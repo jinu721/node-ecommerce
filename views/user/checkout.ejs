@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--=============== FLATICON ===============-->
+    <link
+      rel="stylesheet"
+      href="https://cdn-uicons.flaticon.com/2.0.0/uicons-regular-straight/css/uicons-regular-straight.css"
+    />
+
+    <!--=============== SWIPER CSS ===============-->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+
+    <!--=============== CSS ===============-->
+    <link rel="stylesheet" href="/css/styles.css" />
+
+    <title>Ecommerce Website</title>
+  </head>
+  <body>
+
+        <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ HEADER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+            <%- include('../layouts/header.ejs')  %>
+
+    <!--=============== MAIN ===============-->
+    <main class="main">
+      <!--=============== BREADCRUMB ===============-->
+      <section class="breadcrumb">
+        <ul class="breadcrumb__list flex container">
+          <li><a href="index.html" class="breadcrumb__link">Home</a></li>
+          <li><span class="breadcrumb__link">></span></li>
+          <li><span class="breadcrumb__link">Shop</span></li>
+          <li><span class="breadcrumb__link">></span></li>
+          <li><span class="breadcrumb__link">Checkout</span></li>
+        </ul>
+      </section>
+
+      <!--=============== CHECKOUT ===============-->
+      <section class="checkout section--lg">
+        <div class="checkout__container container grid">
+          <div class="checkout__group">
+            <h3 class="section__title">Billing Details</h3>
+            <address class="address">
+              <div class="address-display">
+                <div>
+                  <a href="#" class="editAddressTxt">Edit</a>
+                  <a href="#" class="removeAddress">Remove</a>
+                </div>
+              </div>
+              <a href="#" class="createAddress">Add</a>
+            </address>
+            <div class="address-form-create">
+              <form
+                action="/address-add"
+                method="post"
+                class="form grid register-form"
+              >
+                <input
+                  type="text"
+                  placeholder="Your Country"
+                  class="form__input countryInp"
+                  name="country"
+                />
+                <p class="err errCountryAddress">err</p>
+                <input
+                  type="text"
+                  placeholder="Your State"
+                  class="form__input stateInp"
+                  name="state"
+                />
+                <p class="err errStateAddress">err</p>
+                <input
+                  type="text"
+                  placeholder="Your District"
+                  class="form__input districtInp"
+                  name="district"
+                />
+                <p class="err errDistrictAddress">err</p>
+                <input
+                  type="text"
+                  placeholder="Your City"
+                  class="form__input cityInp"
+                  name="city"
+                />
+                <p class="err errCityAddress">err dd</p>
+                <input
+                  type="text"
+                  placeholder="Your Street"
+                  class="form__input streetInp"
+                  name="street"
+                />
+                <p class="err errStreetAddress">err</p>
+                <input
+                  type="text"
+                  placeholder="Your Landmark"
+                  class="form__input landmarkInp"
+                  name="lardmark"
+                />
+                <p class="err errLandmarkAddress">err</p>
+                <input
+                  type="text"
+                  placeholder="Your House number"
+                  class="form__input housenoInp"
+                  name="houseno"
+                />
+                <p class="err errHousenoAddress">err</p>
+                <input
+                  type="number"
+                  placeholder="Your Pincode"
+                  class="form__input pincodeInp"
+                  name="pincode"
+                />
+                <p class="err errPincodeAddress">err</p>
+                <div class="form__btn">
+                  <div class="btn btnAddAddress">
+                    <p class="btnAddAddressText">Create</p>
+                    <div class="loader-bar btnAddAddressLoader"></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="address-form-edit">
+              <form
+                action="/address-edit"
+                method="post"
+                class="form grid edit-form"
+              >
+              <input type="hidden" name="id" class="addressIdEdit" value="">
+                <input
+                  type="text"
+                  placeholder="Edit Country"
+                  class="form__input countryInpEdit"
+                  name="country"
+                />
+                <p class="err errCountryAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit State"
+                  class="form__input stateInpEdit"
+                  name="state"
+                />
+                <p class="err errStateAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit District"
+                  class="form__input districtInpEdit"
+                  name="district"
+                />
+                <p class="err errDistrictAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit City"
+                  class="form__input cityInpEdit"
+                  name="city"
+                />
+                <p class="err errCityAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit Street"
+                  class="form__input streetInpEdit"
+                  name="street"
+                />
+                <p class="err errStreetAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit Landmark"
+                  class="form__input landmarkInpEdit"
+                  name="landmark"
+                />
+                <p class="err errLandmarkAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit House number"
+                  class="form__input housenoInpEdit"
+                  name="houseno"
+                />
+                <p class="err errHousenoAddressEdit">err</p>
+                <input
+                  type="text"
+                  placeholder="Edit Pincode"
+                  class="form__input pincodeInpEdit"
+                  name="pincode"
+                />
+                <p class="err errPincodeAddressEdit">err</p>
+                <div class="form__btn">
+                  <div class="btn btnEditAddress">
+                    <p class="btnEditAddressText">Save Changes</p>
+                    <div class="loader-bar btnEditAddressLoader"></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="checkout__group">
+            <h3 class="section__title">Cart Totals</h3>
+            <table class="order__table">
+              <thead>
+                <tr>
+                  <th colspan="2">Products</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>
+                    <img
+                      src="/img/product-1-2.jpg"
+                      alt=""
+                      class="order__img"
+                    />
+                  </td>
+                  <td>
+                    <h3 class="table__title">Yidarton Women Summer Blue</h3>
+                    <p class="table__quantity">x 2</p>
+                  </td>
+                  <td><span class="table__price">$180.00</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <img
+                      src="/img/product-2-1.jpg"
+                      alt=""
+                      class="order__img"
+                    />
+                  </td>
+                  <td>
+                    <h3 class="table__title">LDB Moon Summer</h3>
+                    <p class="table__quantity">x 1</p>
+                  </td>
+                  <td><span class="table__price">$65.00</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <img
+                      src="/img/product-7-1.jpg"
+                      alt=""
+                      class="order__img"
+                    />
+                  </td>
+                  <td>
+                    <h3 class="table__title">Women Short Sleeve Loose</h3>
+                    <p class="table__quantity">x 2</p>
+                  </td>
+                  <td><span class="table__price">$35.00</span></td>
+                </tr>
+                <tr>
+                  <td><span class="order__subtitle">Subtotal</span></td>
+                  <td colspan="2"><span class="table__price">$280.00</span></td>
+                </tr>
+                <tr>
+                  <td><span class="order__subtitle">Shipping</span></td>
+                  <td colspan="2">
+                    <span class="table__price">Free Shipping</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="order__subtitle">Total</span></td>
+                  <td colspan="2">
+                    <span class="order__grand-total">$280.00</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="payment__methods">
+              <h3 class="checkout__title payment__title">Payment</h3>
+              <div class="payment__option flex">
+                <input
+                  type="radio"
+                  name="radio"
+                  id="l1"
+                  checked
+                  class="payment__input"
+                />
+                <label for="l1" class="payment__label"
+                  >Direct Bank Transfer</label
+                >
+              </div>
+              <div class="payment__option flex">
+                <input
+                  type="radio"
+                  name="radio"
+                  id="l2"
+                  class="payment__input"
+                />
+                <label for="l2" class="payment__label">Check Payment</label>
+              </div>
+              <div class="payment__option flex">
+                <input
+                  type="radio"
+                  name="radio"
+                  id="l3"
+                  class="payment__input"
+                />
+                <label for="l3" class="payment__label">Paypal</label>
+              </div>
+            </div>
+            <button class="btn btn--md">Place Order</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+   <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FOOTER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+        <%- include('../layouts/footer.ejs')  %>
+
+
+    <!--=============== SWIPER JS ===============-->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!--=============== MAIN JS ===============-->
+    <script src="/js/user/main.js"></script>
+    <script src="/js/user/checkout.js"></script>
+  </body>
+</html>
