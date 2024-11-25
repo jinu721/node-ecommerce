@@ -15,10 +15,8 @@ const cashOnDelivery = document.getElementById("cashOnDelivery");
 
 const nameRegex = /^[a-zA-Z0-9 ]{3,}$/;
 const priceRegex = /^\d+(\.\d{1,2})?$/;
-const tagsRegex = /^(#\w+)(\s#\w+)*$/;
+const tagsRegex = /^#([a-zA-Z0-9]+(?:\s#[a-zA-Z0-9]+)*)$/;
 
-// Store size and stock data
-const sizeStock = {};
 
 function previewAndCrop(event, index) {
   const file = event.target.files[0];
@@ -44,34 +42,18 @@ function previewAndCrop(event, index) {
   currentImageIndex = index;
 }
 
-
 function startCropping(index) {
-  if (cropperInstances[index]) {
-    const cropper = cropperInstances[index];
-    const canvas = cropper.getCroppedCanvas();
+  const cropper = cropperInstances[index];
+  if (!cropper) return;
 
-    if (canvas) {
-      canvas.toBlob((blob) => {
-        const croppedImageFile = new File(
-          [blob],
-          `croppedImage${index + 1}.png`,
-          {
-            type: "image/png",
-            lastModified: Date.now(),
-          }
-        );
-        croppedImages[index] = croppedImageFile;
-
-        document.getElementById(`cropPreviewSection${index}`).style.display = "none";
-        currentImageIndex = null; 
-      });
-    } else {
-      alert(`Could not retrieve the cropped canvas for index: ${index}`);
-    }
-  } else {
-    alert("Please select an image to crop.");
-  }
+  cropper.getCroppedCanvas().toBlob((blob) => {
+      croppedImages[index] = blob; 
+      const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
+      cropPreviewSection.style.display = "none";
+      console.log("Cropped image stored for upload or further use.");
+  });
 }
+
 
 const colorsOption = [];
 
@@ -92,23 +74,49 @@ function addColor() {
   colorPicker.value = "#ffffff";
 }
 
-function validateStockInput(stockId, errorMessageId, inputId) {
-  const stockInput = document.getElementById(inputId);
-  const errorMessage = document.getElementById(errorMessageId);
+const sizeStock = {};
 
-  if (stockInput.value <= 0 || isNaN(stockInput.value)) {
-    console.log("Please enter a positive stock number.");
+function validateStockAndMaxQuantity(stockId, maxQuantityId, errorMessageId, inputId) {
+  const stockInput = document.getElementById(stockId);
+  const maxQuantityInput = document.getElementById(maxQuantityId);
+  const errorMessage = document.getElementById(errorMessageId);
+  if (!stockInput || !maxQuantityInput || !errorMessage) {
+    console.error(
+      `Missing element: ${
+        !stockInput
+          ? stockId
+          : !maxQuantityInput
+          ? maxQuantityId
+          : errorMessageId
+      }`
+    );
     return false;
   }
+  errorMessage.textContent = "";
+  if (maxQuantityInput.value <= 0 || isNaN(maxQuantityInput.value)) {
+    errorMessage.textContent = "Maximum quantity must be a positive number.";
+    return false;
+  }
+  if (parseInt(maxQuantityInput.value) > parseInt(stockInput.value)) {
+    errorMessage.textContent =
+      "Maximum quantity cannot exceed the available stock.";
+    return false;
+  }
+
   return true;
 }
 
-function handleSizeCheckboxChange(size, stockId, errorMessageId, inputId) {
+function handleSizeCheckboxChange(size, stockId, maxQuantityId, errorMessageId) {
   const checkbox = document.getElementById(size);
   const stockInputDiv = document.getElementById(stockId);
 
+  if (!checkbox || !stockInputDiv) {
+    console.error(`Missing element for size: ${size}`);
+    return;
+  }
+
   if (checkbox.checked) {
-    stockInputDiv.style.display = "block"; 
+    stockInputDiv.style.display = "block";
   } else {
     stockInputDiv.style.display = "none"; 
     delete sizeStock[size];
@@ -122,42 +130,55 @@ function collectStockData() {
     sizeL: "L",
     sizeXL: "XL",
     sizeXXL: "XXL",
-    sizeXXXL: "XXXL"
+    sizeXXXL: "XXXL",
   };
 
   const allSizes = Object.keys(sizeMap);
-  
-  allSizes.forEach(size => {
-    const stockId = 'stockInput' + size.charAt(size.length - 1).toUpperCase();
-    const errorMessageId = 'stock' + size.charAt(size.length - 1).toUpperCase() + 'Error';
-    const inputId = 'productStock' + size.charAt(size.length - 1).toUpperCase();
 
-    if (document.getElementById(size).checked) {
-      const isValid = validateStockInput(stockId, errorMessageId, inputId);
+  allSizes.forEach((size) => {
+    const stockId = "stockInput" + size.slice(4); 
+    const maxQuantityId = "maxQuantity" + size.slice(4);
+    const errorMessageId = "stock" + size.slice(4) + "Error";
+    const inputId = "productStock" + size.slice(4);
+
+    const checkbox = document.getElementById(size);
+    if (checkbox && checkbox.checked) {
+      const isValid = validateStockAndMaxQuantity(
+        stockId,
+        maxQuantityId,
+        errorMessageId,
+        inputId
+      );
       if (isValid) {
         const stockValue = document.getElementById(inputId).value;
+        const maxQuantityValue = document.getElementById(maxQuantityId).value;
         const sizeAbbreviation = sizeMap[size];
-        sizeStock[sizeAbbreviation] = stockValue;  // Store the size as S, M, L, XL, etc.
+        sizeStock[sizeAbbreviation] = {
+          stock: stockValue,
+          maxQuantity: maxQuantityValue,
+        };
       }
     }
   });
-  console.log(sizeStock); // Now stores sizes as S, M, L, XL, XXL, XXXL
+  console.log(sizeStock);
+  return sizeStock; 
 }
 
-document.querySelectorAll('.checkBoxFOrSizes').forEach(checkbox => {
-  checkbox.addEventListener('change', function () {
+document.querySelectorAll(".checkBoxFOrSizes").forEach((checkbox) => {
+  checkbox.addEventListener("change", function () {
     const size = checkbox.id;
-    const stockId = 'stockInput' + size.charAt(size.length - 1).toUpperCase();
-    const errorMessageId = 'stock' + size.charAt(size.length - 1).toUpperCase() + 'Error';
-    const inputId = 'productStock' + size.charAt(size.length - 1).toUpperCase();
+    const stockId = "stockInput" + size.slice(4);
+    const maxQuantityId = "maxQuantity" + size.slice(4);
+    const errorMessageId = "stock" + size.slice(4) + "Error";
 
-    handleSizeCheckboxChange(size, stockId, errorMessageId, inputId);
+    handleSizeCheckboxChange(size, stockId, maxQuantityId, errorMessageId);
   });
 });
 
 function validateAndSubmit() {
   const errorMsgs = document.querySelectorAll(".error-message");
-  errorMsgs.forEach((error) => error.remove());
+  errorMsgs.forEach((error) => (error.textContent = ""));
+
   if (!nameRegex.test(name.value)) {
     showError(name, "Product name must be at least 3 characters long and alphanumeric.");
   } else if (description.value.length < 5) {
@@ -165,17 +186,23 @@ function validateAndSubmit() {
   } else if (categorySelect.value === "") {
     showError(categorySelect, "Please select a category.");
   } else if (!tagsRegex.test(tags.value)) {
-    showError(tags, "Tags should start with #, have letters or numbers, and be separated by spaces.");
+    showError(
+      tags,
+      "Tags should start with #, have letters or numbers, and be separated by spaces."
+    );
   } else if (!priceRegex.test(ogPrice.value)) {
-    showError(ogPrice, "Original Price must be a valid number with up to 2 decimal places.");
+    showError(
+      ogPrice,
+      "Original Price must be a valid number with up to 2 decimal places."
+    );
   } else {
     const imageFiles = document.querySelectorAll('input[type="file"]');
     let validImages = true;
-    imageFiles.forEach((fileInput, index) => {
+    imageFiles.forEach((fileInput) => {
       if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const fileType = file.type.split('/')[1];
-        if (!['jpeg', 'jpg', 'png'].includes(fileType)) {
+        const fileType = file.type.split("/")[1];
+        if (!["jpeg", "jpg", "png"].includes(fileType)) {
           validImages = false;
           showError(fileInput, "Only PNG, JPG, or JPEG files are allowed.");
         }
@@ -184,8 +211,8 @@ function validateAndSubmit() {
 
     if (!validImages) return;
 
-    collectStockData();
 
+    const stockData = collectStockData();
     const formData = new FormData();
     formData.append("name", name.value);
     formData.append("description", description.value);
@@ -193,12 +220,21 @@ function validateAndSubmit() {
     formData.append("brand", brand.value);
     formData.append("price", parseFloat(ogPrice.value));
     formData.append("tags", tags.value);
-    formData.append("sizes", JSON.stringify(sizeStock)); 
+    formData.append("sizes", JSON.stringify(sizeStock));
     formData.append("colors", colorsOption);
     formData.append("cashOnDelivery", cashOnDelivery.checked);
-    formData.append("offerPrice", offerPrice.value !== "" ? offerPrice.value : null);
-    formData.append("warranty", warranty.value !== "" ? warranty.value : null);
-    formData.append("returnPolicy", returnPolicy.value !== "" ? returnPolicy.value : null);
+    formData.append(
+      "offerPrice",
+      offerPrice.value !== "" ? offerPrice.value : null
+    );
+    formData.append(
+      "warranty",
+      warranty.value !== "" ? warranty.value : null
+    );
+    formData.append(
+      "returnPolicy",
+      returnPolicy.value !== "" ? returnPolicy.value : null
+    );
 
     croppedImages.forEach((croppedImage, index) => {
       if (croppedImage) {
@@ -215,11 +251,12 @@ function validateAndSubmit() {
         const data = await response.json();
         console.log(data.msg);
       } catch (err) {
-        console.log("Error ::- " + err);
+        console.error("Error ::-", err);
       }
     })();
   }
 }
+
 
 function showError(input, message) {
   const error = document.createElement("p");
@@ -260,26 +297,6 @@ function toggleStockInput(size) {
 }
 
 
-// window.onload = function() {
-//   const sizes = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-//   sizes.forEach(size => {
-//     if (document.getElementById(`size${size}`).checked) {
-//       toggleStockInput(size);
-//     }
-//   });
-// };
-
-
-
-// ~~~~~~~~~~~~~~~~~~~~~ product update ~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-// `const updateBtn = document.querySelector('.btnUpdateProduct');
-
-// updateBtn.forEach(elem=>{
-  
-// })`
 
 const productNameUpdate = document.querySelector('#productUpdateName');
 const image1 = document.querySelector('.image1');
@@ -300,42 +317,6 @@ const returnPolicyUpdate = document.querySelector('#productUpdateReturnPolicy');
 
 const productImagesUpdate = document.querySelectorAll('.product-update-image');
 const sizeOptionsUpdate = document.querySelectorAll('.form-check-input'); 
-
-
-console.log(productBrandUpdate.value)
-
-let currentProductId;
-const productUpdateModal = document.getElementById('productUpdateModal');
-
-productUpdateModal.addEventListener('shown.bs.modal', function (event) {
-    const button = event.relatedTarget;
-    const productId = button.getAttribute('data-id');
-    currentProductId = productId;
-    console.log("Product ID:", productId);
-    fetchProductData(productId);
-});
-async function fetchProductData(productId) {
-  try{
-    const response = await fetch(`/admin/update-product/${currentProductId}`);
-    const data = await response.json();
-    console.log(data)
-    productNameUpdate.value = data.data.name;
-    productDescriptionUpdate.value = data.data.description;
-    // image1.src = data.data.images[0].replace(/\\/g, '/');
-    // image2.src = data.data.images[1].replace(/\\/g, '/');
-    // image3.src = data.data.images[2].replace(/\\/g, '/');
-    // image4.src = data.data.images[3].replace(/\\/g, '/');
-    // console.log(data.data.images)
-    productTagsUpdate.value = data.data.tags;
-    productBrandUpdate.value = data.data.brand;
-  }catch(err){
-    console.log("Err ::- "+err);
-  }
-}
-
-
-
-// ~~~~~~~~~~~~~~~~~ product List and Unlist ~~~~~~~~~~~~~~~~~~~~~~~
 
 
 const btnUnlist = document.querySelectorAll(".btnListAndUnlist");
@@ -370,3 +351,100 @@ btnUnlist.forEach((elem) => {
     }
   });
 });
+
+
+
+
+document.querySelector('.resultContainer').addEventListener('click', async (event) => {
+  if (event.target.classList.contains('btn-ban')) {
+    const elem = event.target; 
+    try {
+      const userId = elem.getAttribute('data-id');
+      const res = await fetch(`/admin/users/ban/?id=${userId}&val=${elem.textContent}`);
+      const data = await res.json();
+      console.log(data);
+      if (data.val) {
+        if (elem.textContent === "Ban") {
+          elem.classList.replace("badge-outline-danger", "badge-outline-primary");
+          elem.textContent = "Unban";
+        } else {
+          elem.classList.replace("badge-outline-primary", "badge-outline-danger");
+          elem.textContent = "Ban";
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+});
+
+let debounceTimer;
+
+function searchDebouncing() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    searchData();
+  }, 300);
+}
+
+async function searchData() {
+  const query = document.querySelector('.searchProducts').value.trim();
+  console.log(query);
+  const resultsContainer = document.querySelector('.resultContainer');
+  resultsContainer.innerHTML = '';
+  try {
+    const response = await fetch(`/admin/products/search?key=${query}`);
+    const data = await response.json();
+    if (data.val) {
+      console.log(data);
+      data.products.forEach((item,index) => {
+        const productHTML = `
+                <tr>
+                  <td>${index+1}</td>
+                  <td>
+                    <img src="/${ item.images[0] }" alt="image" />
+                  </td>
+                  <td>
+                    <img src="/${ item.images[1] }" alt="image" />
+                  </td>
+                  <td>
+                    <img src="/${ item.images[2] }" alt="image" />
+                  </td>
+                  <td>
+                    <img src="/${ item.images[3] }" alt="image" />
+                  </td>
+                  <td> ${ item.name }</td>
+                  <td>
+                     ${item.category.name}
+                  </td>
+                  <td>${ item.brand }</td>
+                  <td>${ item.price }</td>
+                  <td></td>
+                  <td>
+                    <div
+                      data-id="<%= data._id  %>"
+                      class="badge btnListAndUnlist ${ item.isDeleted?'badge-outline-success':'badge-outline-primary' }"
+                    >
+                      ${ item.isDeleted?'List':'Unlist' }
+                    </div>
+                  </td>
+                  <td>
+                    <a href="/admin/products/update/${item._id}">
+                      <div
+                        class="badge btnUpdateProduct badge-outline-warning"
+                      >
+                        Update
+                      </div>
+                    </a>
+                  </td>
+                </tr>
+        `;
+        resultsContainer.innerHTML += productHTML;
+      });
+    } else {
+      console.log(data.msg);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}

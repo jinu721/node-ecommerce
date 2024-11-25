@@ -10,6 +10,11 @@
       href="https://cdn-uicons.flaticon.com/2.0.0/uicons-regular-straight/css/uicons-regular-straight.css"
     />
 
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
     <!--=============== SWIPER CSS ===============-->
     <link
       rel="stylesheet"
@@ -23,14 +28,14 @@
   </head>
   <body>
     <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ HEADER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-      <%- include('../layouts/header.ejs')  %>
+    <%- include('../layouts/header.ejs') %>
 
     <!--=============== MAIN ===============-->
-    <main class="main">
+    <main class="main mainPageSection">
       <!--=============== BREADCRUMB ===============-->
       <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
-          <li><a href="index.html" class="breadcrumb__link">Home</a></li>
+          <li><a href="/home" class="breadcrumb__link">Home</a></li>
           <li><span class="breadcrumb__link">></span></li>
           <li><span class="breadcrumb__link">Account</span></li>
         </ul>
@@ -57,11 +62,15 @@
               <i class="fi fi-rs-settings-sliders"></i> Change Password
             </p>
             <% } %>
-            <a href="/logout"><p class="account__tab"><i class="fi fi-rs-exit"></i> Logout</p></a>
+            <a href="/logout"
+              ><p class="account__tab">
+                <i class="fi fi-rs-exit"></i> Logout
+              </p></a
+            >
           </div>
           <div class="tabs__content">
             <div class="tab__content active-tab" id="dashboard">
-              <h3 class="tab__header">Hello Jinu</h3>
+              <h3 class="tab__header"><%= user.username %></h3>
               <div class="tab__body">
                 <div class="profile-info">
                   <h4>
@@ -71,11 +80,12 @@
                   <h4>
                     email : <span class="displayEmail"><%= user.email %></span>
                   </h4>
-                  <% if(user.phone){ %>
                   <h4>
-                    phone : <span class="displayPhone"><%= user.phone %></span>
+                    phone :
+                    <span class="displayPhone"
+                      ><%= user.phone?user.phone:'nill' %></span
+                    >
                   </h4>
-                  <% } %>
                   <div class="profile-action">
                     <a href="#" class="edit edit-profile">Edit</a>
                   </div>
@@ -98,8 +108,6 @@
                       value="<%= user.email  %>"
                     />
                     <p class="err error-msg-updateEmail">error msg</p>
-
-                    <% if(user.phone){ %>
                     <input
                       type="text"
                       placeholder="Phone"
@@ -108,7 +116,6 @@
                       value="+<%= user.phone  %>"
                     />
                     <p class="err error-msg-updatePhone">error msg</p>
-                    <% } %>
 
                     <div class="form__btn">
                       <button type="submit" class="btn btn--md updatebtn">
@@ -123,76 +130,153 @@
             <div class="tab__content" content id="orders">
               <h3 class="tab__header">Your Orders</h3>
               <div class="tab__body">
-                <table class="placed__order-table">
+                <table class="placed__order-table ordersInfo">
                   <thead>
                     <tr>
-                      <th>Orders</th>
+                      <th>No</th>
                       <th>Date</th>
-                      <th>Status</th>
+                      <th>Order Status</th>
+                      <th>Payment Status</th>
                       <th>Totals</th>
-                      <th>Actions</th>
+                      <th>Order Details</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody class="ordersParant">
                     <tr>
-                      <td>#1357</td>
+                      <!-- <td>1</td>
                       <td>March 19, 2022</td>
                       <td>Processing</td>
-                      <td>$125.00</td>
+                      <td>Processing</td>
+                      <td>&#8377;1000</td>
                       <td><a href="#" class="view__order">View</a></td>
-                    </tr>
-                    <tr>
-                      <td>#2468</td>
-                      <td>June 29, 2022</td>
-                      <td>Completed</td>
-                      <td>$364.00</td>
                       <td><a href="#" class="view__order">View</a></td>
-                    </tr>
-                    <tr>
-                      <td>#2366</td>
-                      <td>August 02, 2022</td>
-                      <td>Completed</td>
-                      <td>$280.00</td>
-                      <td><a href="#" class="view__order">View</a></td>
+                      <td><a href="#" class="view__order">Cancel Order</a></td> -->
                     </tr>
                   </tbody>
                 </table>
+                <div style="display: flex">
+                  <table class="placed__order-table detailsOfOrders">
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Product Details</th>
+                      </tr>
+                    </thead>
+                    <tbody class="ordersParant orderedProductInfo">
+                      <tr>
+                        <!-- <td>1</td>
+                        <td>March 19, 2022</td>
+                        <td>Processing</td>
+                        <td>Processing</td>
+                        <td>&#8377;1000</td>
+                        <td><a href="#" class="view__order">View</a></td>
+                        <td><a href="#" class="view__order">View</a></td>
+                        <td><a href="#" class="view__order">Cancel Order</a></td> -->
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div class="orderedAddrressInfo">
+                    <address class="address">
+                      <div class="orderedAddress-display"></div>
+                    </address>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="tab__content" content id="wallet">
               <h3 class="tab__header">Wallet</h3>
               <div class="tab__body">
-                <form class="form grid">
-                  <div class="tran-head">
-                    <button>Transactions</button>
-                    <button>All Activities</button>
+                <div style="display: flex">
+                  <div class="container balanceSection">
+                    <!-- Balance Card -->
+                    <div class="card">
+                      <div class="balance-header">
+                        <span>Balance</span>
+                        <div class="currency-toggle">R/ &#8377;</div>
+                      </div>
+                      <div class="balance-amount">$ 7,610.00</div>
+                      <div class="transactions">
+                        <span>↗ +$ 2,339.00</span>
+                        <span>↙ -$ 919.00</span>
+                      </div>
+
+                      <div class="info-section">
+                        <div class="info-item">
+                          <span class="label">Wallet ID:</span>
+                          <span>44zce285ee4944c5e7fe80772b2bfee24b</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p>Totel Balance</p>
-                    <p>3000</p>
+
+                  <div class="transaction-list" style="margin-right: 56px;">
+                    <div class="transactionHistorySection">
+
+                    </div>
+
+                    <!-- <div class="transaction-item">
+                      <div class="transaction-info">
+                        <div class="transaction-icon icon-send">↑</div>
+                        <div class="transaction-details">
+                          <span class="transaction-title">Sent to Market</span>
+                          <span class="transaction-date">Today, 1:15 PM</span>
+                        </div>
+                      </div>
+                      <div
+                        class="transaction-details"
+                        style="text-align: right"
+                      >
+                        <span class="transaction-amount amount-sent"
+                          >-$919.00</span
+                        >
+                        <span class="transaction-status status-completed"
+                          >Completed</span
+                        >
+                      </div>
+                    </div>
+
+                    <div class="transaction-item">
+                      <div class="transaction-info">
+                        <div class="transaction-icon icon-send">↑</div>
+                        <div class="transaction-details">
+                          <span class="transaction-title">Games Purchase</span>
+                          <span class="transaction-date">Today, 12:30 PM</span>
+                        </div>
+                      </div>
+                      <div
+                        class="transaction-details"
+                        style="text-align: right"
+                      >
+                        <span class="transaction-amount amount-sent"
+                          >-$503.00</span
+                        >
+                        <span class="transaction-status status-pending"
+                          >Pending</span
+                        >
+                      </div>
+                    </div> -->
+
+                    <!-- <div class="load-more">Load more transactions</div> -->
                   </div>
-                  <div>
-                    <button>Add money</button>
-                    <button>Windrow Money</button>
-                  </div>
-                  <div></div>
-                  <div class="form__btn">
-                    <button class="btn btn--md">Save</button>
-                  </div>
-                </form>
+                </div>
               </div>
             </div>
             <div class="tab__content" content id="address">
               <h3 class="tab__header">Shipping Address</h3>
               <div class="tab__body">
-                <address class="address">
+                <address class="address addressDisplaySection">
                   <div class="address-display">
                     <div>
                       <a href="#" class="editAddressTxt">Edit</a>
                       <a href="#" class="removeAddress">Remove</a>
                     </div>
                   </div>
-                  <a href="#" class="createAddress">Add</a>
+                  <a  class="createAddress">Add</a>
                 </address>
                 <div class="address-form-create">
                   <form
@@ -270,7 +354,12 @@
                     method="post"
                     class="form grid edit-form"
                   >
-                  <input type="hidden" name="id" class="addressIdEdit" value="">
+                    <input
+                      type="hidden"
+                      name="id"
+                      class="addressIdEdit"
+                      value=""
+                    />
                     <input
                       type="text"
                       placeholder="Edit Country"
@@ -338,39 +427,64 @@
               </div>
             </div>
             <!-- <% if(!user.isGoogleLogin){ %> -->
-              <div class="tab__content" id="change-password">
-                <h3 class="tab__header">Change Password</h3>
-                <div class="tab__body">
-                  <form class="form grid">
+            <div class="tab__content" id="change-password">
+              <h3 class="tab__header">Change Password</h3>
+              <div class="tab__body">
+                <form class="form grid">
+                  <div class="form__input-container">
                     <input
                       type="password"
                       placeholder="Current Password"
+                      id="passwordInput7"
                       class="form__input current-pass"
                     />
-                    <p class="err error-message err-current-pass"></p> 
+                    <i
+                      class="fas fa-eye eye-icon"
+                      onclick="toggleEye('passwordInput7', this)"
+                      id="togglePassword"
+                    ></i>
+                  </div>
+                  <p class="err error-message err-current-pass"></p>
+                  <div class="form__input-container">
                     <input
                       type="password"
                       placeholder="New Password"
+                      id="passwordInput8"
                       class="form__input new-pass"
                     />
-                    <p class="err error-message err-new-pass"></p> 
+                    <i
+                      class="fas fa-eye eye-icon"
+                      onclick="toggleEye('passwordInput8', this)"
+                      id="togglePassword"
+                    ></i>
+                  </div>
+                  <p class="err error-message err-new-pass"></p>
+                  <div class="form__input-container">
                     <input
                       type="password"
                       placeholder="Confirm Password"
+                      id="passwordInput9"
                       class="form__input confirm-pass"
                     />
-                    <p class="err error-message err-confirm-pass"></p> 
-              
-                    <div class="form__btn">
-                      <div class="btn btn-saveChangePass">
-                        <p class="btn-saveChangePassText">Save Changes</p>
-                        <div class="loader-bar btn-saveChangePassLoader"></div>
-                      </div>
+                    <i
+                      class="fas fa-eye eye-icon"
+                      onclick="toggleEye('passwordInput9', this)"
+                      id="togglePassword"
+                    ></i>
+                  </div>
+                  <p class="err error-message err-confirm-pass"></p>
+                  <a href="/forgot" class="forgotTxt">Forgot Password</a>
+
+                  <div class="form__btn">
+                    <div class="btn btn-saveChangePass">
+                      <p class="btn-saveChangePassText">Save Changes</p>
+                      <div class="loader-bar btn-saveChangePassLoader"></div>
                     </div>
-                  </form>
-                </div>
+                  </div>
+                </form>
               </div>
-              
+            </div>
+
             <!-- <% } %> -->
           </div>
         </div>
@@ -398,9 +512,8 @@
       </section>
     </main>
 
-   <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FOOTER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-      <%- include('../layouts/footer.ejs')  %>
-
+    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FOOTER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+    <%- include('../layouts/footer.ejs') %>
 
     <!--=============== SWIPER JS ===============-->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>

@@ -211,7 +211,7 @@
                             <div data-id="<%= data._id  %>" class="badge btnListAndUnlist <%= data.isDeleted?'badge-outline-success':'badge-outline-primary' %>"><%= data.isDeleted?'List':'Unlist' %></div>
                           </td>
                           <td>
-                            <div data-id="<%= data._id %>" class="badge badge-outline-warning">Update</div>
+                            <a href="/admin/category/update/<%= data._id %>"><div class="badge badge-outline-warning">Update</div></a>
                           </td>
                         </tr>
                       <% }) %>
@@ -276,61 +276,6 @@
           </div>
         </div>
       </div>
-
-      <div
-      class="modal fade"
-      id="categoryUpdateModal"
-      tabindex="-1"
-      aria-labelledby="categoryUpdateModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog w-100 modal-lg product-modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="categoryUpdateModalLabel">
-              Update  New Category
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form class="forms-sample" id="categoryForm" enctype="multipart/form-data" novalidate>
-              <input style="display: none;" type="file" class="category-image" required />
-              <div class="form-group">
-                <label for="category">Name</label>
-                <input
-                  type="text"
-                  class="form-control category-name"
-                  id="categoryName" 
-                  name="name"
-                  placeholder="Category Name"
-                  required
-                />
-                <p class="error-message" id="categoryNameError"></p>
-              </div> 
-              <div class="form-group">
-                <label for="categoryImage">Images</label>
-                <input type="file" class="form-control category-image" id="categoryImage" accept="image/*" onchange="previewAndCrop(event)">
-                <p class="error-message" id="categoryImageError"></p>
-              </div>
-              <div class="form-group previewSection">
-                <img id="cropPreview" style="max-width: 100%; display: none;" />
-                <button type="button" id="cropButton" style="display: none;" onclick="startCropping()">Crop Image</button>
-              </div>
-              <div class="form-group">
-      
-              <button type="submit" class="btn btn-primary mt-3">
-                Create
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
   
 </div>

@@ -114,3 +114,50 @@ let swiperProducts = new Swiper(".new__container", {
 //   });
 // });
 
+
+
+let debounceTimer;
+
+function debouncedSearch() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    performSearch();
+  }, 300); 
+}
+async function performSearch() {
+  const query = document.getElementById('searchBox').value.trim();
+  const resultsContainer = document.getElementById('searchResults');
+  resultsContainer.innerHTML = '';
+  if (query.length < 1) {
+    document.getElementById('searchResults').innerHTML = '';
+    document.querySelector('.mainPageSection').classList.remove('blurred');
+    return;
+  }
+
+  try{
+    const response = await fetch(`/product/search?key=${encodeURIComponent(query)}`);
+    const data = await response.json();
+    if(data.val){ 
+      // if (data.results.length === 0) {
+      //   resultsContainer.innerHTML = '<p>No results found</p>';
+      //   return;
+      // };
+      document.querySelector('.mainPageSection').classList.add('blurred');
+      console.log(data.results)
+      data.results.forEach((item) => {
+        const productHTML = `
+          <div class="productItem">
+            <img class="productItemImg" src="/${item.images[0]}" alt="${item.name}">
+            <p class="productItemName">${item.name}</p>
+            <p class="productItemPrice">&#8377;${item.price}</p>
+          </div>
+        `;
+        resultsContainer.innerHTML += productHTML;
+      });
+    }else{
+      console.log(data.msg)
+    }
+  }catch(err){
+    console.log(err);
+  }
+}

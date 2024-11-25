@@ -1,36 +1,28 @@
 // ~~~~~~~~~~~~~~~~~~ update profile section ~~~~~~~~~~~~~~~~~~
 
-// section and buttons
 const profileInfo = document.querySelector(".profile-info");
 const updateForm = document.querySelector(".updateform");
 const editButton = document.querySelector(".edit-profile");
 const updateButton = updateForm.querySelector(".updatebtn");
 
-// Form fields
 const usernameField = updateForm.querySelector(".usernameUpdate");
 const emailField = updateForm.querySelector(".emailUpdate");
 const phoneField = updateForm.querySelector(".phoneUpdate") || null;
 
-// Error message containers
 const usernameError = document.querySelector(".error-msg-updateUsername");
 const emailError = document.querySelector(".error-msg-updateEmail");
 const phoneError = document.querySelector(".error-msg-updatePhone");
 
-// Validation patterns
 const usernamePattern = /^[a-zA-Z0-9_]+$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phonePattern = /^\+[0-9]+$/;
 const passwordPattern =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-// when edit button click
 editButton.addEventListener("click", (e) => {
   e.preventDefault();
   profileInfo.style.display = "none";
-  updateForm.style.display = "grid"; // Show the update form
+  updateForm.style.display = "grid";
 });
-
-// Add validation and submission logic for the update form
 
 updateButton.addEventListener("click", (e) => {
   e.preventDefault();
@@ -116,8 +108,7 @@ updateButton.addEventListener("click", (e) => {
 
 // ~~~~~~~~~~~~~ My address section ~~~~~~~~~~~~~
 
-// create address section 
-
+// create address section
 
 const countryInput = document.querySelector(".countryInp");
 const stateInput = document.querySelector(".stateInp");
@@ -149,9 +140,14 @@ const createAddressText = document.querySelector(".createAddress");
 const textPattern = /^[a-zA-Z\s]+$/;
 const pincodePattern = /^[0-9]{6}$/;
 
+const addressDisplaySection = document.querySelector('.addressDisplaySection');
+const addressCreateSection = document.querySelector('.address-form-create');
+const addressEditSection = document.querySelector('.address-form-edit');
+
 createAddressText.addEventListener("click", () => {
-  addressShow.style.display = "none";
-  addressFormCreate.style.display = "block";
+  addressDisplaySection.style.display = "none";
+  addressEditSection.style.display = "none";
+  addressCreateSection.style.display = "block";
 });
 
 createButton.addEventListener("click", (e) => {
@@ -258,30 +254,9 @@ createButton.addEventListener("click", (e) => {
         });
         const parsedData = await resData.json();
         if (parsedData.val) {
-          const response = await fetch("/account/address");
-          const data = await response.json();
-          const addressContainer = document.querySelector(".address-display");
-          addressContainer.innerHTML = "";
-          data.user.forEach((val) => {
-            const addressDiv = document.createElement("div");
-            addressDiv.classList.add("address-item");
-            addressDiv.innerHTML = `
-        <p><strong>House Number:</strong> <span class="houseno-value">${val.houseNumber}</span></p>
-        <p><strong>Street:</strong> <span class="street-value">${val.street}</span></p>
-        <p><strong>Landmark:</strong> <span class="landmark-value">${val.landMark}</span></p>
-        <p><strong>City:</strong> <span class="city-value">${val.city}</span></p>
-        <p><strong>District:</strong> <span class="district-value">${val.district}</span></p>
-        <p><strong>State:</strong> <span class="state-value">${val.state}</span></p>
-        <p><strong>Country:</strong> <span class="country-value">${val.country}</span></p>
-        <p><strong>Pin Code:</strong> <span class="pincode-value">${val.pinCode}</span></p>
-           <div>
-                    <p data-id="${val._id}" class="editAddress">Edit</p>
-                    <p data-id="${val._id}" class="removeAddress">Remove</p>
-                  </div>
-        <hr style="margin:10px;">
-      `;
-            addressContainer.appendChild(addressDiv);
-          });
+          buttonText.style.display = "none";
+          loader.style.display = "flex";
+          fetchAddress();
           addressShow.style.display = "block";
           addressFormCreate.style.display = "none";
         }
@@ -293,11 +268,7 @@ createButton.addEventListener("click", (e) => {
   }
 });
 
-
-
-// Edit address section 
-
-
+// Edit address section
 
 const countryEditInput = document.querySelector(".countryInpEdit");
 const stateEditInput = document.querySelector(".stateInpEdit");
@@ -320,7 +291,6 @@ const errPincodeEdit = document.querySelector(".errPincodeAddressEdit");
 
 const editButtonText = document.querySelector(".btnEditAddressText");
 const editLoader = document.querySelector(".btnEditAddressLoader");
-
 
 const editAddressButton = document.querySelector(".btnEditAddress");
 
@@ -433,12 +403,90 @@ tabs.forEach((tab) => {
   });
 });
 
-async function fetchOrders() {
-  console.log("Fetching orders...");
-}
-
 async function fetchWallet() {
-  console.log("Fetching wallet data...");
+  const balanceSection = document.querySelector(".balanceSection");
+  const transactionHistorySection = document.querySelector(
+    ".transactionHistorySection"
+  );
+  balanceSection.innerHTML = "";
+  transactionHistorySection.innerHTML = "";
+  try {
+    const response = await fetch("account/wallet");
+    const data = await response.json();
+    console.log(data);
+    if (data.val) {
+      balanceSection.innerHTML = `
+      <div class="card">
+        <div class="balance-header">
+          <span>Balance</span>
+          <div class="currency-toggle">R/ &#8377;</div>
+        </div>
+        <div class="balance-amount">&#8377;${data.wallet.balance}</div>
+        <div class="transactions">
+          <span>↗ +&#8377; ${data.wallet.balance}</span>
+          <span>↙ -&#8377; ${0}</span>
+        </div>
+
+        <div class="info-section">
+          <div class="info-item">
+            <span class="label">Wallet ID:</span>
+            <span>${data.wallet._id}</span>
+          </div>
+        </div>
+      </div>
+      `;
+      data.wallet.transactionHistory.forEach((x) => {
+        function formatDate(dateString) {
+          const date = new Date(dateString);
+          const options = {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          };
+
+          return date.toLocaleString("en-US", options); 
+        }
+        function capitalize(str) {
+          return str.replace(/\b\w/g, function (char) {
+            return char.toUpperCase();
+          });
+        }
+
+        const div = document.createElement("div");
+        div.classList.add("transactionItem");
+        div.innerHTML = `
+        <div class="transaction-item">
+              <div class="transaction-info">
+                <div class="transaction-icon ${x.transactionType==='refund'?'icon-receive':'icon-send'}">${x.transactionType==='refund'?'↓':'↑'}</div>
+                <div class="transaction-details">
+                  <span class="transaction-title"
+                    >${capitalize(x.transactionType)}</span
+                  >
+                  <span class="transaction-date">${formatDate(x.transactionDate)}</span>
+                </div>
+              </div>
+              <div
+                class="transaction-details"
+                style="text-align: right"
+              >
+                <span class="transaction-amount amount-received"
+                  >${x.transactionType==='refund'?'+':'-'}&#8377;${x.transactionAmount}</span
+                >
+                <span class="transaction-status status-completed"
+                  >Completed</span
+                >
+              </div>
+            </div>
+        `;
+        transactionHistorySection.append(div);
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function fetchAddress() {
@@ -467,6 +515,9 @@ async function fetchAddress() {
       `;
       addressContainer.appendChild(addressDiv);
     });
+    addressDisplaySection.style.display = "block";
+    addressEditSection.style.display = "none";
+    addressCreateSection.style.display = "none";
   } catch (err) {
     console.log(err);
   }
@@ -480,7 +531,6 @@ const addressContainer = document.querySelector(".address-display");
 
 addressContainer.addEventListener("click", (event) => {
   event.preventDefault();
-
 
   if (event.target.classList.contains("editAddress")) {
     handleEdit(event);
@@ -497,8 +547,8 @@ async function handleEdit(event) {
   const response = await fetch(`/update-address/${addressId}`);
   const addressData = await response.json();
   if (addressData.val) {
-    addressData.address.address.forEach((a)=>{
-      console.log(a)
+    addressData.address.address.forEach((a) => {
+      console.log(a);
       if (addressId === a._id) {
         countryEditInput.value = a.country;
         addressIdEdit.value = a._id;
@@ -510,9 +560,10 @@ async function handleEdit(event) {
         housenoEditInput.value = a.houseNumber;
         pincodeEditInput.value = a.pinCode;
       }
-    })
-    addressShow.style.display = "none";
-    addressFormEdit.style.display = "block";
+    });
+    addressDisplaySection.style.display = "none";
+    addressEditSection.style.display = "block";
+    addressCreateSection.style.display = "none";
   }
 }
 
@@ -533,9 +584,8 @@ async function handleRemove(event) {
 
 // ~~~~~~~~~~~~~~~~  change password section ~~~~~~~~~~~~~~~~~~~~~
 
-
 document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
-  e.preventDefault(); 
+  e.preventDefault();
   const currentPasswordInput = document.querySelector(".current-pass");
   const newPasswordInput = document.querySelector(".new-pass");
   const confirmPasswordInput = document.querySelector(".confirm-pass");
@@ -543,7 +593,9 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
   const errNewPass = document.querySelector(".err-new-pass");
   const errConfirmPass = document.querySelector(".err-confirm-pass");
   const changePassSaveText = document.querySelector(".btn-saveChangePassText");
-  const changePassSaveLoader = document.querySelector(".btn-saveChangePassLoader");
+  const changePassSaveLoader = document.querySelector(
+    ".btn-saveChangePassLoader"
+  );
   [errCurrentPass, errNewPass, errConfirmPass].forEach((error) => {
     error.style.display = "none";
     error.textContent = "";
@@ -553,19 +605,16 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
     errCurrentPass.style.display = "flex";
     errCurrentPass.textContent = "Current Password cannot be empty.";
     isValid = false;
-  }
-  else if (!passwordPattern.test(newPasswordInput.value)) {
+  } else if (!passwordPattern.test(newPasswordInput.value)) {
     errNewPass.style.display = "flex";
-    errNewPass.textContent = "New Password must be at least 8 characters long, with uppercase, lowercase, a number, and a special character.";
+    errNewPass.textContent =
+      "New Password must be at least 8 characters long, with uppercase, lowercase, a number, and a special character.";
     isValid = false;
-  }
-  else if (confirmPasswordInput.value.length === 0) {
+  } else if (confirmPasswordInput.value.length === 0) {
     errConfirmPass.style.display = "flex";
     errConfirmPass.textContent = "Confirm Password cannot be empty.";
     isValid = false;
-  } 
-  
-  else if (confirmPasswordInput.value !== newPasswordInput.value) {
+  } else if (confirmPasswordInput.value !== newPasswordInput.value) {
     errConfirmPass.style.display = "flex";
     errConfirmPass.textContent = "Passwords do not match.";
     isValid = false;
@@ -577,41 +626,216 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
     errCurrentPass.style.display = "none";
     errNewPass.style.display = "none";
     errConfirmPass.style.display = "none";
-    let changePassRequest = async ()=>{
-      try{
-        const response = await fetch('/change-password',{
-          method:'PATCH',
-          headers:{
-            'Content-Type':'application/json'
+    let changePassRequest = async () => {
+      try {
+        const response = await fetch("/change-password", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
           },
-          body:JSON.stringify({
-            currentPass:currentPasswordInput.value,
-            newPass:newPasswordInput.value
-          })
-        })
+          body: JSON.stringify({
+            currentPass: currentPasswordInput.value,
+            newPass: newPasswordInput.value,
+          }),
+        });
         const data = await response.json();
-        if(!data.val){
+        if (!data.val) {
           changePassSaveText.style.display = "flex";
           changePassSaveLoader.style.display = "none";
           errCurrentPass.style.display = "flex";
           errCurrentPass.textContent = data.msg;
-        }else{
+        } else {
           errCurrentPass.style.display = "none";
           changePassSaveText.style.display = "flex";
           changePassSaveLoader.style.display = "none";
           changePassSaveText.textContent = "Password Changed";
-          setTimeout(()=>{
+          setTimeout(() => {
             changePassSaveText.textContent = "Save Changes";
-          },3000);
-          currentPasswordInput.value = ""
-          newPasswordInput.value = ""
-          confirmPasswordInput.value = ""
+          }, 3000);
+          currentPasswordInput.value = "";
+          newPasswordInput.value = "";
+          confirmPasswordInput.value = "";
           console.log("Pass changed");
         }
-      }catch(err){
-        console.log('Error fetching:-'+err);
+      } catch (err) {
+        console.log("Error fetching:-" + err);
       }
-    }
+    };
     changePassRequest();
   }
 });
+
+async function fetchOrders() {
+  document.querySelector(".ordersInfo").style.display = "block";
+  document.querySelector(".detailsOfOrders").style.display = "none";
+  document.querySelector(".orderedAddrressInfo").style.display = "none";
+  try {
+    console.log("Fetch orders--------------");
+    const response = await fetch("/account/orders");
+    const data = await response.json();
+    const orderContainer = document.querySelector(".ordersParant");
+    orderContainer.innerHTML = "";
+    let orderStatus ;
+    if (data.orders === null) {
+      const ordernulltr = document.createElement("tr");
+      ordernullt.classList.add("order-null-item");
+      ordernullt.innerHTML = `
+        <td>No orders yet!</td>
+      `;
+      orderContainer.appendChild(ordernullTr);
+    } else {
+      data.orders.forEach((data, index) => {
+        const orderDate = new Date(data.orderedAt);
+        const formattedDate = orderDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        const orderTr = document.createElement("tr");
+        orderTr.classList.add("order-item");
+        orderStatus = data.orderStatus;
+        orderTr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${formattedDate}</td>
+          <td>${data.orderStatus}</td>
+          <td>${data.paymentStatus}</td>
+          <td>&#8377;${data.totalAmount}</td>
+          <td  ><a onclick="viewOrderedProduct(event)" data-id="${
+            data._id
+          }" class="view__order btnViewOrder">View</a></td>
+          <td><a onclick="${data.orderStatus==='deilvered'?'returnOrders(event)':'cancelOrders(event)'}" data-id="${
+            data._id
+          }" class="view__order btnCancelOrder">${data.orderStatus==='delivered'?'Return Order':'Cancel Order'}</a></td>
+        `;
+        orderContainer.appendChild(orderTr);
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+function cancelOrders(e) {
+  e.target.addEventListener("click", async (e) => {
+    const orderId = e.target.getAttribute("data-id");
+    try {
+      const response = await fetch(`/cancel-order/${orderId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json({});
+      if (data.val) {
+        fetchOrders();
+        sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');
+      } else {
+        console.log(data.msg);
+      }
+    } catch (err) {
+      console.log();
+    }
+  });
+}
+function returnOrders(e) {
+  console.log('Return')
+  // e.target.addEventListener("click", async (e) => {
+  //   const orderId = e.target.getAttribute("data-id");
+  //   try {
+  //     const response = await fetch(`/cancel-order/${orderId}`, {
+  //       method: "DELETE",
+  //     });
+  //     const data = await response.json({});
+  //     if (data.val) {
+  //       fetchOrders();
+  //       sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');
+  //     } else {
+  //       console.log(data.msg);
+  //     }
+  //   } catch (err) {
+  //     console.log();
+  //   }
+  // });
+}
+
+async function viewOrderedProduct(e) {
+  document.querySelector(".ordersInfo").style.display = "none";
+  document.querySelector(".detailsOfOrders").style.display = "block";
+  document.querySelector(".orderedAddrressInfo").style.display = "block";
+
+  const orderId = e.target.getAttribute("data-id");
+  try {
+    const response = await fetch(`/view-order-details/${orderId}`);
+    const data = await response.json();
+    if (data.val) {
+      const addressContainer = document.querySelector(
+        ".orderedAddress-display"
+      );
+      const productDetailsTbody = document.querySelector(".orderedProductInfo");
+      addressContainer.innerHTML = "";
+
+      const addressDiv = document.createElement("div");
+      addressDiv.classList.add("address-item");
+      addressDiv.innerHTML = `
+        <p><strong>House Number:</strong> <span class="houseno-value">${data.shippingAddress.houseNumber}</span></p>
+        <p><strong>Street:</strong> <span class="street-value">${data.shippingAddress.street}</span></p>
+        <p><strong>Landmark:</strong> <span class="landmark-value">${data.shippingAddress.landMark}</span></p>
+        <p><strong>City:</strong> <span class="city-value">${data.shippingAddress.city}</span></p>
+        <p><strong>District:</strong> <span class="district-value">${data.shippingAddress.district}</span></p>
+        <p><strong>State:</strong> <span class="state-value">${data.shippingAddress.state}</span></p>
+        <p><strong>Country:</strong> <span class="country-value">${data.shippingAddress.country}</span></p>
+        <p><strong>Pin Code:</strong> <span class="pincode-value">${data.shippingAddress.pinCode}</span></p>
+      `;
+      addressContainer.appendChild(addressDiv);
+
+      data.items.forEach((x, index) => {
+        const orderDetailTr = document.createElement("tr");
+        orderDetailTr.classList.add("order-item");
+        orderDetailTr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${x.product.name}</td>
+          <td>${x.product.price}</td>
+          <td>${x.quantity}</td>
+          <td>&#8377;${x.offerPrice * x.quantity}</td>
+          <td><a href="/details/${
+            x.product._id
+          }" class="view__order">View</a></td>
+        `;
+        productDetailsTbody.appendChild(orderDetailTr);
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+function toggleEye(inputId, iconElement) {
+  const passwordInput = document.getElementById(inputId);
+  const isPassword = passwordInput.getAttribute("type") === "password";
+  passwordInput.setAttribute("type", isPassword ? "text" : "password");
+  iconElement.classList.toggle("fa-eye");
+  iconElement.classList.toggle("fa-eye-slash");
+}
+
+
+async function sendNotification(title,message,type,status){
+  try{
+    const response = await fetch('/notifications',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        title,
+        message,
+        type,
+        status
+      })
+    });
+    const data = await response.json();
+    if(data.val){
+      console.log('Notification sended successfully');
+    }else{
+      console.log(data.msg);
+    }
+  }catch(err){
+    console.log(`Sending notification error :- ${err}`);
+  }
+}

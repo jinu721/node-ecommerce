@@ -1,11 +1,74 @@
 const cartModel = require('../models/cartModel');
+const orderModel = require('../models/orderModel');
 const productModel = require('../models/productModel');
 const userModel = require('../models/userModel');
 const path = require('path');
 
 module.exports = {
-    async checkoutPageLoad(req,res){
-        
-        res.render('checkout');
-    }   
+    // async checkoutPageLoad(req,res){
+    //     const {productId,price,quantity,size,color,isBuyNow} = req.session.tempCart;
+    //     try{
+
+    //         let product ;
+    //         if(isBuyNow){
+    //             product = await productModel.find({_id:productId});
+    //         }
+    //         console.log(product)
+    //         res.render('checkout',{product,quantity,size,color});
+    //     }catch(err){
+    //         console.log(err);
+    //     }
+    // }   
+    async checkoutPageLoad(req, res) {
+        let isBuyNow ;
+        if(req.session.tempCart){
+            isBuyNow = true;
+        }else{
+            isBuyNow = false;
+        }
+        try {
+            let cart;
+            console.log(`hei mahn : --- ${isBuyNow}`)
+            if (isBuyNow) {
+                const { productId, price, quantity, size, color } = req.session.tempCart;
+                const product = await productModel.findById(productId);
+                req.session.tempCart = null;
+                console.log(product)  
+                return res.render('checkout', { product, quantity, size, color });
+            } else {
+                cart = await cartModel.findOne({ userId: req.session.currentId });
+                if (!cart || cart.items.length === 0) {
+                    return res.status(400).json({ val: false, msg: "Cart is empty" });
+                }
+                const productIds = cart.items.map(item => item.productId);
+                const products = await productModel.find({ '_id': { $in: productIds } });
+    
+                const cartItems = cart.items.map(item => {
+                    const product = products.find(p => p._id.toString() === item.productId.toString());
+                    return {
+                        ...product._doc, 
+                        quantity: item.quantity,
+                        size: item.size,
+                        color: item.color
+                    };
+                });
+                console.log(cartItems)
+                return res.render('checkout', { cartItems }); 
+            }
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ val: false, msg: 'Something went wrong' });
+        }
+    },
+    async successPageLoad(req,res){
+        const {orderId} = req.params;
+        try{
+            cosnole.log(orderId)
+            // const order = await orderModel.findOne({_id:orderId});
+            // console.log(order)
+            res.render('success')
+        }catch(err){
+            console.log(err);
+        }
+    }
 }

@@ -15,7 +15,16 @@ router.post('/admin/products/add', upload.fields([
     { name: 'productImage5', maxCount: 1 }
   ]), productController.productsAdd);
 router.get('/admin/products/unlist', productController.productUnlist);
-router.get('/admin/update-product/:productId', productController.productUpdateLoad);
+router.get('/product-stock', productController.productStock);
+router.get('/admin/products/update/:productId', productController.productUpdateLoad);
+router.post('/admin/products/update/:productId', productController.productDataUpdate);
+router.post('/update-product-image/:productId',upload.single('productImage'),productController.productImageUpdate);
+router.post('/remove-product-color/:productId/:index',productController.productColorRemove);
+router.post('/add-product-color',productController.productColorAddUpdate);
+router.post('/admin/products/update-stock/:productId',productController.productStockUpdate);
+router.get('/product/search',productController.productsearch);
 
+router.get('/product/reviews/:productId',productController.productReviewsload);
+router.post('/product/review/add/:productId',productController.productReviewsAdd);
 
 module.exports = router;

@@ -12,12 +12,20 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const checkoutRoutes = require('./routes/checkoutRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const walletRoutes = require('./routes/walletRotes');
+const couponRoutes = require('./routes/couponRoutes');
+const notifyRoutes = require('./routes/notificationRoutes');
 require('./services/authServiece'); 
 
 const authCheck = require('./middlewares/authCheck');
 const banCheck = require('./middlewares/banCheck');
 const roleCheck = require('./middlewares/roleCheck');
 const hideLogin = require('./middlewares/hideLogin');
+const countCheck = require('./middlewares/countCheck');
+const adminCheck = require('./middlewares/adminAuth');
+const visitorsCheck = require('./middlewares/countViewers');
+const cacheMiddleware = require('./middlewares/cacheHandle');
 
 // ~~~ view engine setup ~~~
 app.set('view engine','ejs');
@@ -45,6 +53,17 @@ app.use(authCheck);
 app.use(banCheck);
 app.use(roleCheck);
 app.use(hideLogin);
+app.use(countCheck);
+app.use(adminCheck);
+app.use(visitorsCheck);
+
+
+app.use('/register', (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
 
 
 // ~~~ User routes setup ~~~
@@ -57,6 +76,11 @@ app.use('/',wishlistRoutes);
 app.use('/',categoryRoutes); 
 app.use('/',cartRoutes); 
 app.use('/',checkoutRoutes); 
+app.use('/',orderRoutes); 
+app.use('/',walletRoutes); 
+app.use('/',couponRoutes); 
+app.use('/',notifyRoutes); 
+// app.use('/',cacheMiddleware); 
 
 app.listen(3000,()=>{
     console.log('Server started on :- http://localhost:3000/');

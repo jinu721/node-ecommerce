@@ -34,7 +34,7 @@
     <%- include('../layouts/header.ejs')  %>
 
     <!--=============== MAIN ===============-->
-    <main class="main">
+    <main class="main mainPageSection">
       <!--=============== BREADCRUMB ===============-->
       <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
@@ -185,36 +185,13 @@
                           All
                         </a>
                       </li>
-
-                      <li class="p-b-6">
-                        <a href="#" class="filter-link stext-106 trans-04">
-                          Sweatshirts
-                        </a>
-                      </li>
-
-                      <li class="p-b-6">
-                        <a href="#" class="filter-link stext-106 trans-04">
-                          Jackets
-                        </a>
-                      </li>
-
-                      <li class="p-b-6">
-                        <a href="#" class="filter-link stext-106 trans-04">
-                          Tshirts
-                        </a>
-                      </li>
-
-                      <li class="p-b-6">
-                        <a href="#" class="filter-link stext-106 trans-04">
-                          Shirts
-                        </a>
-                      </li>
-
-                      <li class="p-b-6">
-                        <a href="#" class="filter-link stext-106 trans-04">
-                          Hoddies
-                        </a>
-                      </li>
+                      <% category.forEach((cat=>{ %>
+                        <li class="p-b-6">
+                          <a href="#" class="filter-link stext-106 trans-04">
+                            <%= cat.name %>
+                          </a>
+                        </li>
+                        <% })) %>
                     </ul>
                   </div>
                   <div class="filter-col2 p-r-15 p-b-27">

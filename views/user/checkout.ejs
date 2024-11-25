@@ -206,51 +206,46 @@
               </thead>
 
               <tbody>
-                <tr>
-                  <td>
-                    <img
-                      src="/img/product-1-2.jpg"
-                      alt=""
-                      class="order__img"
-                    />
-                  </td>
-                  <td>
-                    <h3 class="table__title">Yidarton Women Summer Blue</h3>
-                    <p class="table__quantity">x 2</p>
-                  </td>
-                  <td><span class="table__price">$180.00</span></td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="/img/product-2-1.jpg"
-                      alt=""
-                      class="order__img"
-                    />
-                  </td>
-                  <td>
-                    <h3 class="table__title">LDB Moon Summer</h3>
-                    <p class="table__quantity">x 1</p>
-                  </td>
-                  <td><span class="table__price">$65.00</span></td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="/img/product-7-1.jpg"
-                      alt=""
-                      class="order__img"
-                    />
-                  </td>
-                  <td>
-                    <h3 class="table__title">Women Short Sleeve Loose</h3>
-                    <p class="table__quantity">x 2</p>
-                  </td>
-                  <td><span class="table__price">$35.00</span></td>
-                </tr>
+                <% let subTotal = 0;  %>
+                <% if (typeof product !== 'undefined') { %>
+                  <tr>
+                    <td>
+                      <img
+                        src="/<%= product.images[0] %>"
+                        alt="Product Image"
+                        class="order__img"
+                      />
+                    </td>
+                    <td>
+                      <h3 class="table__title"><%= product.name %></h3>
+                      <p class="table__quantity">x <%= quantity %></p>
+                    </td>
+                    <td><span class="table__price">&#8377;<%= product.offerPrice * quantity %></span></td>
+                    <% subTotal += product.offerPrice * quantity; %>
+                  </tr>
+                <% } else { %>
+                  <% cartItems.forEach(data => { %>
+                    <tr>
+                      <td>
+                        <img
+                          src="/<%= data.images[0] %>"
+                          alt="Product Image"
+                          class="order__img"
+                        />
+                      </td>
+                      <td>
+                        <h3 class="table__title"><%= data.name %></h3>
+                        <p class="table__quantity">x <%= data.quantity %></p>
+                      </td>
+                      <td><span class="table__price">&#8377;<%= data.offerPrice * data.quantity %></span></td>
+                      <% subTotal += data.offerPrice * data.quantity; %>
+                    </tr>
+                  <% }); %>
+                <% } %>
+              
                 <tr>
                   <td><span class="order__subtitle">Subtotal</span></td>
-                  <td colspan="2"><span class="table__price">$280.00</span></td>
+                  <td colspan="2"><span class="table__price">&#8377;<%= subTotal %></span></td>
                 </tr>
                 <tr>
                   <td><span class="order__subtitle">Shipping</span></td>
@@ -261,45 +256,73 @@
                 <tr>
                   <td><span class="order__subtitle">Total</span></td>
                   <td colspan="2">
-                    <span class="order__grand-total">$280.00</span>
+                    <span class="old__price oldPriceTag">&#8377;<span class="oldPriceTagValue"><%= subTotal %></span></span>
+                    <span class="order__grand-total offerAppliedPriceTag">&#8377;<span class="offerAppliedPriceTagValue"><%= subTotal %></span></span>
                   </td>
                 </tr>
               </tbody>
+              
+              
             </table>
+            <div class="cart__coupon">
+              <h3 class="section__title">Apply Coupon</h3>
+              <div class="coupon__form form grid">
+                <div class="form__group grid">
+                  <input
+                    type="text"
+                    class="form__input couponInput"
+                    placeholder="Enter Your Coupon"
+                    id="couponInput"
+                  />
+                  <div class="form__btn">
+                    <button class="btn flex btn--sm btncouponAplly" id="applyCouponBtn">
+                      <i class="fi-rs-label"></i> Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>            
             <div class="payment__methods">
               <h3 class="checkout__title payment__title">Payment</h3>
               <div class="payment__option flex">
                 <input
                   type="radio"
-                  name="radio"
+                  name="payment"
                   id="l1"
+                  value="cash_on_delivery"
                   checked
-                  class="payment__input"
+                  class="payment__input paymentSelection"
                 />
-                <label for="l1" class="payment__label"
-                  >Direct Bank Transfer</label
-                >
+                <label for="l1" class="payment__label">Cash on Delivery</label>
               </div>
               <div class="payment__option flex">
                 <input
                   type="radio"
-                  name="radio"
+                  name="payment"
                   id="l2"
-                  class="payment__input"
+                  value="wallet"
+                  class="payment__input paymentSelection"
                 />
-                <label for="l2" class="payment__label">Check Payment</label>
+                <label for="l2" class="payment__label">Wallet</label>
               </div>
               <div class="payment__option flex">
                 <input
                   type="radio"
-                  name="radio"
+                  name="payment"
                   id="l3"
-                  class="payment__input"
+                  value="razorpay"
+                  class="payment__input paymentSelection"
                 />
-                <label for="l3" class="payment__label">Paypal</label>
+                <label for="l3" class="payment__label">Razorpay</label>
               </div>
             </div>
-            <button class="btn btn--md">Place Order</button>
+            
+            <% if (typeof product !== 'undefined') { %>
+              <button data-item='<%= JSON.stringify(product) %>' class="btn btn--md btnPlaceOrder">Place Order</button>
+            <% } else if (typeof cartItems !== 'undefined') { %>
+              <button data-item='<%= JSON.stringify(cartItems) %>' class="btn btn--md btnPlaceOrder">Place Order</button>
+            <% } %>
+            
           </div>
         </div>
       </section>
@@ -311,7 +334,9 @@
 
     <!--=============== SWIPER JS ===============-->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!--=============== MAIN JS ===============-->
     <script src="/js/user/main.js"></script>
     <script src="/js/user/checkout.js"></script>

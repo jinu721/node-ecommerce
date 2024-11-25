@@ -21195,3 +21195,369 @@ div.tagsinput {
   border-top-right-radius: 50%;
   border-bottom-right-radius: 50%;
 }
+
+.imageViewDiv {
+  display: flex;
+  gap: 10px; 
+}
+
+.mainBodyUpdate{
+  display:flex;
+  justify-content: center;
+  padding: 30px;
+}
+.updateProduct{
+  width: 500px;
+  margin: 20px;
+  border: solid 1px grey;
+  border-radius: 20px;
+  padding: 20px;
+}
+.updateVariant{
+  margin: 20px;
+  width: 450px;
+  border: solid 1px grey;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.productsImages {
+  display: flex;
+  justify-content: center;
+}
+
+.productsImages .image-container {
+  position: relative;
+  width: 60px; 
+  height: 60px;
+  margin: 10px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.productsImages img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+.image-container .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.4); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(3px); 
+}
+
+.image-container:hover .overlay {
+  opacity: 1; 
+}
+
+.add-icon {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+
+
+.size-option {
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+.size-label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+.stock-input {
+  flex-direction: column;
+  margin-left: auto;
+}
+.stock-input-group {
+  display: flex;
+  align-items: center;
+}
+.stock-input-field {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.add-stock-button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.error-message {
+  color: red;
+  font-size: 0.85em;
+  margin-top: 5px;
+}
+
+.VariantText,.productText{
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 0.9rem;
+  color: lightgreen;
+}
+
+.address-section {
+  max-width: 500px;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.address-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 1rem;
+}
+
+.address-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: lightgrey;
+}
+
+.order-date {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.address-details p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: lightgrey;
+}
+
+.address-details strong {
+  color: whitesmoke;
+}
+
+.address-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.view-order-btn, .cancel-order-btn {
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+
+.product-details-section {
+  /* max-width: 800px; */
+  margin: 10px;
+  padding: 1.5rem;
+}
+
+.product-details-section h3 {
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.product-details-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.product-details-table th,
+.product-details-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.product-details-table th {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+}
+
+.product-details-table td {
+  border-bottom: 1px solid #ddd;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.product-details-table tr{
+  background-color: whitesmoke;
+}
+
+.product-details-table tr:hover {
+  background-color: #eef3f7;
+}
+
+.color-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+
+.order-status-section {
+  padding: 1.5rem;
+  /* border: 1px solid #ddd;
+  border-radius: 8px; */
+  /* background-color: whitesmoke; */
+  margin: 20px;
+}
+
+.order-status-section h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.status-container label {
+  font-size: 1rem;
+  color: #555;
+}
+
+.status-dropdown {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #333;
+  margin-right: 10px;
+}
+
+.update-status-btn {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.update-status-btn:hover {
+  background-color: #0056b3;
+}
+
+.status-log {
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+.status-log h4 {
+  font-size: 1.2rem;
+  color: whitesmoke;
+  margin-bottom: 0.5rem;
+}
+
+.status-log ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.status-log li {
+  font-size: 0.95rem;
+  color: grey;
+  margin: 0.3rem 0;
+}
+
+.status-log li strong {
+  color: white;
+}
+
+.mainBodyView{
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.adminLoginMain{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+
+
+
+.inputSet{
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+input[type="date"] {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+#customDateInputs{
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}

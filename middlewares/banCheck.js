@@ -6,7 +6,6 @@ let banCheck = async (req, res, next) => {
     if (req.session.loggedIn) {
         const email = req.session.userEmail;
         const user = await userModal.findOne({ email });
-
         if (user && user.isDeleted) {
             console.log("Rendering ban page from banCheck");
             return res.render('ban');

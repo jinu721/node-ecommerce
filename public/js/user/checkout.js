@@ -1,214 +1,209 @@
+let selectedAddressId = null;
+
 async function fetchAddress() {
-    try {
-      const response = await fetch("/account/address");
-      const data = await response.json();
-      console.log(data)
-      const addressContainer = document.querySelector(".address-display");
-      addressContainer.innerHTML = "";
-      data.user.forEach((val) => {
-        const addressDiv = document.createElement("div");
-        addressDiv.classList.add("address-item");
-        addressDiv.innerHTML = `
-          <p><strong>House Number:</strong> <span class="houseno-value">${val.houseNumber}</span></p>
-          <p><strong>Street:</strong> <span class="street-value">${val.street}</span></p>
-          <p><strong>Landmark:</strong> <span class="landmark-value">${val.landMark}</span></p>
-          <p><strong>City:</strong> <span class="city-value">${val.city}</span></p>
-          <p><strong>District:</strong> <span class="district-value">${val.district}</span></p>
-          <p><strong>State:</strong> <span class="state-value">${val.state}</span></p>
-          <p><strong>Country:</strong> <span class="country-value">${val.country}</span></p>
-          <p><strong>Pin Code:</strong> <span class="pincode-value">${val.pinCode}</span></p>
-             <div>
-                      <a data-id="${val._id}"  class="editAddress">Edit</a>
-                      <a data-id="${val._id}" class="removeAddress">Remove</a>
+  try {
+    const response = await fetch("/account/address");
+    const data = await response.json();
+    console.log(data);
+
+    const addressContainer = document.querySelector(".address-display");
+    addressContainer.innerHTML = "";
+
+    data.user.forEach((val) => {
+      const addressDiv = document.createElement("div");
+      addressDiv.classList.add("address-item1");
+      addressDiv.style.position = "relative";
+      addressDiv.innerHTML = `
+                <input type="radio" name="addressSelect" value="${val._id}" class="address-radio" style="position: absolute; top: 10px; right: 10px; accent-color: black;">
+                <div>
+                    <p><strong>House Number:</strong> <span class="houseno-value">${val.houseNumber}</span></p>
+                    <p><strong>Street:</strong> <span class="street-value">${val.street}</span></p>
+                    <p><strong>Landmark:</strong> <span class="landmark-value">${val.landMark}</span></p>
+                    <p><strong>City:</strong> <span class="city-value">${val.city}</span></p>
+                    <p><strong>District:</strong> <span class="district-value">${val.district}</span></p>
+                    <p><strong>State:</strong> <span class="state-value">${val.state}</span></p>
+                    <p><strong>Country:</strong> <span class="country-value">${val.country}</span></p>
+                    <p><strong>Pin Code:</strong> <span class="pincode-value">${val.pinCode}</span></p>
+                    <div>
+                        <a data-id="${val._id}" class="editAddress">Edit</a>
+                        <a data-id="${val._id}" class="removeAddress">Remove</a>
                     </div>
-          <hr style="margin:10px;">
-        `;
-        addressContainer.appendChild(addressDiv);
-      });
-    } catch (err) {
-      console.log(err);
-    }
+                </div>
+            `;
+      addressContainer.appendChild(addressDiv);
+    });
+    addClickListeners();
+  } catch (err) {
+    console.log(err);
   }
-  fetchAddress()
+}
 
+function addClickListeners() {
+  const addressItems = document.querySelectorAll(".address-item1");
 
-
-
-  const countryInput = document.querySelector(".countryInp");
-  const stateInput = document.querySelector(".stateInp");
-  const districtInput = document.querySelector(".districtInp");
-  const cityInput = document.querySelector(".cityInp");
-  const streetInput = document.querySelector(".streetInp");
-  const landmarkInput = document.querySelector(".landmarkInp");
-  const housenoInput = document.querySelector(".housenoInp");
-  const pincodeInput = document.querySelector(".pincodeInp");
-  
-  const errCountry = document.querySelector(".errCountryAddress");
-  const errState = document.querySelector(".errStateAddress");
-  const errDistrict = document.querySelector(".errDistrictAddress");
-  const errCity = document.querySelector(".errCityAddress");
-  const errStreet = document.querySelector(".errStreetAddress");
-  const errLandmark = document.querySelector(".errLandmarkAddress");
-  const errHouseno = document.querySelector(".errHousenoAddress");
-  const errPincode = document.querySelector(".errPincodeAddress");
-  
-  const createButton = document.querySelector(".btnAddAddress");
-  const buttonText = document.querySelector(".btnAddAddressText");
-  const loader = document.querySelector(".btnAddAddressLoader");
-  
-  const addressFormCreate = document.querySelector(".address-form-create");
-  const addressFormEdit = document.querySelector(".address-form-edit");
-  const addressShow = document.querySelector(".address");
-  const createAddressText = document.querySelector(".createAddress");
-  
-  const textPattern = /^[a-zA-Z\s]+$/;
-  const pincodePattern = /^[0-9]{6}$/;
-  
-  createAddressText.addEventListener("click", () => {
-    addressShow.style.display = "none";
-    addressFormCreate.style.display = "block";
+  addressItems.forEach((item) => {
+    item.addEventListener("click", (event) => {
+      const radio = item.querySelector(".address-radio");
+      radio.checked = true;
+      selectedAddressId = radio.value;
+      console.log("Selected Address ID:", selectedAddressId);
+    });
   });
-  
-  createButton.addEventListener("click", (e) => {
+}
+
+fetchAddress();
+
+const countryInput = document.querySelector(".countryInp");
+const stateInput = document.querySelector(".stateInp");
+const districtInput = document.querySelector(".districtInp");
+const cityInput = document.querySelector(".cityInp");
+const streetInput = document.querySelector(".streetInp");
+const landmarkInput = document.querySelector(".landmarkInp");
+const housenoInput = document.querySelector(".housenoInp");
+const pincodeInput = document.querySelector(".pincodeInp");
+
+const errCountry = document.querySelector(".errCountryAddress");
+const errState = document.querySelector(".errStateAddress");
+const errDistrict = document.querySelector(".errDistrictAddress");
+const errCity = document.querySelector(".errCityAddress");
+const errStreet = document.querySelector(".errStreetAddress");
+const errLandmark = document.querySelector(".errLandmarkAddress");
+const errHouseno = document.querySelector(".errHousenoAddress");
+const errPincode = document.querySelector(".errPincodeAddress");
+
+const createButton = document.querySelector(".btnAddAddress");
+const buttonText = document.querySelector(".btnAddAddressText");
+const loader = document.querySelector(".btnAddAddressLoader");
+
+const addressFormCreate = document.querySelector(".address-form-create");
+const addressFormEdit = document.querySelector(".address-form-edit");
+const addressShow = document.querySelector(".address");
+const createAddressText = document.querySelector(".createAddress");
+
+const textPattern = /^[a-zA-Z\s]+$/;
+const pincodePattern = /^[0-9]{6}$/;
+
+createAddressText.addEventListener("click", () => {
+  addressShow.style.display = "none";
+  addressFormCreate.style.display = "block";
+});
+
+createButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!countryInput.value.match(textPattern)) {
+    errCountry.style.display = "flex";
+    errState.style.display = "none";
+    errDistrict.style.display = "none";
+    errCity.style.display = "none";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "none";
+    errCountry.textContent = "Please enter a valid country name.";
+  } else if (!stateInput.value.match(textPattern)) {
+    errCountry.style.display = "none";
+    errState.style.display = "flex";
+    errDistrict.style.display = "none";
+    errCity.style.display = "none";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "none";
+    errState.textContent = "Please enter a valid state name.";
+  } else if (!districtInput.value.match(textPattern)) {
+    errCountry.style.display = "none";
+    errState.style.display = "none";
+    errDistrict.style.display = "flex";
+    errCity.style.display = "none";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "none";
+    errDistrict.textContent = "Please enter a valid district name.";
+  } else if (!cityInput.value.match(textPattern)) {
+    errCountry.style.display = "none";
+    errState.style.display = "none";
+    errDistrict.style.display = "none";
+    errCity.style.display = "flex";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "none";
+    errCity.textContent = "Please enter a valid city name.";
+  } else if (!streetInput.value.match(textPattern)) {
+    errCountry.style.display = "none";
+    errState.style.display = "none";
+    errDistrict.style.display = "none";
+    errCity.style.display = "none";
+    errStreet.style.display = "flex";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "none";
+    errStreet.textContent = "Please enter a valid street name.";
+  } else if (!housenoInput.value) {
+    errCountry.style.display = "none";
+    errState.style.display = "none";
+    errDistrict.style.display = "none";
+    errCity.style.display = "none";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "flex";
+    errPincode.style.display = "none";
+    errHouseno.textContent = "House number cannot be empty.";
+  } else if (!pincodeInput.value.match(pincodePattern)) {
+    errCountry.style.display = "none";
+    errState.style.display = "none";
+    errDistrict.style.display = "none";
+    errCity.style.display = "none";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "flex";
+    errPincode.textContent = "Please enter a valid 6-digit pincode.";
+  } else {
     buttonText.style.display = "none";
     loader.style.display = "flex";
-    e.preventDefault();
-    if (!countryInput.value.match(textPattern)) {
-      errCountry.style.display = "flex";
-      errState.style.display = "none";
-      errDistrict.style.display = "none";
-      errCity.style.display = "none";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "none";
-      errCountry.textContent = "Please enter a valid country name.";
-    } else if (!stateInput.value.match(textPattern)) {
-      errCountry.style.display = "none";
-      errState.style.display = "flex";
-      errDistrict.style.display = "none";
-      errCity.style.display = "none";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "none";
-      errState.textContent = "Please enter a valid state name.";
-    } else if (!districtInput.value.match(textPattern)) {
-      errCountry.style.display = "none";
-      errState.style.display = "none";
-      errDistrict.style.display = "flex";
-      errCity.style.display = "none";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "none";
-      errDistrict.textContent = "Please enter a valid district name.";
-    } else if (!cityInput.value.match(textPattern)) {
-      errCountry.style.display = "none";
-      errState.style.display = "none";
-      errDistrict.style.display = "none";
-      errCity.style.display = "flex";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "none";
-      errCity.textContent = "Please enter a valid city name.";
-    } else if (!streetInput.value.match(textPattern)) {
-      errCountry.style.display = "none";
-      errState.style.display = "none";
-      errDistrict.style.display = "none";
-      errCity.style.display = "none";
-      errStreet.style.display = "flex";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "none";
-      errStreet.textContent = "Please enter a valid street name.";
-    } else if (!housenoInput.value) {
-      errCountry.style.display = "none";
-      errState.style.display = "none";
-      errDistrict.style.display = "none";
-      errCity.style.display = "none";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "flex";
-      errPincode.style.display = "none";
-      errHouseno.textContent = "House number cannot be empty.";
-    } else if (!pincodeInput.value.match(pincodePattern)) {
-      errCountry.style.display = "none";
-      errState.style.display = "none";
-      errDistrict.style.display = "none";
-      errCity.style.display = "none";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "flex";
-      errPincode.textContent = "Please enter a valid 6-digit pincode.";
-    } else {
-      errCountry.style.display = "none";
-      errState.style.display = "none";
-      errDistrict.style.display = "none";
-      errCity.style.display = "none";
-      errStreet.style.display = "none";
-      errLandmark.style.display = "none";
-      errHouseno.style.display = "none";
-      errPincode.style.display = "none";
-      const addressInfo = {
-        country: countryInput.value,
-        state: stateInput.value,
-        district: districtInput.value,
-        city: cityInput.value,
-        street: streetInput.value,
-        landmark: landmarkInput.value,
-        houseno: housenoInput.value,
-        pincode: pincodeInput.value,
-      };
-      let sendReq = async () => {
-        try {
-          const resData = await fetch("/create-address", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(addressInfo),
-          });
-          const parsedData = await resData.json();
-          if (parsedData.val) {
-            const response = await fetch("/account/address");
-            const data = await response.json();
-            const addressContainer = document.querySelector(".address-display");
-            addressContainer.innerHTML = "";
-            data.user.forEach((val) => {
-              const addressDiv = document.createElement("div");
-              addressDiv.classList.add("address-item");
-              addressDiv.innerHTML = `
-          <p><strong>House Number:</strong> <span class="houseno-value">${val.houseNumber}</span></p>
-          <p><strong>Street:</strong> <span class="street-value">${val.street}</span></p>
-          <p><strong>Landmark:</strong> <span class="landmark-value">${val.landMark}</span></p>
-          <p><strong>City:</strong> <span class="city-value">${val.city}</span></p>
-          <p><strong>District:</strong> <span class="district-value">${val.district}</span></p>
-          <p><strong>State:</strong> <span class="state-value">${val.state}</span></p>
-          <p><strong>Country:</strong> <span class="country-value">${val.country}</span></p>
-          <p><strong>Pin Code:</strong> <span class="pincode-value">${val.pinCode}</span></p>
-             <div>
-                      <p data-id="${val._id}" class="editAddress">Edit</p>
-                      <p data-id="${val._id}" class="removeAddress">Remove</p>
-                    </div>
-          <hr style="margin:10px;">
-        `;
-              addressContainer.appendChild(addressDiv);
-            });
-            addressShow.style.display = "block";
-            addressFormCreate.style.display = "none";
-          }
-        } catch (err) {
-          console.log("Error in updating profile:", err);
+    errCountry.style.display = "none";
+    errState.style.display = "none";
+    errDistrict.style.display = "none";
+    errCity.style.display = "none";
+    errStreet.style.display = "none";
+    errLandmark.style.display = "none";
+    errHouseno.style.display = "none";
+    errPincode.style.display = "none";
+    const addressInfo = {
+      country: countryInput.value,
+      state: stateInput.value,
+      district: districtInput.value,
+      city: cityInput.value,
+      street: streetInput.value,
+      landmark: landmarkInput.value,
+      houseno: housenoInput.value,
+      pincode: pincodeInput.value,
+    };
+    let sendReq = async () => {
+      try {
+        const resData = await fetch("/create-address", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(addressInfo),
+        });
+        const parsedData = await resData.json();
+        if (parsedData.val) {
+          addressShow.style.display = "block";
+          addressFormCreate.style.display = "none";
+          fetchAddress();
         }
-      };
-      sendReq();
-    }
-  });
+      } catch (err) {
+        console.log("Error in updating profile:", err);
+      }
+    };
+    sendReq();
+  }
+});
 
-  
 const countryEditInput = document.querySelector(".countryInpEdit");
 const stateEditInput = document.querySelector(".stateInpEdit");
 const districtEditInput = document.querySelector(".districtInpEdit");
@@ -230,7 +225,6 @@ const errPincodeEdit = document.querySelector(".errPincodeAddressEdit");
 
 const editButtonText = document.querySelector(".btnEditAddressText");
 const editLoader = document.querySelector(".btnEditAddressLoader");
-
 
 const editAddressButton = document.querySelector(".btnEditAddress");
 
@@ -309,13 +303,10 @@ editAddressButton.addEventListener("click", (e) => {
   }
 });
 
-
-
 const addressContainer = document.querySelector(".address-display");
 
 addressContainer.addEventListener("click", (event) => {
   event.preventDefault();
-
 
   if (event.target.classList.contains("editAddress")) {
     handleEdit(event);
@@ -332,8 +323,8 @@ async function handleEdit(event) {
   const response = await fetch(`/update-address/${addressId}`);
   const addressData = await response.json();
   if (addressData.val) {
-    addressData.address.address.forEach((a)=>{
-      console.log(a)
+    addressData.address.address.forEach((a) => {
+      console.log(a);
       if (addressId === a._id) {
         countryEditInput.value = a.country;
         addressIdEdit.value = a._id;
@@ -345,7 +336,7 @@ async function handleEdit(event) {
         housenoEditInput.value = a.houseNumber;
         pincodeEditInput.value = a.pinCode;
       }
-    })
+    });
     addressShow.style.display = "none";
     addressFormEdit.style.display = "block";
   }
@@ -363,5 +354,274 @@ async function handleRemove(event) {
     fetchAddress();
   } else {
     console.error("Failed to delete address");
+  }
+}
+
+
+const paymentSelection = document.querySelectorAll('.paymentSelection');
+let selectedPayment = null;
+
+paymentSelection.forEach((elem) => {
+  elem.addEventListener('change', () => {
+    if (elem.checked) {
+      selectedPayment = elem.value; 
+      console.log(`Selected Payment Method: ${selectedPayment}`);
+    }
+  });
+});
+
+const preSelected = document.querySelector('.paymentSelection:checked');
+if (preSelected) {
+  selectedPayment = preSelected.value;
+  console.log(`Initially Selected Payment Method: ${selectedPayment}`);
+}
+
+
+
+console.log(selectedPayment)
+
+let isOfferApplied = false ;
+let code = null ;
+
+document.querySelector('.btnPlaceOrder').addEventListener('click', async (e) => {
+  console.log(selectedPayment);
+  console.log(selectedAddressId);
+  const item = e.target.getAttribute('data-item');
+  const parsedItem = JSON.parse(item)
+  console.log(parsedItem);
+  console.log(isOfferApplied,code)
+  if (!selectedAddressId) {
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Please select an address",
+    });
+  } else if (!selectedPayment) {
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Please select a payment option",
+    });
+  } else {
+    try {
+      const response = await fetch('/place-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          item,
+          selectedAddressId,
+          selectedPayment,
+          isOfferApplied,
+          code
+        })
+      });
+      const data = await response.json();
+
+      console.log(data)
+      
+      if (!data.val) {
+        console.log("Error in response:", data);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.msg || "Something went wrong",
+        });
+      } else {
+        if (selectedPayment === 'razorpay') {
+          const options = {
+            key: data.key, 
+            amount: data.order.amount, 
+            currency: "INR",
+            name: "Male Fashion",
+            description: "Order Payment",
+            order_id: data.order.id, 
+            handler: async function (paymentResponse) {
+              try {
+                const verifyResponse = await fetch('/verify-payment', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    paymentId: paymentResponse.razorpay_payment_id,
+                    orderId: paymentResponse.razorpay_order_id,
+                    signature: paymentResponse.razorpay_signature,
+                  })
+                });
+                const verifyData = await verifyResponse.json();
+
+                if (verifyData.val) {
+                  Swal.fire({
+                    title: "Success",
+                    text: "Order placed successfully",
+                    icon: "success"
+                  }).then(() => {
+                    sendNotification(
+                      'Order Placed Successfully',
+                      'Your order #123 has been placed successfully! Thank you for shopping with us. You can track your order in the "My Orders" section. We hope you enjoy your purchase!',
+                      'order',
+                      'success'
+                    );                    
+                    console.log(verifyData)
+                    window.location.href = "/success";
+                  });
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Payment Verification Failed",
+                    text: verifyData.msg || "Something went wrong",
+                  });
+                }
+              } catch (error) {
+                console.error("Verification error:", error);
+                Swal.fire({
+                  icon: "error",
+                  title: "Oops...",
+                  text: "Payment verification failed",
+                });
+              }
+            },
+            prefill: {
+              name: data.userName, 
+              email: data.userEmail,
+              contact: data.userContact 
+            },
+            theme: {
+              color: "#3399cc"
+            }
+          };
+          console.log(options)
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } else {
+          Swal.fire({
+            title: "Success",
+            text: "Order placed successfully",
+            icon: "success"
+          }).then((result) => {
+            if (result.isConfirmed || result.isDismissed) {
+              sendNotification(
+                'Order Placed Successfully',
+                'Your order #123 has been placed successfully! Thank you for shopping with us. You can track your order in the "My Orders" section. We hope you enjoy your purchase!',
+                'order',
+                'success'
+              );
+              window.location.href = "/success";
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong while placing your order",
+      });
+    }
+  }
+});
+
+
+
+document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
+  e.preventDefault();
+  const couponInput = document.querySelector('.couponInput');
+  console.log('3883');
+  
+  if (!couponInput.value) {
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Please enter a coupon code.",
+    });
+  } else {
+    const oldPriceTag = document.querySelector('.oldPriceTag');
+    const oldPriceTagValue = document.querySelector('.oldPriceTagValue');
+    const offerAppliedPriceTag = document.querySelector('.offerAppliedPriceTag');
+    const offerAppliedPriceTagValue = document.querySelector('.offerAppliedPriceTagValue');
+    couponInput.setAttribute('readonly', 'true');
+    document.querySelector('.btncouponAplly').disabled = true;
+
+    async function applycoupon() {
+      try {
+        const response = await fetch('/coupon/apply', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            couponCode: couponInput.value,
+            totalPrice: parseInt(oldPriceTagValue.textContent)
+          })
+        });
+
+        const data = await response.json();
+
+        if (!data.val) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: data.msg,
+          });
+          couponInput.removeAttribute('readonly');
+          document.querySelector('.btncouponAplly').disabled = false;
+        } else {
+          Swal.fire({
+            title: "Success",
+            text: data.msg,
+            icon: "success"
+          });
+
+          console.log(data);
+
+          oldPriceTag.style.display = "block";
+          oldPriceTagValue.textContent = data.originalPrice;
+          offerAppliedPriceTag.style.display = "block";
+          offerAppliedPriceTagValue.textContent = data.discountedPrice;
+          couponInput.value = couponInput.value; 
+          couponInput.setAttribute('readonly', 'true'); 
+          document.querySelector('.btncouponAplly').disabled = true; 
+        }
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Something went wrong. Please try again.",
+        });
+      }
+    }
+
+    applycoupon();
+  }
+});
+
+
+
+async function sendNotification(title,message,type,status){
+  try{
+    const response = await fetch('/notifications',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        title,
+        message,
+        type,
+        status
+      })
+    });
+    const data = await response.json();
+    if(data.val){
+      console.log('Notification sended successfully');
+    }else{
+      console.log(data.msg);
+    }
+  }catch(err){
+    console.log(`Sending notification error :- ${err}`);
   }
 }

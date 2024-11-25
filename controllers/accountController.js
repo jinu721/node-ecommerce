@@ -1,19 +1,20 @@
 const productModel = require("../models/productModel");
 const userModel = require("../models/userModel");
+const orderModel = require("../models/orderModel");
 const otpModel = require("../models/otpModel");
 const bcrypt = require("bcrypt");
 const { sendOtpEmail } = require("../services/mailServiece");
 const { generateOtp, otpExpiry } = require("../utils/otpGenrator");
 
 module.exports = {
-  async whenProfileLoad(req, res) {
+  async ProfileLoad(req, res) {
     try {
       const currentUser = req.session.currentEmail;
       const user = await userModel.findOne({ email: currentUser });
       res.render("accounts", { user });
     } catch (err) {}
   },
-  async whenUserUpdate(req, res) {
+  async UserUpdate(req, res) {
     try {
       const { username, email, phone } = req.body;
       const currentUser = await userModel.findOne({
@@ -50,10 +51,10 @@ module.exports = {
       return res.status(500).json({ val: false });
     }
   },
-  whenForgotPassLoad(req, res) {
+  ForgotPassLoad(req, res) {
     res.render("forgot");
   },
-  async whenForgetPassRequest(req, res) {
+  async ForgetPassRequest(req, res) {
     console.log("Rex");
     try {
       const { email } = req.body;
@@ -84,7 +85,7 @@ module.exports = {
     }
   },
 
-  async whenForgetPassverify(req, res) {
+  async ForgetPassverify(req, res) {
     const { email, otp } = req.body;
     try {
       const otpRecord = await otpModel.findOne({ email });
@@ -98,7 +99,7 @@ module.exports = {
       console.log(err);
     }
   },
-  async whenForgetPassChange(req, res) {
+  async ForgetPassChange(req, res) {
     const { password, email } = req.body;
     try {
 
@@ -111,7 +112,7 @@ module.exports = {
       console.log(err);
     }
   },
-  async whenAddressLoad(req, res) {
+  async AddressLoad(req, res) {
     try {
       const currentUser = await userModel.findOne({
         email: req.session.currentEmail,
@@ -128,7 +129,7 @@ module.exports = {
       return res.status(500).json({ val: false });
     }
   },
-  async whenAddressCreate(req, res) {
+  async AddressCreate(req, res) {
     const {
       pincode,
       houseno,
@@ -169,7 +170,7 @@ module.exports = {
       return res.status(500).json({ val: false });
     }
   },
-  async whenEditAddressLoad(req, res) {
+  async EditAddressLoad(req, res) {
     const { addressId } = req.params;
     try {
       const address = await userModel.findOne({ "address._id": addressId });
@@ -183,7 +184,7 @@ module.exports = {
       res.status(500).json({ val: false });
     }
   },
-  async whenEditAddress(req, res) {
+  async EditAddress(req, res) {
     const {
       id,
       pincode,
@@ -226,7 +227,7 @@ module.exports = {
       res.status(500).json({ val: false, message: "Internal server error" });
     }
   },
-  async whenDeleteAddress(req, res) {
+  async DeleteAddress(req, res) {
     const { addressId } = req.params;
     try {
       const address = await userModel.findOne({ "address._id": addressId });
@@ -245,7 +246,7 @@ module.exports = {
       res.status(500).json({ val: false, message: "Internal server error" });
     }
   },
-  async whenChangePassword(req, res) {
+  async ChangePassword(req, res) {
     const { currentPass, newPass } = req.body;
     const { currentEmail } = req.session;
     try {
@@ -267,6 +268,19 @@ module.exports = {
       res.status(200).json({ val: true });
     } catch (err) {
       console.log("Error in updating address:", err);
+      res.status(500).json({ val: false, message: "Internal server error" });
+    }
+  },
+  async ordersPageLoad(req, res) {
+    const { currentId } = req.session;
+    try {
+      const orders = await orderModel.find({user:currentId});
+      if(!orders){
+        return res.status(200).json({ val: false,orders:null});
+      }
+      res.status(200).json({ val: true,orders});
+    } catch (err) {
+      console.log("Error in load orders:", err);
       res.status(500).json({ val: false, message: "Internal server error" });
     }
   },

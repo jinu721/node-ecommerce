@@ -170,7 +170,7 @@
                 <h4 class="card-title">Order Status</h4>
                 <div class="table-responsive">
                   <form class="nav-link mt-2 mt-md-0  d-lg-flex search">
-                    <input type="text" class="form-control" placeholder="Search users">
+                    <input type="text" oninput="searchDebouncing()" class="form-control searchUsers" placeholder="Search users">
                     <button style="height: 33px;margin: 3px 0px 0px 10px;" class="btn btn-primary" >Search</button>
                   </form>
                   <table class="table">
@@ -184,7 +184,7 @@
                         <!-- <th> View </th> -->
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="resultContainer">
                       <% user.forEach((value) => { %>
                         <tr>
                           <td> <%= value.username %> </td>
@@ -203,9 +203,6 @@
                           <td>
                             <div data-id="<%= value._id  %>" class="badge <%= value.isDeleted?'badge-outline-primary':'badge-outline-danger' %> btn-ban"><%= value.isDeleted?'Unban':'Ban' %></div>
                           </td>
-                          <!-- <td>
-                            <div data-id="<%= value._id  %>" class="badge badge-outline-warning btn-view">View</div>
-                          </td> -->
                         </tr>
                       <% }); %>
                     </tbody>

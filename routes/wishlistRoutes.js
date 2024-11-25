@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const wishlistController = require('../controllers/wishlistController');
-const productsRoutes = require('./productRoutes');
-const categoryRoutes = require('./categoryRoutes');
+
 
 router.get('/wishlist',wishlistController.wishlistLoad);
+router.post('/add-to-wislist/:productId',wishlistController.addToWishlist);
+router.delete('/remove-from-wishlist/:wishlistItemId',wishlistController.removeFromWishlist);
+router.post('/wishlist/add-to-cart',wishlistController.addToCartFromWishlist);
 
 module.exports = router;

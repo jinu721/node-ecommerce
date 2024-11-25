@@ -52,6 +52,9 @@ module.exports = {
         if(!passwordMatch){
           return res.status(409).json({type:"password",msg:"Enter a valid password",val:false});
         }
+        if(user.isDeleted){
+          return res.status(400).json({type:"ban",msg:"This account has been banned.",val:false});
+        }
         const otp = generateOtp(); 
         await otpModel.create({
           email: user.email,

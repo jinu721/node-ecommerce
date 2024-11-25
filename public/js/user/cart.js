@@ -131,3 +131,55 @@ function renderCart(cart, products) {
         });
     }
 }
+
+document.querySelectorAll('.quantity').forEach(input => {
+  input.addEventListener('change', async(e)=>{
+      const newQuantity = e.target.value;
+      console.log(newQuantity)
+      const itemId = e.target.getAttribute('data-id');
+      console.log(newQuantity)
+      try{
+        const response = await fetch(`/update-cart-item/${itemId}`,{
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ quantity: newQuantity }),
+        });
+        const data = await response.json();
+        console.log(data)
+        if (data.val) {
+          document.querySelector(`.Total[data-id="${itemId}"]`).textContent = data.updatedTotal;
+          document.querySelectorAll('.cartTotalPrice').forEach(elem=>{
+            elem.textContent = data.cartTotal;
+          })
+      } else {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: data.msg,
+          });
+      }
+      }catch(err){
+        console.log(err);
+      }
+  });
+});
+
+
+// document.querySelector('.btnProceedToCheckout').addEventListener('click',async ()=>{
+//   try{
+//     const response = await fetch('/checkout');
+//     console.log(response);
+//   }catch(err){
+//     console.log(err);
+//   }
+// })
+
+// document.querySelector('.btnProceedToCheckout').addEventListener('click', async () => {
+//   const response = await fetch('/checkout');
+//   if (resp) {
+//       window.location.href = '/checkout';
+//       alert('Error: ' + data.msg);
+//   }
+// });

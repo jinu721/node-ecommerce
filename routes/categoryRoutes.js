@@ -8,5 +8,8 @@ router.get('/admin/categories',categoryController.categoryLoadAdmin)
 router.post('/admin/category/add',upload.single('categoryImage'),categoryController.categoryAdd);
 router.get('/category/:categoryId/',categoryController.categoryLoad);
 router.get('/admin/category/unlist', categoryController.categoryUnlist);
+router.get('/admin/category/update/:categoryId', categoryController.categoryUpdateload);
+router.post('/update-category-image/:categoryId',upload.single('categoryImage'),categoryController.categoryImageUpdate);
+router.post('/admin/category/update/:categoryId', categoryController.categoryUpdate);
 
 module.exports = router;

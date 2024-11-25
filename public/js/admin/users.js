@@ -1,81 +1,67 @@
-const phoneElement = document.querySelector(".phone");
-const countryElement = document.querySelector(".country");
-const stateElement = document.querySelector(".state");
-const districtElement = document.querySelector(".district");
-const cityElement = document.querySelector(".city");
-const streetElement = document.querySelector(".street");
-const landmarkElement = document.querySelector(".landmark");
-const pincodeElement = document.querySelector(".pincode");
 
-const btnView = document.querySelectorAll(".btn-view");
-const userInfoView = document.querySelector(".userInfoView");
-const btnBan = document.querySelectorAll(".btn-ban");
-
-btnView.forEach((elem) => {
-  console.log("click1");
-  elem.addEventListener("click", async () => {
-    console.log("click1");
+document.querySelector('.resultContainer').addEventListener('click', async (event) => {
+  if (event.target.classList.contains('btn-ban')) {
+    const elem = event.target; 
     try {
-      const userId = elem.getAttribute("data-id");
-      console.log(userId);
-      const res = await fetch(`/admin/users/view/${userId}`);
-      const data = await res.json();
-      console.log(data);
-      if (data) {
-        data.user.address.forEach((val, index) => {
-          const userInfoChild = document.createElement("div");
-          userInfoChild.classList.add("childInfo");
-          const genarate = `
-                    <div class="card">
-                    <h4>Address ${index + 1}</h4>
-                    <p class="country">Country : ${val.country}</p>
-                    <p class="state">State : ${val.state}</p>
-                    <p class="district">District : ${val.district}</p>
-                    <p class="city">City : ${val.city}</p>
-                    <p class="street">Street : ${val.street} </p>
-                    <p class="landmark">Landmark : ${val.landMark}</p>
-                    <p class="pincode">PinCode : ${val.pinCode}</p>
-                </div>
-                    `;
-          userInfoChild.innerHTML = genarate;
-          userInfoView.appendChild(userInfoChild);
-        });
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  });
-});
-
-btnBan.forEach((elem) => {
-  elem.addEventListener("click", async () => {
-    try {
-      const userId = elem.getAttribute("data-id");
-      const res = await fetch(
-        `/admin/users/ban/?id=${userId}&val=${elem.textContent}`
-      );
-      console.log(res);
+      const userId = elem.getAttribute('data-id');
+      const res = await fetch(`/admin/users/ban/?id=${userId}&val=${elem.textContent}`);
       const data = await res.json();
       console.log(data);
       if (data.val) {
         if (elem.textContent === "Ban") {
-          console.log(elem.textContent);
-          elem.classList.replace(
-            "badge-outline-danger",
-            "badge-outline-primary"
-          );
+          elem.classList.replace("badge-outline-danger", "badge-outline-primary");
           elem.textContent = "Unban";
         } else {
-          console.log(elem.textContent);
-          elem.classList.replace(
-            "badge-outline-primary",
-            "badge-outline-danger"
-          );
+          elem.classList.replace("badge-outline-primary", "badge-outline-danger");
           elem.textContent = "Ban";
         }
       }
     } catch (err) {
       console.log(err);
     }
-  });
+  }
 });
+
+let debounceTimer;
+
+function searchDebouncing() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    searchData();
+  }, 300);
+}
+
+async function searchData() {
+  const query = document.querySelector('.searchUsers').value.trim();
+  console.log(query);
+  const resultsContainer = document.querySelector('.resultContainer');
+  resultsContainer.innerHTML = '';
+  try {
+    const response = await fetch(`/admin/users/search?key=${query}`);
+    const data = await response.json();
+    if (data.val) {
+      console.log(data.users);
+      data.users.forEach((item) => {
+        const productHTML = `
+        <tr>
+          <td>${item.username}</td>
+          <td>${item.email}</td>
+          <td>${item.role}</td>
+          <td>28:10:2024</td>
+          <td>
+            <div data-id="${item._id}" class="badge ${item.isDeleted ? 'badge-outline-primary' : 'badge-outline-danger'} btn-ban">
+              ${item.isDeleted ? 'Unban' : 'Ban'}
+            </div>
+          </td>
+        </tr>
+        `;
+        resultsContainer.innerHTML += productHTML;
+      });
+    } else {
+      console.log(data.msg);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+

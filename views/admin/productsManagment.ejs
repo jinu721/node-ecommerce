@@ -236,7 +236,8 @@
                   <form class="nav-link mt-2 mt-md-0 d-lg-flex search">
                     <input
                       type="text"
-                      class="form-control"
+                      oninput="searchDebouncing()"
+                      class="form-control searchProducts"
                       placeholder="Search products"
                     />
                     <div style="display: flex">
@@ -268,12 +269,11 @@
                         <th>category</th>
                         <th>Brand</th>
                         <th>Price</th>
-                        <th>stock</th>
                         <th>List</th>
                         <th>Update</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="resultContainer">
                       <% if(!val){ %>
                       <p><%= msg %></p>
                       <% }else{ %> <% products.forEach((data,index)=>{ %>
@@ -299,8 +299,6 @@
                         </td>
                         <td><%= data.brand %></td>
                         <td><%= data.price %></td>
-                        <td><%= data.stock %></td>
-                        <td></td>
                         <td>
                           <div
                             data-id="<%= data._id  %>"
@@ -310,14 +308,13 @@
                           </div>
                         </td>
                         <td>
-                          <div
-                            class="badge btnUpdateProduct badge-outline-warning"
-                            data-bs-toggle="modal"
-                            data-id="<%= data._id %>"
-                            data-bs-target="#productUpdateModal"
-                          >
-                            Update
-                          </div>
+                          <a href="/admin/products/update/<%= data._id %>">
+                            <div
+                              class="badge btnUpdateProduct badge-outline-warning"
+                            >
+                              Update
+                            </div>
+                          </a>
                         </td>
                       </tr>
                       <% }) %> <% } %>
@@ -335,7 +332,7 @@
           aria-labelledby="productUploadModalLabel"
           aria-hidden="true"
         >
-          <div class="modal-dialog w-100 modal-lg product-modal">
+          <div class="modal-dialog w-100 modal-lg product-modal uploadModal">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="productUploadModalLabel">
@@ -498,6 +495,7 @@
                       required
                     />
                   </div>
+
                   <div class="form-group">
                     <label for="sizeS">
                       <input
@@ -513,7 +511,16 @@
                         type="number"
                         class="form-control"
                         id="productStockS"
+                        name="stockS"
                         placeholder="Stock for Small Size"
+                      />
+                      <label for="maxQuantityS">Max Quantity per User</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxQuantityS"
+                        name="maxQuantityS"
+                        placeholder="Max quantity for Small Size"
                       />
                       <p class="error-message" id="stockSError"></p>
                     </div>
@@ -524,7 +531,6 @@
                       <input
                         type="checkbox"
                         id="sizeM"
-                        class="checkBoxFOrSizes"
                         onchange="toggleStockInput('M')"
                       />
                       Medium
@@ -535,7 +541,16 @@
                         type="number"
                         class="form-control"
                         id="productStockM"
+                        name="stockM"
                         placeholder="Stock for Medium Size"
+                      />
+                      <label for="maxQuantityM">Max Quantity per User</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxQuantityM"
+                        name="maxQuantityM"
+                        placeholder="Max quantity for Medium Size"
                       />
                       <p class="error-message" id="stockMError"></p>
                     </div>
@@ -547,7 +562,6 @@
                         type="checkbox"
                         id="sizeL"
                         onchange="toggleStockInput('L')"
-                        class="checkBoxFOrSizes"
                       />
                       Large
                     </label>
@@ -557,7 +571,16 @@
                         type="number"
                         class="form-control"
                         id="productStockL"
+                        name="stockL"
                         placeholder="Stock for Large Size"
+                      />
+                      <label for="maxQuantityL">Max Quantity per User</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxQuantityL"
+                        name="maxQuantityL"
+                        placeholder="Max quantity for Large Size"
                       />
                       <p class="error-message" id="stockLError"></p>
                     </div>
@@ -568,7 +591,6 @@
                       <input
                         type="checkbox"
                         id="sizeXL"
-                        class="checkBoxFOrSizes"
                         onchange="toggleStockInput('XL')"
                       />
                       XL
@@ -579,7 +601,16 @@
                         type="number"
                         class="form-control"
                         id="productStockXL"
+                        name="stockXL"
                         placeholder="Stock for XL Size"
+                      />
+                      <label for="maxQuantityXL">Max Quantity per User</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxQuantityXL"
+                        name="maxQuantityXL"
+                        placeholder="Max quantity for XL Size"
                       />
                       <p class="error-message" id="stockXLError"></p>
                     </div>
@@ -590,7 +621,6 @@
                       <input
                         type="checkbox"
                         id="sizeXXL"
-                        class="checkBoxFOrSizes"
                         onchange="toggleStockInput('XXL')"
                       />
                       XXL
@@ -601,7 +631,16 @@
                         type="number"
                         class="form-control"
                         id="productStockXXL"
+                        name="stockXXL"
                         placeholder="Stock for XXL Size"
+                      />
+                      <label for="maxQuantityXXL">Max Quantity per User</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxQuantityXXL"
+                        name="maxQuantityXXL"
+                        placeholder="Max quantity for XXL Size"
                       />
                       <p class="error-message" id="stockXXLError"></p>
                     </div>
@@ -611,7 +650,6 @@
                     <label for="sizeXXXL">
                       <input
                         type="checkbox"
-                        class="checkBoxFOrSizes"
                         id="sizeXXXL"
                         onchange="toggleStockInput('XXXL')"
                       />
@@ -623,7 +661,16 @@
                         type="number"
                         class="form-control"
                         id="productStockXXXL"
+                        name="stockXXXL"
                         placeholder="Stock for XXXL Size"
+                      />
+                      <label for="maxQuantityXXXL">Max Quantity per User</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="maxQuantityXXXL"
+                        name="maxQuantityXXXL"
+                        placeholder="Max quantity for XXXL Size"
                       />
                       <p class="error-message" id="stockXXXLError"></p>
                     </div>
@@ -758,401 +805,6 @@
             </div>
           </div>
         </div>
-        <div
-          class="modal fade"
-          id="productUpdateModal"
-          tabindex="-1"
-          aria-labelledby="productUpdateModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog w-100 modal-lg product-modal">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="productUpdateModalLabel">
-                  Update Product
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <form
-                  class="forms-sample"
-                  id="productUpdateForm"
-                  enctype="multipart/form-data"
-                  novalidate
-                >
-                  <input
-                    style="display: none"
-                    type="file"
-                    class="product-update-image"
-                    multiple
-                    required
-                  />
-                  <div class="form-group">
-                    <label for="productUpdateName">Name</label>
-                    <input
-                      type="text"
-                      class="form-control product-update-name"
-                      id="productUpdateName"
-                      name="name"
-                      placeholder="Product Name"
-                      required
-                    />
-                    <p class="error-message" id="productUpdateNameError"></p>
-                  </div>
-                  <div class="imageViewDiv">
-                    <img class="image1" src="" alt="" />
-                    <img class="image2" src="" alt="" />
-                    <img class="image3" src="" alt="" />
-                    <img class="image4" src="" alt="" />
-                  </div>
-                  <div class="form-group">
-                    <label for="productUpdateImages">Images</label>
-                    <input
-                      type="file"
-                      class="form-control product-update-image"
-                      id="productUpdateImage1"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 0)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewUpdateSection0"
-                      style="display: none"
-                    >
-                      <img id="cropPreviewUpdate0" style="max-width: 100%" />
-                      <button type="button" onclick="startCroppingUpdate(0)">
-                        Crop Image 1
-                      </button>
-                    </div>
-
-                    <input
-                      type="file"
-                      class="form-control product-update-image"
-                      id="productUpdateImage2"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 1)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewUpdateSection1"
-                      style="display: none"
-                    >
-                      <img id="cropPreviewUpdate1" style="max-width: 100%" />
-                      <button type="button" onclick="startCroppingUpdate(1)">
-                        Crop Image 2
-                      </button>
-                    </div>
-
-                    <input
-                      type="file"
-                      class="form-control product-update-image"
-                      id="productUpdateImage3"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 2)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewUpdateSection2"
-                      style="display: none"
-                    >
-                      <img id="cropPreviewUpdate2" style="max-width: 100%" />
-                      <button type="button" onclick="startCroppingUpdate(2)">
-                        Crop Image 3
-                      </button>
-                    </div>
-
-                    <input
-                      type="file"
-                      class="form-control product-update-image"
-                      id="productUpdateImage4"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 3)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewUpdateSection3"
-                      style="display: none"
-                    >
-                      <img id="cropPreviewUpdate3" style="max-width: 100%" />
-                      <button type="button" onclick="startCroppingUpdate(3)">
-                        Crop Image 4
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="productUpdateDesc">Description</label>
-                    <input
-                      type="text"
-                      class="form-control product-update-desc"
-                      id="productUpdateDescription"
-                      name="description"
-                      placeholder="Product Description"
-                      required
-                    />
-                    <p class="error-message" id="descUpdateError"></p>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="productUpdateCategory">Category</label>
-                    <select
-                      class="form-control"
-                      id="productUpdateCategory"
-                      name="cta"
-                    >
-                      <option value="">Select Category</option>
-                      <% category.forEach((data)=>{ %>
-                      <option value="<%= data.name  %>">
-                        <%= data.name %>
-                      </option>
-                      <% }) %>
-                    </select>
-                    <p class="error-message" id="categoryUpdateError"></p>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="productUpdateTags">Tags</label>
-                    <input
-                      type="text"
-                      class="form-control product-update-tags"
-                      id="productUpdateTags"
-                      placeholder="Product tags"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="productUpdateBrand">Brand</label>
-                    <input
-                      type="text"
-                      class="form-control product-update-brand"
-                      id="productUpdateBrand"
-                      placeholder="Product brand"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>Size Options</label>
-                    <div style="padding: 10px">
-                      <div class="form-check">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          id="sizeSmallUpdate"
-                          value="S"
-                          onchange="updateSelectedSizesUpdate()"
-                        />
-                        <label class="form-check-label" for="sizeSmallUpdate"
-                          >S</label
-                        >
-                      </div>
-                      <div class="form-check">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          id="sizeMediumUpdate"
-                          value="M"
-                          onchange="updateSelectedSizesUpdate()"
-                        />
-                        <label class="form-check-label" for="sizeMediumUpdate"
-                          >M</label
-                        >
-                      </div>
-                      <div class="form-check">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          id="sizeLargeUpdate"
-                          value="L"
-                          onchange="updateSelectedSizesUpdate()"
-                        />
-                        <label class="form-check-label" for="sizeLargeUpdate"
-                          >L</label
-                        >
-                      </div>
-                      <div class="form-check">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          id="sizeXLUpdate"
-                          value="XL"
-                          onchange="updateSelectedSizesUpdate()"
-                        />
-                        <label class="form-check-label" for="sizeXLUpdate"
-                          >XL</label
-                        >
-                      </div>
-                      <div class="form-check">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          id="sizeXXLUpdate"
-                          value="XXL"
-                          onchange="updateSelectedSizesUpdate()"
-                        />
-                        <label class="form-check-label" for="sizeXXLUpdate"
-                          >XXL</label
-                        >
-                      </div>
-                      <div class="form-check">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          id="sizeXXXLUpdate"
-                          value="XXXL"
-                          onchange="updateSelectedSizesUpdate()"
-                        />
-                        <label class="form-check-label" for="sizeXXXLUpdate"
-                          >XXXL</label
-                        >
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label>Color Options</label>
-                    <div class="form-check">
-                      <input
-                        type="color"
-                        value="#008000"
-                        id="colorPickerUpdate"
-                      />
-                      <button
-                        class="btn btn-success mb-3"
-                        type="button"
-                        onclick="addColorUpdate()"
-                      >
-                        Add Color
-                      </button>
-                    </div>
-                    <div class="showColors" id="showColorsUpdate"></div>
-                  </div>
-                  <div class="form-group">
-                    <label for="productUpdateOgPrice">Price</label>
-                    <input
-                      type="number"
-                      class="form-control product-update-og-price"
-                      id="productUpdateOgPrice"
-                      placeholder="Original Price"
-                      required
-                    />
-                    <p class="error-message" id="ogPriceUpdateError"></p>
-                  </div>
-                  <div class="form-group">
-                    <div class="form-check">
-                      <input
-                        type="checkbox"
-                        class="form-check-input"
-                        id="cashOnDeliveryUpdate"
-                      />
-                      <label class="form-check-label" for="cashOnDeliveryUpdate"
-                        >Cash on Delivery</label
-                      >
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <div class="form-check mb-3">
-                      <input
-                        type="checkbox"
-                        class="form-check-input"
-                        id="toggleOfferPriceUpdate"
-                        onclick="toggleOfferPriceInputUpdate()"
-                      />
-                      <label
-                        class="form-check-label"
-                        for="toggleOfferPriceUpdate"
-                        >Add Offer Price</label
-                      >
-                    </div>
-                    <div
-                      class="offer-price-input mt-2"
-                      id="offerPriceUpdateDiv"
-                      style="display: none"
-                    >
-                      <label for="productUpdateOfferPrice">Offer Price</label>
-                      <input
-                        type="number"
-                        class="form-control product-update-offer-price"
-                        id="productUpdateOfferPrice"
-                        placeholder="Offer Price"
-                      />
-                      <p class="error-message" id="offerPriceUpdateError"></p>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="productUpdateStock">Stock</label>
-                    <input
-                      type="number"
-                      class="form-control product-update-stock"
-                      id="productUpdateStock"
-                      placeholder="Stock"
-                      required
-                    />
-                    <p class="error-message" id="stockUpdateError"></p>
-                  </div>
-                  <div class="form-group">
-                    <div class="form-check mb-3">
-                      <input
-                        type="checkbox"
-                        class="form-check-input"
-                        id="toggleWarrantyUpdate"
-                        onclick="toggleWarrantyInputUpdate()"
-                      />
-                      <label class="form-check-label" for="toggleWarrantyUpdate"
-                        >Add Warranty</label
-                      >
-                    </div>
-                    <div
-                      class="warranty-input mt-2"
-                      id="warrantyUpdateDiv"
-                      style="display: none"
-                    >
-                      <label for="productUpdateWarranty">Warranty</label>
-                      <input
-                        type="text"
-                        class="form-control product-update-warranty"
-                        id="productUpdateWarranty"
-                        placeholder="Warranty"
-                      />
-                      <p class="error-message" id="warrantyUpdateError"></p>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="productUpdateReturnPolicy">Return Policy</label>
-                    <input
-                      type="text"
-                      class="form-control product-update-return-policy"
-                      id="productUpdateReturnPolicy"
-                      placeholder="Return Policy"
-                      required
-                    />
-                    <p class="error-message" id="returnPolicyUpdateError"></p>
-                  </div>
-                  <div class="modal-footer">
-                    <button
-                      type="button"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="submit"
-                      class="btn btn-primary"
-                      id="updateProductBtn"
-                    >
-                      Update Product
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
     <ul class="pagination">
@@ -1191,6 +843,6 @@
 
     <script src="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/admin/products.js"></script>
+    <script src="/js/admin/products.js" defer></script>
   </body>
 </html>

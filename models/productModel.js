@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { type } = require("os");
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -19,8 +18,10 @@ const productSchema = new mongoose.Schema({
   reviews: [
     {
       user: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+      username: { type: String,required: true},
       rating: { type: Number, required: true },
       comment: { type: String },
+      reviewDate:{ type: Date, default: Date.now }
     },
   ],
   isDeleted: { type: Boolean, default: false },
