@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { type } = require('os');
 
 const orderSchema = new mongoose.Schema({
   user: {
@@ -66,6 +67,10 @@ const orderSchema = new mongoose.Schema({
   },
   deliveredAt: {
     type: Date,
+  },
+  returnRequest: {
+    requestStatus:{type:Boolean,default:false},
+    requestMessage:{type:String}
   },
   statusHistory: [
     {

@@ -16,6 +16,9 @@ module.exports = {
       req.body;
     const userId = req.session.currentId;
     try {
+
+      console.log(isOfferApplied);
+
       if (!item || !selectedAddressId || !selectedPayment) {
         return res
           .status(400)
@@ -282,7 +285,7 @@ module.exports = {
       if (!order) {
         return res.status(404).json({ val: false, msg: "Order not found" });
       }
-      if (order.paymentMethod === "razorpay") {
+      if (order.paymentMethod === "razorpay"||order.paymentMethod === "wallet") {
         let wallet = await walletModel.findOne({
           userId: currentId,
         });
@@ -427,14 +430,13 @@ module.exports = {
     }
   },
   async verifyPayment(req, res) {
+    console.log('suiii')
     const { paymentId, orderId, signature } = req.body;
     const userId = req.session.currentId;
     console.log(paymentId, orderId, signature);
     try {
       if (!paymentId || !orderId || !signature) {
-        return res
-          .status(400)
-          .json({ val: false, msg: "Missing required fields" });
+        return res.status(400).json({ val: false, msg: "Missing required fields" });
       }
       const body = orderId + "|" + paymentId;
       const expectedSignature = crypto
@@ -443,10 +445,16 @@ module.exports = {
         .digest("hex");
 
       if (expectedSignature !== signature) {
-        return res
-          .status(400)
-          .json({ val: false, msg: "Invalid payment signature" });
+        return res.status(400).json({ val: false, msg: "Invalid payment signature" });
       }
+
+      const payment = await razorpay.payments.fetch(paymentId);
+
+      if (payment.status !== "captured") {
+        // await updateOrderStatus(orderId, "failed"); 
+        return res.status(400).json({ val: false, msg: "Payment not captured" });
+      }
+
       res.status(200).json({
         val: true,
         msg: "Payment verified and order placed successfully",
@@ -466,6 +474,26 @@ module.exports = {
       res.render('success')
     }catch(err){
       console.log(err)
+    }
+  },
+  async reqestReturn(req,res){
+    const {orderId} = req.params;
+    const {reasonMsg} = req.body;
+    console.log(reasonMsg);
+    try{
+      const updateResult = await orderModel.updateOne(
+        { _id: orderId },
+        {
+          $set: {
+            'returnRequest.requestStatus': true,
+            'returnRequest.requestMessage': reasonMsg,
+          },
+        }
+      );  
+      res.status(200).json({val:true});
+    }catch(err){
+      console.log(err);
+      res.status(500).json({val:false,msg:'Something went wrong'});
     }
   }
 };

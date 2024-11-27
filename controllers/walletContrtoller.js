@@ -10,6 +10,9 @@ module.exports = {
             if(!wallet){
                 return res.status(400).json({val:false,msg:'No wallet found!'});
             }
+            if (wallet && wallet.transactionHistory) {
+                wallet.transactionHistory.sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
+            }
             console.log(wallet)
             res.status(200).json({val:true,wallet});
         }catch(err){

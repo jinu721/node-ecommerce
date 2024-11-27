@@ -60,9 +60,12 @@ module.exports = {
       console.log("Query:", query);
 
       const unlistedCategories = await categoryModel.find({isDeleted:true});
-      const unlistedCategoryIds = unlistedCategories.map(x=>x._id.toString())
+      const unlistedCategoryIds = unlistedCategories.map(x=>x._id.toString());
     
+      
       query.category = { $nin: unlistedCategoryIds };
+
+      console.log(query)
       
       let products = await productModel.find(query).skip(skip).limit(limit).sort(sortBy);
       if (req.query.name == "A-Z") {
@@ -76,6 +79,9 @@ module.exports = {
           return 0;
         });
       }
+
+      // console.log(products)
+
       const category = await categoryModel.find({});
       if (req.query.api) {
         return res.status(200).json({ products, category });

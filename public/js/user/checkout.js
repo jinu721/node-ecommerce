@@ -544,6 +544,7 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
     const offerAppliedPriceTagValue = document.querySelector('.offerAppliedPriceTagValue');
     couponInput.setAttribute('readonly', 'true');
     document.querySelector('.btncouponAplly').disabled = true;
+    
 
     async function applycoupon() {
       try {
@@ -554,7 +555,7 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
           },
           body: JSON.stringify({
             couponCode: couponInput.value,
-            totalPrice: parseInt(oldPriceTagValue.textContent)
+            totalPrice: parseInt(oldPriceTagValue.textContent),
           })
         });
 
@@ -584,6 +585,8 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
           couponInput.value = couponInput.value; 
           couponInput.setAttribute('readonly', 'true'); 
           document.querySelector('.btncouponAplly').disabled = true; 
+          deleteCouponBtn.style.display = "block";
+          isOfferApplied = true;
         }
       } catch (err) {
         console.log(err);
@@ -598,6 +601,51 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
     applycoupon();
   }
 });
+
+
+document.querySelector('.btncouponDelete').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const couponInput = document.querySelector('.couponInput');
+  const deleteCouponBtn = document.querySelector('.btncouponDelete');
+  const offerAppliedPriceTagValue = document.querySelector('.offerAppliedPriceTagValue');
+  const oldPriceTagValue = document.querySelector('.oldPriceTagValue');
+  
+  const couponCode = couponInput.value;
+  const response = await fetch('/coupon/remove', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      couponCode: couponCode,
+      totalPrice: parseInt(offerAppliedPriceTagValue.textContent),
+    })
+  });
+
+  const data = await response.json();
+  console.log(data)
+  if (data.val) {
+    document.querySelector('.oldPriceTag').style.display = "none";
+    offerAppliedPriceTagValue.textContent = oldPriceTagValue.textContent;
+    Swal.fire({
+      title: "Coupon Removed",
+      text: "Your coupon has been removed successfully.",
+      icon: "success",
+    });
+    couponInput.value = "";
+    couponInput.removeAttribute('readonly');
+    document.querySelector('.btncouponAplly').disabled = false;
+    deleteCouponBtn.style.display = "none";
+    isOfferApplied = false;
+  }else{
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: data.msg,
+    });
+  }
+});
+
 
 
 

@@ -33,8 +33,11 @@ dateButtons.forEach((btn) => {
   });
 });
 
-let topSellingChartInstance = null;
+let topSellingProductsChartInstance = null;
+let topSellingCategoriesChartInstance = null;
+let topSellingBrandsChartInstance = null;
 let lineChartWithDotsInstance = null;
+
 
 async function fetchData(url) {
   const dashboardData = document.querySelector(".dashboardData");
@@ -158,37 +161,168 @@ async function fetchData(url) {
         </div>
 
         `;
-      const topSellingCtx = document
-        .getElementById("topSellingChart")
-        .getContext("2d");
-      if (topSellingChartInstance) {
-        topSellingChartInstance.destroy();
+        const generateRandomColor = () =>
+          `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
+        
+        const generateRandomBorderColor = () =>
+          `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`;
+        
+        // Top-Selling Products Chart
+        const topSellingProductsCtx = document
+          .getElementById("topSellingChart")
+          .getContext("2d");
+        if (topSellingProductsChartInstance) {
+          topSellingProductsChartInstance.destroy();
+        }
+        topSellingProductsChartInstance = new Chart(topSellingProductsCtx, {
+          type: "bar",
+          data: {
+            labels: data.dashboard.topSellingProducts.map((prod) => prod.product.name),
+            datasets: [
+              {
+                label: "Sales Quantity",
+                data: data.dashboard.topSellingProducts.map((prod) => prod.totalQuantity),
+                backgroundColor: data.dashboard.topSellingProducts.map(generateRandomColor),
+                borderColor: data.dashboard.topSellingProducts.map(generateRandomBorderColor),
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+            },
+            scales: {
+              x: { beginAtZero: true },
+              y: { beginAtZero: true },
+            },
+          },
+        });
+        
+        // Top-Selling Categories Chart
+        const topSellingCategoriesCtx = document
+          .getElementById("topSellingCategoriesChart")
+          .getContext("2d");
+        if (topSellingCategoriesChartInstance) {
+          topSellingCategoriesChartInstance.destroy();
+        }
+        topSellingCategoriesChartInstance = new Chart(topSellingCategoriesCtx, {
+          type: "bar",
+          data: {
+            labels: data.dashboard.topSellingCategories.map((cat) => cat.category),
+            datasets: [
+              {
+                label: "Sales Quantity",
+                data: data.dashboard.topSellingCategories.map((cat) => cat.totalQuantity),
+                backgroundColor: data.dashboard.topSellingCategories.map(generateRandomColor),
+                borderColor: data.dashboard.topSellingCategories.map(generateRandomBorderColor),
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+            },
+            scales: {
+              x: { beginAtZero: true },
+              y: { beginAtZero: true },
+            },
+          },
+        });
+        
+        // Top-Selling Brands Chart
+        const topSellingBrandsCtx = document
+          .getElementById("topSellingBrandsChart")
+          .getContext("2d");
+        if (topSellingBrandsChartInstance) {
+          topSellingBrandsChartInstance.destroy();
+        }
+        topSellingBrandsChartInstance = new Chart(topSellingBrandsCtx, {
+          type: "bar",
+          data: {
+            labels: data.dashboard.topSellingBrands.map((brand) => brand.brand),
+            datasets: [
+              {
+                label: "Sales Quantity",
+                data: data.dashboard.topSellingBrands.map((brand) => brand.totalQuantity),
+                backgroundColor: data.dashboard.topSellingBrands.map(generateRandomColor),
+                borderColor: data.dashboard.topSellingBrands.map(generateRandomBorderColor),
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+            },
+            scales: {
+              x: { beginAtZero: true },
+              y: { beginAtZero: true },
+            },
+          },
+        });
+
+      const visitorData = data.dashboard?.vistors || [];
+      if (visitorData.length === 0) {
+        console.error("No visitor data available.");
+        return;
       }
-      topSellingChartInstance = new Chart(topSellingCtx, {
-        type: "bar",
+
+      const dates = visitorData.map((data) => {
+        const date = new Date(data.date);
+        return date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      });
+
+      const uniqueVisitors = visitorData.map(
+        (data) => data.uniqueVisitors || 0
+      );
+      const totalViews = visitorData.map((data) => data.totalViews || 0);
+
+      const canvas = document.getElementById("lineChartWithDots");
+      if (!canvas) {
+        console.error("Canvas element with ID 'lineChartWithDots' not found.");
+        return;
+      }
+
+      const ctx = canvas.getContext("2d");
+
+      if (lineChartWithDotsInstance) {
+        lineChartWithDotsInstance.destroy();
+      }
+
+      lineChartWithDotsInstance = new Chart(ctx, {
+        type: "line",
         data: {
-          labels: data.dashboard.topSellingProducts.map(
-            (prod) => prod.product.name
-          ),
+          labels: dates,
           datasets: [
             {
-              label: "Sales Quantity",
-              data: data.dashboard.topSellingProducts.map(
-                (prod) => prod.totalQuantity
-              ),
-              backgroundColor: data.dashboard.topSellingProducts.map(
-                () =>
-                  `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                    Math.random() * 255
-                  )}, ${Math.floor(Math.random() * 255)}, 0.6)`
-              ),
-              borderColor: data.dashboard.topSellingProducts.map(
-                () =>
-                  `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                    Math.random() * 255
-                  )}, ${Math.floor(Math.random() * 255)}, 1)`
-              ),
-              borderWidth: 1,
+              label: "Unique Visitors",
+              data: uniqueVisitors,
+              borderColor: "rgba(54, 162, 235, 1)",
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              fill: false,
+              pointRadius: 5,
+              pointBackgroundColor: "rgba(54, 162, 235, 1)",
+              borderWidth: 2,
+              tension: 0.3,
+            },
+            {
+              label: "Total Views",
+              data: totalViews,
+              borderColor: "rgba(255, 99, 132, 1)",
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              fill: false,
+              pointBackgroundColor: "rgba(255, 99, 132, 1)",
+              borderWidth: 2,
+              tension: 0.3,
             },
           ],
         },
@@ -198,90 +332,17 @@ async function fetchData(url) {
             legend: { display: true },
           },
           scales: {
-            x: { beginAtZero: true },
-            y: { beginAtZero: true },
+            x: {
+              type: "category",
+              title: { display: true, text: "Date" },
+            },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Count" },
+            },
           },
         },
       });
-
-
-      const visitorData = data.dashboard?.vistors || [];
-      if (visitorData.length === 0) {
-          console.error("No visitor data available.");
-          return;
-      }
-
-      const dates = visitorData.map((data) => {
-          const date = new Date(data.date);
-          return date.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-          });
-      });
-
-      const uniqueVisitors = visitorData.map((data) => data.uniqueVisitors || 0);
-      const totalViews = visitorData.map((data) => data.totalViews || 0);
-
-      const canvas = document.getElementById("lineChartWithDots");
-      if (!canvas) {
-          console.error("Canvas element with ID 'lineChartWithDots' not found.");
-          return;
-      }
-
-      const ctx = canvas.getContext("2d");
-
-      if (lineChartWithDotsInstance) {
-          lineChartWithDotsInstance.destroy();
-      }
-
-      lineChartWithDotsInstance = new Chart(ctx, {
-          type: "line",
-          data: {
-              labels: dates,
-              datasets: [
-                  {
-                      label: "Unique Visitors",
-                      data: uniqueVisitors,
-                      borderColor: "rgba(54, 162, 235, 1)",
-                      backgroundColor: "rgba(54, 162, 235, 0.2)",
-                      fill: false,
-                      pointRadius: 5,
-                      pointBackgroundColor: "rgba(54, 162, 235, 1)",
-                      borderWidth: 2,
-                      tension: 0.3,
-                  },
-                  {
-                      label: "Total Views",
-                      data: totalViews,
-                      borderColor: "rgba(255, 99, 132, 1)",
-                      backgroundColor: "rgba(255, 99, 132, 0.2)",
-                      fill: false,
-                      pointBackgroundColor: "rgba(255, 99, 132, 1)",
-                      borderWidth: 2,
-                      tension: 0.3,
-                  },
-              ],
-          },
-          options: {
-              responsive: true,
-              plugins: {
-                  legend: { display: true },
-              },
-              scales: {
-                  x: {
-                      type: "category",
-                      title: { display: true, text: "Date" },
-                  },
-                  y: {
-                      beginAtZero: true,
-                      title: { display: true, text: "Count" },
-                  },
-              },
-          },
-      });
-
-
     } else {
       console.log(data.msg);
     }
@@ -294,15 +355,14 @@ document.querySelector(".btnDownloadPdf").addEventListener("click", () => {});
 
 fetchData(`/admin/dashboard/data?range=${selectedRange}`);
 
-
 downloadBtn.addEventListener("click", async () => {
-
   errorMsg.textContent = "";
   downloadBtn.disabled = true;
 
   if (selectedRange === "custom") {
     if (!startDateInput.value || !endDateInput.value) {
-      errorMsg.textContent = "Both start and end dates are required for custom range.";
+      errorMsg.textContent =
+        "Both start and end dates are required for custom range.";
       downloadBtn.disabled = false;
       return;
     }
@@ -315,14 +375,13 @@ downloadBtn.addEventListener("click", async () => {
   }
 
   try {
-    const requestData = { range: selectedRange }; 
+    const requestData = { range: selectedRange };
     if (selectedRange === "custom") {
       requestData.startDate = startDateInput.value;
       requestData.endDate = endDateInput.value;
     }
 
-
-    console.log(requestData)
+    console.log(requestData);
 
     const response = await fetch("/admin/dashboard/download-report", {
       method: "POST",
@@ -350,5 +409,3 @@ downloadBtn.addEventListener("click", async () => {
     downloadBtn.disabled = false;
   }
 });
-
-

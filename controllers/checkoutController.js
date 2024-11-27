@@ -5,20 +5,7 @@ const userModel = require('../models/userModel');
 const path = require('path');
 
 module.exports = {
-    // async checkoutPageLoad(req,res){
-    //     const {productId,price,quantity,size,color,isBuyNow} = req.session.tempCart;
-    //     try{
 
-    //         let product ;
-    //         if(isBuyNow){
-    //             product = await productModel.find({_id:productId});
-    //         }
-    //         console.log(product)
-    //         res.render('checkout',{product,quantity,size,color});
-    //     }catch(err){
-    //         console.log(err);
-    //     }
-    // }   
     async checkoutPageLoad(req, res) {
         let isBuyNow ;
         if(req.session.tempCart){

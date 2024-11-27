@@ -9,6 +9,11 @@
       rel="stylesheet"
       href="https://cdn-uicons.flaticon.com/2.0.0/uicons-regular-straight/css/uicons-regular-straight.css"
     />
+    <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+/>
+
 
     <!--=============== SWIPER CSS ===============-->
     <link
@@ -276,12 +281,19 @@
                   />
                   <div class="form__btn">
                     <button class="btn flex btn--sm btncouponAplly" id="applyCouponBtn">
-                      <i class="fi-rs-label"></i> Apply
+                      <i class="fas fa-tag"></i> Apply
+                    </button>
+                  </div>
+                  <!-- Delete Coupon Icon using Font Awesome -->
+                  <div class="form__btn">
+                    <button class="btn flex btn--sm btncouponDelete" id="deleteCouponBtn" style="display: none;">
+                      <i class="fas fa-times-circle"></i> Delete
                     </button>
                   </div>
                 </div>
               </div>
-            </div>            
+            </div>
+                      
             <div class="payment__methods">
               <h3 class="checkout__title payment__title">Payment</h3>
               <div class="payment__option flex">

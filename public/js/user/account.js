@@ -665,24 +665,24 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
   }
 });
 
-async function fetchOrders() {
+async function fetchOrders(page = 1) {
   document.querySelector(".ordersInfo").style.display = "block";
   document.querySelector(".detailsOfOrders").style.display = "none";
   document.querySelector(".orderedAddrressInfo").style.display = "none";
+  document.querySelector(".pagination").style.display = "flex";
+
   try {
-    console.log("Fetch orders--------------");
-    const response = await fetch("/account/orders");
+    const response = await fetch(`/account/orders?page=${page}&limit=4`);
     const data = await response.json();
+
     const orderContainer = document.querySelector(".ordersParant");
     orderContainer.innerHTML = "";
-    let orderStatus ;
-    if (data.orders === null) {
-      const ordernulltr = document.createElement("tr");
-      ordernullt.classList.add("order-null-item");
-      ordernullt.innerHTML = `
-        <td>No orders yet!</td>
-      `;
-      orderContainer.appendChild(ordernullTr);
+
+    if (!data.orders || data.orders.length === 0) {
+      const orderNullTr = document.createElement("tr");
+      orderNullTr.classList.add("order-null-item");
+      orderNullTr.innerHTML = `<td colspan="6">No orders yet!</td>`;
+      orderContainer.appendChild(orderNullTr);
     } else {
       data.orders.forEach((data, index) => {
         const orderDate = new Date(data.orderedAt);
@@ -691,72 +691,196 @@ async function fetchOrders() {
           month: "long",
           day: "numeric",
         });
-        const orderTr = document.createElement("tr");
-        orderTr.classList.add("order-item");
-        orderStatus = data.orderStatus;
-        orderTr.innerHTML = `
-          <td>${index + 1}</td>
+
+        const orderRow = document.createElement("tr");
+        orderRow.classList.add("order-item");
+        orderRow.innerHTML = `
+          <td>${index + 1 + (page - 1) * 10}</td>
           <td>${formattedDate}</td>
           <td>${data.orderStatus}</td>
           <td>${data.paymentStatus}</td>
           <td>&#8377;${data.totalAmount}</td>
-          <td  ><a onclick="viewOrderedProduct(event)" data-id="${
-            data._id
-          }" class="view__order btnViewOrder">View</a></td>
-          <td><a onclick="${data.orderStatus==='deilvered'?'returnOrders(event)':'cancelOrders(event)'}" data-id="${
-            data._id
-          }" class="view__order btnCancelOrder">${data.orderStatus==='delivered'?'Return Order':'Cancel Order'}</a></td>
+          <td>
+            <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${data._id}">View</a>
+          </td>
+          <td>
+            <a class="view__order btnCancelOrder" data-id="${data._id}">
+              ${data.orderStatus === "delivered" ? "Request Return" : "Cancel Order"}
+            </a>
+          </td>
         `;
-        orderContainer.appendChild(orderTr);
+        orderContainer.append(orderRow);
+        orderRow.querySelector('.btnCancelOrder').addEventListener('click', (event) => {
+          if (data.orderStatus === 'delivered') {
+            requestReturn(event);
+          } else {
+            cancelOrders(event);
+          }
+        });
       });
+      
+
+      renderPagination(data.currentPage, data.totalPages);
     }
   } catch (err) {
-    console.log(err);
+    console.error("Error fetching orders:", err);
   }
 }
 
+
+function renderPagination(currentPage, totalPages) {
+  const paginationContainer = document.querySelector(".pagination");
+  paginationContainer.innerHTML = "";
+
+  if (currentPage > 1) {
+    const prevButton = document.createElement("button");
+    prevButton.classList.add("pagination-btn");
+    prevButton.innerText = '<';
+    prevButton.addEventListener("click", () => fetchOrders(currentPage - 1));
+    paginationContainer.appendChild(prevButton);
+  }
+
+  for (let i = 1; i <= totalPages; i++) {
+    const pageButton = document.createElement("button");
+    pageButton.classList.add("pagination-btn");
+    pageButton.innerText = i;
+    if (i === currentPage) pageButton.classList.add("active");
+    pageButton.addEventListener("click", () => fetchOrders(i));
+    paginationContainer.appendChild(pageButton);
+  }
+  if (currentPage < totalPages) {
+    const nextButton = document.createElement("button");
+    nextButton.classList.add("pagination-btn");
+    nextButton.innerText = ">";
+    nextButton.addEventListener("click", () => fetchOrders(currentPage + 1));
+    paginationContainer.appendChild(nextButton);
+  }
+}
+
+
+
+
+
 function cancelOrders(e) {
-  e.target.addEventListener("click", async (e) => {
-    const orderId = e.target.getAttribute("data-id");
-    try {
-      const response = await fetch(`/cancel-order/${orderId}`, {
-        method: "DELETE",
-      });
-      const data = await response.json({});
-      if (data.val) {
-        fetchOrders();
-        sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');
-      } else {
-        console.log(data.msg);
+  e.target.addEventListener("click",(e) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Cancel"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const orderId = e.target.getAttribute("data-id");
+        try {
+          const response = await fetch(`/cancel-order/${orderId}`, {
+            method: "DELETE",
+          });
+          const data = await response.json({});
+          if (data.val) {
+            fetchOrders();
+            sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');
+          } else {
+            console.log(data.msg);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        Swal.fire({
+          title: "Canceled!",
+          text: "Your order has been canceled.",
+          icon: "success"
+        });
       }
-    } catch (err) {
-      console.log();
-    }
+    });
   });
 }
-function returnOrders(e) {
-  console.log('Return')
-  // e.target.addEventListener("click", async (e) => {
-  //   const orderId = e.target.getAttribute("data-id");
-  //   try {
-  //     const response = await fetch(`/cancel-order/${orderId}`, {
-  //       method: "DELETE",
-  //     });
-  //     const data = await response.json({});
-  //     if (data.val) {
-  //       fetchOrders();
-  //       sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');
-  //     } else {
-  //       console.log(data.msg);
-  //     }
-  //   } catch (err) {
-  //     console.log();
-  //   }
-  // });
+function requestReturn(event) {
+  const orderId = event.target.getAttribute("data-id");
+  Swal.fire({
+    title: 'Request Return',
+    html: `
+      <div class="swalInput">
+        <textarea id="returnReason" class="returnReason" placeholder="Enter your reason"></textarea>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Submit',
+    cancelButtonText: 'Close',
+    focusConfirm: false,
+    customClass: {
+      title: 'custom-title',
+      popup: 'swalPopupCustom'
+    },
+    preConfirm: () => {
+      const reason = document.getElementById('returnReason').value.trim();
+      if (!reason) {
+        Swal.showValidationMessage('Please enter a reason for the return');
+        return false;
+      }
+      return { reason };
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const reason = result.value.reason;
+      async function requestReturn(){
+        try{
+          const response = await fetch(`/orders/request-return/${orderId}`,{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify({
+              reasonMsg:reason
+            })
+          });
+          const data = await response.json();
+          if(!data.val){
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: data.msg,
+            });
+          }else{
+            Swal.fire({
+              icon: 'success',
+              title: 'Submitted!',
+              text: 'Your return request has been sent.',
+              confirmButtonText: 'OK',
+              customClass: {
+                title: 'custom-title'
+              }
+            });
+          }
+        }catch(err){
+          console.log(err);
+        }
+      }
+      requestReturn();
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      console.log('Return request canceled');
+    }
+  });
+  
+  
 }
+
+const btnViewOrder = document.querySelectorAll('.btnViewOrder');
+
+// console.log(btnViewOrder)
+
+// btnViewOrder.forEach(elem=>{
+//   elem.addEventListener('click',(e)=>{
+//     console.log('CLicked')
+//   })
+// })
+
 
 async function viewOrderedProduct(e) {
   document.querySelector(".ordersInfo").style.display = "none";
+  document.querySelector(".pagination").style.display = "none";
   document.querySelector(".detailsOfOrders").style.display = "block";
   document.querySelector(".orderedAddrressInfo").style.display = "block";
 

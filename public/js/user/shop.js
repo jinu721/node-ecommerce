@@ -109,6 +109,8 @@ function displayProducts(products) {
   const productContainer = document.querySelector(".products__container");
   productContainer.innerHTML = "";
 
+  console.log(products);
+
   products.forEach((product) => {
     const productItem = document.createElement("div");
     productItem.classList.add("product__item");

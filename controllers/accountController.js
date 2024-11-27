@@ -273,15 +273,31 @@ module.exports = {
   },
   async ordersPageLoad(req, res) {
     const { currentId } = req.session;
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 10; 
+    const skip = (page - 1) * limit;
+    
     try {
-      const orders = await orderModel.find({user:currentId});
-      if(!orders){
-        return res.status(200).json({ val: false,orders:null});
-      }
-      res.status(200).json({ val: true,orders});
+      const totalOrders = await orderModel.countDocuments({ user: currentId });
+      const orders = await orderModel
+        .find({ user: currentId })
+        .skip(skip)
+        .limit(limit)
+        .sort({ orderedAt: -1 }); 
+  
+      const totalPages = Math.ceil(totalOrders / limit);
+  
+      res.status(200).json({
+        success: true,
+        orders,
+        totalOrders,
+        totalPages,
+        currentPage: page,
+      });
     } catch (err) {
       console.log("Error in load orders:", err);
-      res.status(500).json({ val: false, message: "Internal server error" });
+      res.status(500).json({ success: false, message: "Internal server error" });
     }
-  },
+  }
+  ,
 };

@@ -1,26 +1,43 @@
 const deleteIconCart = document.querySelectorAll('.deleteIconCart');
 
 deleteIconCart.forEach(elem => {
-    elem.addEventListener('click', async (e) => {
-        const cartItemId = e.target.getAttribute('data-id');
-        try {
-            const response = await fetch(`/delete-from-cart/${cartItemId}`, {
-                method: 'DELETE',
-            });
-            const data = await response.json();
-
-            if (!data.val) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: data.msg,
-                });
-            } else {
-                renderCart(data.cart, data.products);
-            }
-        } catch (err) {
-            console.log(err);
+    elem.addEventListener('click',(e) => {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          const cartItemId = e.target.getAttribute('data-id');
+          try {
+              const response = await fetch(`/delete-from-cart/${cartItemId}`, {
+                  method: 'DELETE',
+              });
+              const data = await response.json();
+  
+              if (!data.val) {
+                  Swal.fire({
+                      icon: "error",
+                      title: "Oops...",
+                      text: data.msg,
+                  });
+              } else {
+                  renderCart(data.cart, data.products);
+              }
+          } catch (err) {
+              console.log(err);
+          }
+          Swal.fire({
+            title: "Deleted!",
+            text: "Item has been deleted.",
+            icon: "success"
+          });
         }
+      });
     });
 });
 function renderCart(cart, products) {

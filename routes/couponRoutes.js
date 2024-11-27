@@ -10,5 +10,6 @@ router.get('/admin/coupons/update/:couponId',couponController.couponAdminUpdateP
 router.post('/admin/coupons/update/:couponId',couponController.couponAdminUpdate);
 router.delete('/admin/coupons/delete/:couponId',couponController.couponAdminDelete);
 router.post('/coupon/apply',couponController.couponApply);
+router.delete('/coupon/remove',couponController.removeApply);
 
 module.exports = router;

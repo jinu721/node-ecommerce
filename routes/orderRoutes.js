@@ -11,6 +11,7 @@ router.get('/admin/orders/view/:orderId', orderController.adminOrdersViewLoad);
 router.post('/admin/order/status/:orderId', orderController.adminOrdersStatusUpdate);
 router.post('/verify-payment', orderController.verifyPayment);
 router.get('/success', orderController.successPageLoad);
+router.post('/orders/request-return/:orderId', orderController.reqestReturn);
 
 
 module.exports = router;

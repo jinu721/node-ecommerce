@@ -125,6 +125,75 @@ module.exports = {
           },
         },
       ]);
+
+      const topSellingCategories = await orderModel.aggregate([
+        { $match: {...dateFilter, orderStatus: "delivered" } },
+        { $unwind: "$items" },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.product",
+            foreignField: "_id",
+            as: "productDetails",
+          },
+        },
+        { $unwind: "$productDetails" },
+        {
+          $group: {
+            _id: "$productDetails.category",
+            totalQuantity: { $sum: "$items.quantity" },
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "_id",
+            foreignField: "_id",
+            as: "categoryDetails",
+          },
+        },
+        { $unwind: "$categoryDetails" },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 5 },
+        {
+          $project: {
+            category: "$categoryDetails.name",
+            totalQuantity: 1,
+          },
+        },
+      ]);
+
+      const topSellingBrands = await orderModel.aggregate([
+        { $match: {...dateFilter, orderStatus: "delivered" } },
+        { $unwind: "$items" },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.product",
+            foreignField: "_id",
+            as: "productDetails",
+          },
+        },
+        { $unwind: "$productDetails" },
+        {
+          $group: {
+            _id: "$productDetails.brand",
+            totalQuantity: { $sum: "$items.quantity" },
+          },
+        },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 5 },
+        {
+          $project: {
+            brand: "$_id",
+            totalQuantity: 1,
+          },
+        },
+      ]);
+      
+
+      console.log(topSellingBrands)
+      
   
       const vistors = await visitorModel.find({});
   
@@ -137,6 +206,8 @@ module.exports = {
         totalPendingMoney,
         categories: categoryData,
         topSellingProducts,
+        topSellingCategories,
+        topSellingBrands,
         vistors,
       };
       res.status(200).json({ val: true, dashboard });

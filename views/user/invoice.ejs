@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Invoice</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        color: #333;
+        background-color: #f5f5f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .invoice-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 800px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        font-size: 48px;
+        font-weight: bold;
+        margin-right: 20px;
+      }
+
+      .billed-to {
+        margin-bottom: 30px;
+      }
+
+      .items {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+      }
+
+      .items th,
+      .items td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .items th {
+        background-color: #f5f5f5;
+      }
+
+      .totals {
+        text-align: right;
+        margin-bottom: 30px;
+      }
+
+      .thank-you {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .payment-info {
+        border-top: 1px solid #ddd;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-container">
+      <div class="header">
+        <img
+          class="nav__logo-img"
+          src="/img/menslogoblack.png"
+          alt="website logo"
+        />
+        <h1>INVOICE</h1>
+      </div>
+      <div class="billed-to">
+        <p>PAY TO:</p>
+        <p>Male fashion</p>
+        <p></p>
+      </div>
+      <table class="items">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Eggshell Camisole Top</td>
+            <td>1</td>
+            <td>$123</td>
+            <td>$123</td>
+          </tr>
+          <tr>
+            <td>Cuban Collar Shirt</td>
+            <td>2</td>
+            <td>$127</td>
+            <td>$254</td>
+          </tr>
+          <tr>
+            <td>Floral Cotton Dress</td>
+            <td>1</td>
+            <td>$123</td>
+            <td>$123</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="totals">
+        <p>Subtotal: $500</p>
+        <p>Tax (0%): $0</p>
+        <p>Total: $500</p>
+      </div>
+      <div class="thank-you">
+        <p>Thank you!</p>
+      </div>
+      <div class="payment-info">
+        <p>PAYMENT INFORMATION</p>
+        <p>Briard Bank</p>
+        <p>Account Name: Samira Hadid</p>
+        <p>Account No.: 123-456-7890</p>
+        <p>Pay by: 5 July 2025</p>
+        <p>Samira Hadid</p>
+        <p>123 Anywhere St., Any City, ST 12345</p>
+      </div>
+    </div>
+  </body>
+</html>

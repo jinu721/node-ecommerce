@@ -200,4 +200,25 @@ module.exports = {
       res.status(500).json({ val: false, msg: err });
     }
   },
+  async removeApply(req, res) {
+    const { couponCode } = req.body;
+    try {
+      console.log(couponCode);
+  
+      const coupon = await couponModel.findOne({ code: couponCode });
+  
+      if (!coupon) {
+        return res.status(400).json({ val: false, msg: "Coupon not found" });
+      }
+      coupon.usedCount -= 1;
+      coupon.markModified('usedCount');
+  
+      await coupon.save();
+  
+      res.status(200).json({ val: true, msg: "Coupon removed successfully" });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ val: false, msg: err.message });
+    }
+  }
 };

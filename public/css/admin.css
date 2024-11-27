@@ -21561,3 +21561,48 @@ button:hover {
   align-items: center;
   justify-content: center;
 }
+
+
+.read-request-section {
+  margin: 50px auto;
+  padding: 30px;
+  max-width: 300px;
+  border-radius: 10px;
+  border: solid 1px white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+.section-header {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.request-details {
+  /* background-color: #fff; */
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e6e6e6;
+  margin-bottom: 20px;
+}
+.request-details p {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+}
+.btn-approve {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+}
+.btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+}
+.btn-approve:hover {
+  background-color: #218838;
+}
+.btn-cancel:hover {
+  background-color: #c82333;
+}
