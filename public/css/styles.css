@@ -3244,7 +3244,6 @@ table {
 }
 
 .pagination-btn {
-  /* padding: 10px 20px; */
   width: 30px;
   height: 30px;
   border: none;
@@ -3263,6 +3262,31 @@ table {
 .pagination-btn.active {
   background-color: #28a745;
   cursor: default;
+}
+
+
+/* Style the Retry Payment icon button */
+.btnRetryPayment {
+  display: inline-block;
+  padding: 8px;
+  width: 20px;
+  height: 20px;
+  background-color: #f1c40f; /* A yellow color */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  text-align: center;
+  font-size: 18px;  /* Icon size */
+  transition: background-color 0.3s ease;
+}
+
+.btnRetryPayment:hover {
+  background-color: #f39c12; /* Darker yellow on hover */
+}
+
+.btnRetryPayment i {
+  pointer-events: none; /* Ensures the icon is clickable but doesn't interfere with button styling */
 }
 
 

@@ -4,11 +4,8 @@ const categoryModel = require("../models/categoryModel");
 const orderModel = require("../models/orderModel");
 const vistorModel = require("../models/visitorModel");
 const visitorModel = require("../models/visitorModel");
-const puppeteer = require("puppeteer");
 const path = require("path");
-const PDFDocument = require("pdfkit");
 let pdf = require("html-pdf");
-const fs = require("fs");
 const ejs = require("ejs");
 const moment = require("moment");
 
@@ -300,7 +297,7 @@ module.exports = {
         },
         (err, renderedHTML) => {
           if (err) {
-            console.error("EJS Rendering Error:", err);
+            console.error(err);
             return res.status(500).json({ msg: "Error rendering report template." });
           }
       
@@ -313,14 +310,12 @@ module.exports = {
       
           pdf.create(renderedHTML, pdfOptions).toFile("report.pdf", (err, result) => {
             if (err) {
-              console.error("PDF Generation Error:", err);
+              console.error(err);
               return res.status(500).json({ msg: "Error generating PDF file." });
             }
-      
-            console.log("PDF Generated Successfully:", result.filename);
             return res.download(result.filename, "SalesReport.pdf", (downloadErr) => {
               if (downloadErr) {
-                console.error("PDF Download Error:", downloadErr);
+                console.error(downloadErr);
                 return res.status(500).json({ msg: "Error downloading PDF file." });
               }
             });

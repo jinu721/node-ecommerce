@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoice</title>
-    <link rel="stylesheet" type="text/css" href="styles.css" />
     <style>
       * {
         margin: 0;
@@ -11,89 +12,108 @@
       }
 
       body {
-        font-family: Arial, sans-serif;
-        font-size: 16px;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
         color: #333;
-        background-color: #f5f5f5;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        min-height: 100vh;
+        padding: 20px;
       }
 
       .invoice-container {
         background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 40px;
-        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        padding: 30px;
         max-width: 800px;
+        width: 100%;
       }
 
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
       }
 
       .logo {
-        font-size: 48px;
-        font-weight: bold;
-        margin-right: 20px;
+        max-width: 100px;
       }
 
-      .billed-to {
-        margin-bottom: 30px;
+      .invoice-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .billed-to,
+      .payment-info {
+        margin-bottom: 20px;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
       }
 
       .items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
       }
 
       .items th,
       .items td {
         padding: 10px;
         text-align: left;
-        border-bottom: 1px solid #ddd;
+        border: 1px solid #ddd;
       }
 
       .items th {
-        background-color: #f5f5f5;
+        background-color: #f1f1f1;
+        color: #333;
       }
 
       .totals {
         text-align: right;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+      }
+
+      .totals p {
+        font-size: 16px;
+        margin: 5px 0;
+      }
+
+      .totals .total-amount {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
       }
 
       .thank-you {
         text-align: center;
-        margin-bottom: 30px;
-      }
-
-      .payment-info {
-        border-top: 1px solid #ddd;
-        padding-top: 20px;
+        font-size: 18px;
+        color: #007bff;
+        margin-bottom: 20px;
       }
     </style>
   </head>
   <body>
     <div class="invoice-container">
       <div class="header">
-        <img
-          class="nav__logo-img"
-          src="/img/menslogoblack.png"
-          alt="website logo"
-        />
-        <h1>INVOICE</h1>
+        <a class="logo" href="https://imgbb.com/"
+          ><img src="https://i.ibb.co/hgn3dqf/image.png" alt="image" border="0"
+        /></a>
+        <h1 style="margin-top: 20px" class="invoice-title">Invoice</h1>
       </div>
       <div class="billed-to">
-        <p>PAY TO:</p>
-        <p>Male fashion</p>
-        <p></p>
+        <p class="section-title">Pay To:</p>
+        <p>Male Fashion</p>
       </div>
       <table class="items">
         <thead>
@@ -105,42 +125,34 @@
           </tr>
         </thead>
         <tbody>
+          <% order.items.forEach(data => { %>
           <tr>
-            <td>Eggshell Camisole Top</td>
-            <td>1</td>
-            <td>$123</td>
-            <td>$123</td>
+            <td><%= data.product.name %></td>
+            <td><%= data.quantity %></td>
+            <td>&#8377;<%= data.product.offerPrice %></td>
+            <td>&#8377;<%= data.quantity*data.product.offerPrice %></td>
           </tr>
-          <tr>
-            <td>Cuban Collar Shirt</td>
-            <td>2</td>
-            <td>$127</td>
-            <td>$254</td>
-          </tr>
-          <tr>
-            <td>Floral Cotton Dress</td>
-            <td>1</td>
-            <td>$123</td>
-            <td>$123</td>
-          </tr>
+          <% }); %>
         </tbody>
       </table>
       <div class="totals">
-        <p>Subtotal: $500</p>
-        <p>Tax (0%): $0</p>
-        <p>Total: $500</p>
+        <p class="total-amount">Total: &#8377;<%= order.totalAmount %></p>
       </div>
-      <div class="thank-you">
-        <p>Thank you!</p>
-      </div>
+      <div class="thank-you">Thank you for your Purchase!</div>
       <div class="payment-info">
-        <p>PAYMENT INFORMATION</p>
-        <p>Briard Bank</p>
-        <p>Account Name: Samira Hadid</p>
-        <p>Account No.: 123-456-7890</p>
-        <p>Pay by: 5 July 2025</p>
-        <p>Samira Hadid</p>
-        <p>123 Anywhere St., Any City, ST 12345</p>
+        <p class="section-title">Payment Information:</p>
+        <% if(order.paymentMethod==='cash_on_delivery'){ %>
+        <p>Cash on delivary</p>
+        <p>Payment status: <%= order.paymentStatus %></p>
+        <% }else if(order.paymentMethod==='wallet'){ %>
+        <p>wallet</p>
+        <p>Male fashion wallet</p>
+        <p>Payment status: <%= order.paymentStatus %></p>
+        <% }else if(order.paymentMethod==='razorpay'){ %>
+        <p>Razorpay</p>
+        <p>Payment status: <%= order.paymentStatus %></p>
+        <% } %>
+        <p>Order date : <%= new Date(order.orderedAt).toLocaleString() %></p>
       </div>
     </div>
   </body>

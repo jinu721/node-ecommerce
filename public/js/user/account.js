@@ -665,6 +665,68 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
   }
 });
 
+// async function fetchOrders(page = 1) {
+//   document.querySelector(".ordersInfo").style.display = "block";
+//   document.querySelector(".detailsOfOrders").style.display = "none";
+//   document.querySelector(".orderedAddrressInfo").style.display = "none";
+//   document.querySelector(".pagination").style.display = "flex";
+
+//   try {
+//     const response = await fetch(`/account/orders?page=${page}&limit=4`);
+//     const data = await response.json();
+
+//     const orderContainer = document.querySelector(".ordersParant");
+//     orderContainer.innerHTML = "";
+
+//     if (!data.orders || data.orders.length === 0) {
+//       const orderNullTr = document.createElement("tr");
+//       orderNullTr.classList.add("order-null-item");
+//       orderNullTr.innerHTML = `<td colspan="6">No orders yet!</td>`;
+//       orderContainer.appendChild(orderNullTr);
+//     } else {
+//       data.orders.forEach((data, index) => {
+//         const orderDate = new Date(data.orderedAt);
+//         const formattedDate = orderDate.toLocaleDateString("en-US", {
+//           year: "numeric",
+//           month: "long",
+//           day: "numeric",
+//         });
+
+//         const orderRow = document.createElement("tr");
+//         orderRow.classList.add("order-item");
+//         orderRow.innerHTML = `
+//           <td>${index + 1 + (page - 1) * 10}</td>
+//           <td>${formattedDate}</td>
+//           <td>${data.orderStatus}</td>
+//           <td>${data.paymentStatus}</td>
+//           <td>&#8377;${data.totalAmount}</td>
+//           <td>
+//             <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${data._id}">View</a>
+//           </td>
+//           <td>
+//             <a class="view__order btnCancelOrder" data-id="${data._id}">
+//               ${data.orderStatus === "delivered" ? "Request Return" : "Cancel Order"}
+//             </a>
+//           </td>
+//         `;
+//         orderContainer.append(orderRow);
+//         orderRow.querySelector('.btnCancelOrder').addEventListener('click', (event) => {
+//           if (data.orderStatus === 'delivered') {
+//             requestReturn(event);
+//           } else {
+//             cancelOrders(event);
+//           }
+//         });
+//       });
+      
+
+//       renderPagination(data.currentPage, data.totalPages);
+//     }
+//   } catch (err) {
+//     console.error("Error fetching orders:", err);
+//   }
+// }
+
 async function fetchOrders(page = 1) {
   document.querySelector(".ordersInfo").style.display = "block";
   document.querySelector(".detailsOfOrders").style.display = "none";
@@ -681,11 +743,11 @@ async function fetchOrders(page = 1) {
     if (!data.orders || data.orders.length === 0) {
       const orderNullTr = document.createElement("tr");
       orderNullTr.classList.add("order-null-item");
-      orderNullTr.innerHTML = `<td colspan="6">No orders yet!</td>`;
+      orderNullTr.innerHTML = `<td colspan="7">No orders yet!</td>`; // Adjusted for new column
       orderContainer.appendChild(orderNullTr);
     } else {
-      data.orders.forEach((data, index) => {
-        const orderDate = new Date(data.orderedAt);
+      data.orders.forEach((order, index) => {
+        const orderDate = new Date(order.orderedAt);
         const formattedDate = orderDate.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
@@ -695,30 +757,38 @@ async function fetchOrders(page = 1) {
         const orderRow = document.createElement("tr");
         orderRow.classList.add("order-item");
         orderRow.innerHTML = `
-          <td>${index + 1 + (page - 1) * 10}</td>
+          <td>${index + 1 + (page - 1) * 4}</td> <!-- Adjusted pagination index -->
           <td>${formattedDate}</td>
-          <td>${data.orderStatus}</td>
-          <td>${data.paymentStatus}</td>
-          <td>&#8377;${data.totalAmount}</td>
+          <td>${order.orderStatus}</td>
+          <td>${order.paymentStatus}</td>
+          <td>&#8377;${order.totalAmount}</td>
           <td>
-            <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${data._id}">View</a>
+            <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${order._id}">View</a>
           </td>
           <td>
-            <a class="view__order btnCancelOrder" data-id="${data._id}">
-              ${data.orderStatus === "delivered" ? "Request Return" : "Cancel Order"}
+            <a class="view__order btnCancelOrder" data-id="${order._id}">
+              ${order.orderStatus === "delivered" ? "Request Return" : "Cancel Order"}
             </a>
+            ${order.paymentStatus === "pending" ? `<a class="btnRetryPayment" data-id="${order._id}"><i class="fa fa-sync-alt"></i></a>` : ""}
           </td>
         `;
+
         orderContainer.append(orderRow);
+
         orderRow.querySelector('.btnCancelOrder').addEventListener('click', (event) => {
-          if (data.orderStatus === 'delivered') {
+          if (order.orderStatus === 'delivered') {
             requestReturn(event);
           } else {
             cancelOrders(event);
           }
         });
+
+        if (order.paymentStatus === "pending") {
+          orderRow.querySelector('.btnRetryPayment').addEventListener('click', (event) => {
+            retryPayment(event);
+          });
+        }
       });
-      
 
       renderPagination(data.currentPage, data.totalPages);
     }

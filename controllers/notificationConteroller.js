@@ -18,7 +18,8 @@ module.exports = {
     }
   },
   async addNotification(req, res) {
-    const { currentId } = req.session;
+    console.log('HEII')
+    const currentId = req.body.userId || req.session.currentId
     const { title, message, type,status } = req.body;
     try {
       if (!title || !message || !type) {

@@ -15,7 +15,8 @@
     <link rel="stylesheet" href="/css/admin.css" />
   </head>
   <body style="display: flex">
-    <input type="hidden" value="<%= order._id  %>" name="" id="productId" />
+    <input type="hidden" value="<%= order._id  %>" name="" id="orderId" />
+    <input type="hidden" value="<%= order.user  %>" name="" id="userId" />
     <input
       type="hidden"
       value="<%= order.orderStatus  %>"
@@ -29,71 +30,63 @@
       style="display: flex; flex-direction: column; justify-content: center"
     >
       <div style="display: flex; justify-content: center">
-        <div style="display: flex;flex-direction: column;">
+        <div style="display: flex; flex-direction: column">
           <section class="order-status-section">
             <div class="status-container">
               <select id="order-status" class="status-dropdown">
-                <option
-                  class="processingSt"
-                  value="processing"
-                >
+                <option class="processingSt" value="processing">
                   Processing
                 </option>
-                <option  class="shippedSt" value="shipped">
-                  Shipped
-                </option>
-                <option
-                  class="deliveredSt"
-                  value="delivered"
-                >
-                  Delivered
-                </option>
-                <option
-                  class="cancelledSt"
-                  value="cancelled"
-                >
-                  Cancelled
-                </option>
-                <option
-                  class="ReturnedSt"
-                  value="returned"
-                >
-                  Returned
-                </option>
+                <option class="shippedSt" value="shipped">Shipped</option>
+                <option class="deliveredSt" value="delivered">Delivered</option>
+                <option class="cancelledSt" value="cancelled">Cancelled</option>
+                <option class="ReturnedSt" value="returned">Returned</option>
               </select>
               <button class="update-status-btn">Update Status</button>
             </div>
-  
+
             <div class="status-log">
               <h4>Status History</h4>
               <ul>
                 <% order.statusHistory.forEach(x=>{ %>
                 <li>
                   <strong><%= x.status %></strong> - <%= new
-                  Date(x.updatedAt).toLocaleDateString('en-GB', { day: '2-digit',
-                  month: 'short', year: 'numeric' }) %>
+                  Date(x.updatedAt).toLocaleDateString('en-GB', { day:
+                  '2-digit', month: 'short', year: 'numeric' }) %>
                 </li>
                 <% }) %>
               </ul>
             </div>
           </section>
-          <section>
+          <% if(order.returnRequest.requestStatus){ %>
+          <section class="request-return">
             <div class="container">
               <div class="read-request-section">
                 <div class="section-header">Read Request</div>
                 <div class="request-details">
                   <h5>Reason for Return:</h5>
                   <p>
-                    The product was not as described and had a defect in the packaging. I would like to return it for a replacement or refund.
+                    <%= order.returnRequest.requestMessage %>
                   </p>
                 </div>
                 <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-cancel">Cancel</button>
-                  <button type="button" class="btn btn-approve">Approve</button>
+                  <button
+                    type="button"
+                    class="btn btn-cancel btn-requestCancel"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-approve btn-requestApproved"
+                  >
+                    Approve
+                  </button>
                 </div>
               </div>
             </div>
           </section>
+          <% } %>
         </div>
         <section class="product-details-section">
           <table class="product-details-table">
@@ -154,203 +147,8 @@
     </main>
 
     <footer></footer>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-      const updateStatusBtn = document.querySelector(".update-status-btn");
-      const orderStatusDropdown = document.getElementById("order-status");
-      const statusLog = document.querySelector(".status-log ul");
-      const orderId = document.getElementById("productId").value;
-      const currentOrderStatus = document.querySelector(
-        "#currentOrderStatus"
-      ).value;
-      const orderStatusSection = document.querySelector(".status-container");
-      const processingSt = document.querySelector(".processingSt");
-      const shippedSt = document.querySelector(".shippedSt");
-      const deliveredSt = document.querySelector(".deliveredSt");
-      const cancelledSt = document.querySelector(".cancelledSt");
-
-      console.log(shippedSt);
-      console.log(processingSt);
-      console.log(deliveredSt);
-      console.log(cancelledSt);
-
-      // if (currentOrderStatus === "processing") {
-      //   processingSt.style.display = "none";
-      //   shippedSt.style.display = "block";
-      //   deliveredSt.style.display = "block";
-      //   cancelledSt.style.display = "block";
-      // } else if (currentOrderStatus === "shipped") {
-      //   processingSt.style.display = "none";
-      //   shippedSt.style.display = "none";
-      //   deliveredSt.style.display = "block";
-      //   cancelledSt.style.display = "block";
-      // } else if (currentOrderStatus === "delivered") {
-      //   orderStatusSection.style.display = "none";
-      // } else if (currentOrderStatus === "cancelled") {
-      //   orderStatusSection.style.display = "none";
-      // }
-
-      // console.log(orderStatusSection);
-      // console.log(currentOrderStatus);
-
-      updateStatusBtn.addEventListener("click", async () => {
-        const newStatus = orderStatusDropdown.value;
-        console.log(orderId);
-
-        try {
-          const response = await fetch(`/admin/order/status/${orderId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ newStatus }),
-          });
-
-          const data = await response.json();
-          console.log(data);
-
-          if (data.val) {
-            const date = new Date(data.updatedAt).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
-            const statusEntry = document.createElement("li");
-            statusEntry.innerHTML = `<strong>${data.status}</strong> - ${date}`;
-            statusLog.prepend(statusEntry);
-            if(data.status==='shipped'){
-              
-            }
-          } else {
-            console.log(data.msg);
-          }
-        } catch (error) {
-          console.error("Error updating status:", error);
-          Swal.fire("Error", "An unexpected error occurred", "error");
-        }
-      });
-
-      async function sendNotification(title, message, type, status) {
-        try {
-          const response = await fetch("/notifications", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              title,
-              message,
-              type,
-              status,
-            }),
-          });
-          const data = await response.json();
-          if (data.val) {
-            console.log("Notification sended successfully");
-          } else {
-            console.log(data.msg);
-          }
-        } catch (err) {
-          console.log(`Sending notification error :- ${err}`);
-        }
-      }
-    
-
-      const requestId = "12345";
-    const userId = "67890";
-
-
-    document.getElementById("approve-btn").addEventListener("click", async () => {
-      try {
-        const response = await fetch(`/admin/requests/approve/${requestId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "approved" }),
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          Swal.fire({
-            title: "Approved",
-            text: "The request has been approved successfully.",
-            icon: "success",
-            confirmButtonText: "OK",
-          });
-        } else {
-          Swal.fire("Error", data.message || "Something went wrong!", "error");
-        }
-      } catch (error) {
-        console.error("Error approving request:", error);
-        Swal.fire("Error", "An unexpected error occurred.", "error");
-      }
-    });
-
-    document.getElementById("cancel-btn").addEventListener("click", async () => {
-      try {
-
-        const response = await fetch(`/admin/requests/cancel/${requestId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "cancelled" }),
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          Swal.fire({
-            title: "Cancelled",
-            text: "The request has been cancelled.",
-            icon: "info",
-            confirmButtonText: "OK",
-          });
-
-          await sendNotification(
-            "Request Cancelled",
-            "Your return request has been cancelled by the admin.",
-            "info",
-            "cancelled"
-          );
-        } else {
-          Swal.fire("Error", data.message || "Failed to cancel the request.", "error");
-        }
-      } catch (error) {
-        console.error("Error cancelling request:", error);
-        Swal.fire("Error", "An unexpected error occurred.", "error");
-      }
-    });
-
-    async function sendNotification(title, message, type, status) {
-      try {
-        const response = await fetch("/notifications", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title,
-            message,
-            type,
-            status,
-            userId, 
-          }),
-        });
-        const data = await response.json();
-        if (data.success) {
-          console.log("Notification sent successfully.");
-        } else {
-          console.error("Notification error:", data.message);
-        }
-      } catch (error) {
-        console.error("Error sending notification:", error);
-      }
-    }
-    
-    </script>
+    <script src="/js/admin/orderView.js" ></script>
   </body>
 </html>

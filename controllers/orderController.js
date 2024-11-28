@@ -9,6 +9,9 @@ const walletModel = require("../models/walletModel");
 const crypto = require("crypto");
 const couponModel = require("../models/couponModel");
 const notificationModel = require("../models/notificationModel");
+const pdf = require('html-pdf');
+const ejs = require('ejs');
+const path = require('path');
 
 module.exports = {
   async placeOrder(req, res) {
@@ -227,7 +230,7 @@ module.exports = {
           paymentMethod: selectedPayment,
           shippingAddress: address,
           orderedAt: new Date(),
-          paymentStatus: "pending",
+          paymentStatus: "paid",
           orderStatus: "processing",
           statusHistory: [{ status: "processing", updatedAt: new Date() }],
         });
@@ -373,6 +376,7 @@ module.exports = {
           path: "items.product",
           model: "Products",
         })
+        .sort({orderedAt:-1})
         .skip((currentPage - 1) * ordersPerPage)
         .limit(ordersPerPage);
   
@@ -392,10 +396,7 @@ module.exports = {
     const { orderId } = req.params;
     console.log(orderId);
     try {
-      const order = await orderModel.findOne({ _id: orderId }).populate({
-        path: "items.product",
-        select: "name description price category imageUrl",
-      });
+      const order = await orderModel.findOne({ _id: orderId }).populate("items.product");
       console.log(order);
       res.status(404).render("orderView", { order });
     } catch (err) {
@@ -430,7 +431,6 @@ module.exports = {
     }
   },
   async verifyPayment(req, res) {
-    console.log('suiii')
     const { paymentId, orderId, signature } = req.body;
     const userId = req.session.currentId;
     console.log(paymentId, orderId, signature);
@@ -451,9 +451,15 @@ module.exports = {
       const payment = await razorpay.payments.fetch(paymentId);
 
       if (payment.status !== "captured") {
-        // await updateOrderStatus(orderId, "failed"); 
         return res.status(400).json({ val: false, msg: "Payment not captured" });
       }
+
+    let order = await orderModel.findOne({user:userId}).sort({orderedAt:-1});
+
+    order.paymentStatus = 'paid';
+
+    order.markModified('paymentStatus');
+    await order.save();
 
       res.status(200).json({
         val: true,
@@ -471,7 +477,20 @@ module.exports = {
   },
   async successPageLoad(req,res){
     try{
-      res.render('success')
+      const {currentId} =  req.session;
+      if(!currentId){
+        return res.status(400).json("user not found");
+      }
+      const recentOrder = await orderModel.findOne({ user:currentId }).sort({ orderedAt: -1 }) .populate('items.product').lean(); 
+
+      console.log(recentOrder)
+  
+      if (!recentOrder) {
+        return res.status(404).send("No recent orders found.");
+      }
+      res.render('success', {
+        order: recentOrder, 
+      });
     }catch(err){
       console.log(err)
     }
@@ -495,5 +514,102 @@ module.exports = {
       console.log(err);
       res.status(500).json({val:false,msg:'Something went wrong'});
     }
+  },
+  async downloadRecipt(req,res){
+    const {orderId} = req.query; 
+    if(!orderId){
+      return res.status(400).json("orderId not found");
+    }
+    try{
+      const order = await orderModel.findOne({_id:orderId}).sort({orderedAt:-1}).populate('items.product').lean();
+      console.log(order);
+  
+      const templatePath = path.join(__dirname, "..", "views", "user", "invoice.ejs");
+      ejs.renderFile(templatePath,{order},(err,renderedHTML)=>{
+        if(err){
+          console.log(err);
+          return res.status(500).json({val:false,msg:'Something went wrong while genrating invoice'});
+        }
+        const pdfOptions = {
+          heigth:"11.25in",
+          width:"8.5in",
+          header:{height:'20mm'},
+          footer:{height:'20mm'}
+        }
+        pdf.create(renderedHTML,pdfOptions).toFile("pdfrecipt.pdf",(err,result)=>{
+          if(err){
+           return  res.status(500).json({val:false,msg:'Something went wrong while creating invoice pdf'});
+          }
+          return res.download(result.filename,'invoice.pdf',(downloadErr)=>{
+            if(downloadErr){
+              console.log(downloadErr);
+              return  res.status(500).json({val:false,msg:'Something went wrong while downloading invoice'});
+            }
+          })
+        })
+      })
+    }catch(err){
+      console.log(err);
+      res.status(500).json({val:false,msg:err.message});
+    }
+  },
+  async adminReturnRequest(req,res){
+    const {orderId} = req.params;
+    const {status} = req.body;
+    try{
+      const order = await orderModel.findOne({_id:orderId});
+      if(!order){
+        return res.status(400).json({val:false,msg:'Order not found'});
+      }
+      if(status==='approved'){
+        order.orderStatus = "returned";
+        order.statusHistory.push({
+          status: "returned",
+          updatedAt: new Date(),
+        });
+        await order.save();
+      }
+      res.status(200).json({ val: true, msg: "Order return request approved" });
+    }catch(err){
+      console.log(err);
+      res.status(200).json({ val: true, msg: err.message });
+    }
+  },
+  async retryPayment(req, res) {
+    const { orderId } = req.body; 
+    const userId = req.session.currentId;
+  
+    try {
+      let order = await orderModel.findOne({ _id: orderId, user: userId });
+      if (!order || order.paymentStatus !== 'failed') {
+        return res.status(400).json({
+          val: false,
+          msg: "Invalid order or the payment was not failed",
+        });
+      }
+  
+      const razorpayOrder = await razorpay.orders.create({
+        amount: order.amount * 100, 
+        currency: "INR",
+        receipt: orderId.toString(),
+        notes: {
+          orderId: orderId.toString(),
+        },
+      });
+      res.status(200).json({
+        val: true,
+        orderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        key: "RAZORPAY_KEY", 
+      });
+    } catch (err) {
+      console.error("Error retrying payment:", err);
+      res.status(500).json({
+        val: false,
+        msg: "Payment retry failed",
+        error: err.message,
+      });
+    }
   }
+  
 };

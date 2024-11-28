@@ -175,40 +175,45 @@
           <div class="tick"></div>
         </div>
         <h1>Order Success!</h1>
-        <!-- <h2>IDR 1,000,000</h2> -->
+        <h2>₹<%= order.totalAmount %></h2>
         <hr />
-        <!-- <div class="details">
+        <div class="details">
           <div>
             <span>Ref Number</span>
-            <span>000085752257</span>
+            <span><%= order._id %></span>
           </div>
           <div>
             <span>Payment Time</span>
-            <span>25-02-2023, 13:22:16</span>
+            <span><%= new Date(order.orderedAt).toLocaleString() %></span>
           </div>
           <div>
             <span>Payment Method</span>
-            <span>Bank Transfer</span>
+            <span><%= order.paymentMethod %></span>
           </div>
           <div>
-            <span>Sender Name</span>
-            <span>Antonio Roberto</span>
+            <span>Customer Name</span>
+            <span><%= order.customerName %></span>
           </div>
-        </div> -->
+        </div>
         <hr />
-        <!-- <div class="details">
+        <div class="details">
           <div>
-            <span>Amount</span>
-            <span>IDR 1,000,000</span>
+            <span>Total Amount</span>
+            <span>₹<%= order.totalAmount %></span>
           </div>
           <div>
             <span>Admin Fee</span>
-            <span>IDR 193.00</span>
+            <span>₹<%= order.adminFee || 0 %></span>
           </div>
-        </div> -->
+        </div>
         <div class="buttons">
           <a href="/"><button class="home-btn">Back to Home</button></a>
-          <button class="pdf-btn">Get PDF Receipt</button>
+          <button
+            class="pdf-btn"
+            onclick="window.location.href='/download-receipt?orderId=<%= order._id %>'"
+          >
+            Get PDF Receipt
+          </button>
         </div>
       </div>
     </div>

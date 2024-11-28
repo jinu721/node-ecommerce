@@ -357,39 +357,37 @@ async function handleRemove(event) {
   }
 }
 
-
-const paymentSelection = document.querySelectorAll('.paymentSelection');
+const paymentSelection = document.querySelectorAll(".paymentSelection");
 let selectedPayment = null;
 
 paymentSelection.forEach((elem) => {
-  elem.addEventListener('change', () => {
+  elem.addEventListener("change", () => {
     if (elem.checked) {
-      selectedPayment = elem.value; 
+      selectedPayment = elem.value;
       console.log(`Selected Payment Method: ${selectedPayment}`);
     }
   });
 });
 
-const preSelected = document.querySelector('.paymentSelection:checked');
+const preSelected = document.querySelector(".paymentSelection:checked");
 if (preSelected) {
   selectedPayment = preSelected.value;
   console.log(`Initially Selected Payment Method: ${selectedPayment}`);
 }
 
+console.log(selectedPayment);
 
+let isOfferApplied = false;
+let code = null;
 
-console.log(selectedPayment)
-
-let isOfferApplied = false ;
-let code = null ;
-
-document.querySelector('.btnPlaceOrder').addEventListener('click', async (e) => {
+document.querySelector(".btnPlaceOrder").addEventListener("click", async (e) => {
   console.log(selectedPayment);
   console.log(selectedAddressId);
-  const item = e.target.getAttribute('data-item');
-  const parsedItem = JSON.parse(item)
+  const item = e.target.getAttribute("data-item");
+  const parsedItem = JSON.parse(item);
   console.log(parsedItem);
-  console.log(isOfferApplied,code)
+  console.log(isOfferApplied, code);
+
   if (!selectedAddressId) {
     Swal.fire({
       icon: "error",
@@ -404,23 +402,22 @@ document.querySelector('.btnPlaceOrder').addEventListener('click', async (e) => 
     });
   } else {
     try {
-      const response = await fetch('/place-order', {
-        method: 'POST',
+      const response = await fetch("/place-order", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           item,
           selectedAddressId,
           selectedPayment,
           isOfferApplied,
-          code
-        })
+          code,
+        }),
       });
       const data = await response.json();
+      console.log(data);
 
-      console.log(data)
-      
       if (!data.val) {
         console.log("Error in response:", data);
         Swal.fire({
@@ -429,42 +426,50 @@ document.querySelector('.btnPlaceOrder').addEventListener('click', async (e) => 
           text: data.msg || "Something went wrong",
         });
       } else {
-        if (selectedPayment === 'razorpay') {
+        if (selectedPayment === "razorpay") {
+          let paymentSuccess = false;
+          let paymentInProgress = false;
+          let isPaymentHandled = false; 
+
           const options = {
-            key: data.key, 
-            amount: data.order.amount, 
+            key: data.key,
+            amount: data.order.amount,
             currency: "INR",
             name: "Male Fashion",
             description: "Order Payment",
-            order_id: data.order.id, 
+            order_id: data.order.id,
             handler: async function (paymentResponse) {
+              if (isPaymentHandled) return; 
+              isPaymentHandled = true;
+
               try {
-                const verifyResponse = await fetch('/verify-payment', {
-                  method: 'POST',
+                const verifyResponse = await fetch("/verify-payment", {
+                  method: "POST",
                   headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
                     paymentId: paymentResponse.razorpay_payment_id,
                     orderId: paymentResponse.razorpay_order_id,
                     signature: paymentResponse.razorpay_signature,
-                  })
+                  }),
                 });
                 const verifyData = await verifyResponse.json();
 
                 if (verifyData.val) {
+                  paymentSuccess = true;
                   Swal.fire({
                     title: "Success",
                     text: "Order placed successfully",
-                    icon: "success"
+                    icon: "success",
                   }).then(() => {
                     sendNotification(
-                      'Order Placed Successfully',
+                      "Order Placed Successfully",
                       'Your order #123 has been placed successfully! Thank you for shopping with us. You can track your order in the "My Orders" section. We hope you enjoy your purchase!',
-                      'order',
-                      'success'
-                    );                    
-                    console.log(verifyData)
+                      "order",
+                      "success"
+                    );
+                    console.log(verifyData);
                     window.location.href = "/success";
                   });
                 } else {
@@ -484,29 +489,70 @@ document.querySelector('.btnPlaceOrder').addEventListener('click', async (e) => 
               }
             },
             prefill: {
-              name: data.userName, 
+              name: data.userName,
               email: data.userEmail,
-              contact: data.userContact 
+              contact: data.userContact,
             },
             theme: {
-              color: "#3399cc"
-            }
+              color: "#3399cc",
+            },
           };
-          console.log(options)
+
+          let isPopupOpen = false;
+
+          window.addEventListener("blur", () => {
+            if (!paymentSuccess && !isPaymentHandled) {
+              isPopupOpen = true;
+              paymentInProgress = true;
+            }
+          });
+
+          window.addEventListener("focus", () => {
+            if (isPopupOpen && !paymentSuccess && paymentInProgress && !isPaymentHandled) {
+              isPopupOpen = false;
+              paymentInProgress = false;
+              console.warn("Razorpay popup closed by user");
+              Swal.fire({
+                icon: "info",
+                title: "Payment Cancelled",
+                text: "You closed the payment window. The order has been placed, but payment was not successful. You can continue the payment from the account section.",
+              }).then(() => {
+              });
+            } else if (paymentSuccess) {
+              console.log("Payment was successful!");
+            }
+          });
+
           const rzp = new Razorpay(options);
+          rzp.on("payment.failed", function (response) {
+            if (isPaymentHandled) return;
+            isPaymentHandled = true;
+            paymentInProgress = false;
+            console.error("Payment failed:", response);
+            rzp.close();
+            Swal.fire({
+              icon: "info",
+              title: "Payment Incomplete",
+              text:
+                "The payment could not be completed. The order has been placed but payment was not successful. Please try again.",
+            }).then(() => {
+              
+            });
+          });
+
           rzp.open();
         } else {
           Swal.fire({
             title: "Success",
             text: "Order placed successfully",
-            icon: "success"
+            icon: "success",
           }).then((result) => {
             if (result.isConfirmed || result.isDismissed) {
               sendNotification(
-                'Order Placed Successfully',
+                "Order Placed Successfully",
                 'Your order #123 has been placed successfully! Thank you for shopping with us. You can track your order in the "My Orders" section. We hope you enjoy your purchase!',
-                'order',
-                'success'
+                "order",
+                "success"
               );
               window.location.href = "/success";
             }
@@ -526,11 +572,11 @@ document.querySelector('.btnPlaceOrder').addEventListener('click', async (e) => 
 
 
 
-document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
+document.querySelector(".btncouponAplly").addEventListener("click", (e) => {
   e.preventDefault();
-  const couponInput = document.querySelector('.couponInput');
-  console.log('3883');
-  
+  const couponInput = document.querySelector(".couponInput");
+  console.log("3883");
+
   if (!couponInput.value) {
     Swal.fire({
       icon: "error",
@@ -538,25 +584,28 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
       text: "Please enter a coupon code.",
     });
   } else {
-    const oldPriceTag = document.querySelector('.oldPriceTag');
-    const oldPriceTagValue = document.querySelector('.oldPriceTagValue');
-    const offerAppliedPriceTag = document.querySelector('.offerAppliedPriceTag');
-    const offerAppliedPriceTagValue = document.querySelector('.offerAppliedPriceTagValue');
-    couponInput.setAttribute('readonly', 'true');
-    document.querySelector('.btncouponAplly').disabled = true;
-    
+    const oldPriceTag = document.querySelector(".oldPriceTag");
+    const oldPriceTagValue = document.querySelector(".oldPriceTagValue");
+    const offerAppliedPriceTag = document.querySelector(
+      ".offerAppliedPriceTag"
+    );
+    const offerAppliedPriceTagValue = document.querySelector(
+      ".offerAppliedPriceTagValue"
+    );
+    couponInput.setAttribute("readonly", "true");
+    document.querySelector(".btncouponAplly").disabled = true;
 
     async function applycoupon() {
       try {
-        const response = await fetch('/coupon/apply', {
-          method: 'POST',
+        const response = await fetch("/coupon/apply", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             couponCode: couponInput.value,
             totalPrice: parseInt(oldPriceTagValue.textContent),
-          })
+          }),
         });
 
         const data = await response.json();
@@ -567,13 +616,13 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
             title: "Oops...",
             text: data.msg,
           });
-          couponInput.removeAttribute('readonly');
-          document.querySelector('.btncouponAplly').disabled = false;
+          couponInput.removeAttribute("readonly");
+          document.querySelector(".btncouponAplly").disabled = false;
         } else {
           Swal.fire({
             title: "Success",
             text: data.msg,
-            icon: "success"
+            icon: "success",
           });
 
           console.log(data);
@@ -582,9 +631,9 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
           oldPriceTagValue.textContent = data.originalPrice;
           offerAppliedPriceTag.style.display = "block";
           offerAppliedPriceTagValue.textContent = data.discountedPrice;
-          couponInput.value = couponInput.value; 
-          couponInput.setAttribute('readonly', 'true'); 
-          document.querySelector('.btncouponAplly').disabled = true; 
+          couponInput.value = couponInput.value;
+          couponInput.setAttribute("readonly", "true");
+          document.querySelector(".btncouponAplly").disabled = true;
           deleteCouponBtn.style.display = "block";
           isOfferApplied = true;
         }
@@ -602,74 +651,74 @@ document.querySelector('.btncouponAplly').addEventListener('click', (e) => {
   }
 });
 
+document
+  .querySelector(".btncouponDelete")
+  .addEventListener("click", async (e) => {
+    e.preventDefault();
+    const couponInput = document.querySelector(".couponInput");
+    const deleteCouponBtn = document.querySelector(".btncouponDelete");
+    const offerAppliedPriceTagValue = document.querySelector(
+      ".offerAppliedPriceTagValue"
+    );
+    const oldPriceTagValue = document.querySelector(".oldPriceTagValue");
 
-document.querySelector('.btncouponDelete').addEventListener('click', async (e) => {
-  e.preventDefault();
-  const couponInput = document.querySelector('.couponInput');
-  const deleteCouponBtn = document.querySelector('.btncouponDelete');
-  const offerAppliedPriceTagValue = document.querySelector('.offerAppliedPriceTagValue');
-  const oldPriceTagValue = document.querySelector('.oldPriceTagValue');
-  
-  const couponCode = couponInput.value;
-  const response = await fetch('/coupon/remove', {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      couponCode: couponCode,
-      totalPrice: parseInt(offerAppliedPriceTagValue.textContent),
-    })
+    const couponCode = couponInput.value;
+    const response = await fetch("/coupon/remove", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        couponCode: couponCode,
+        totalPrice: parseInt(offerAppliedPriceTagValue.textContent),
+      }),
+    });
+
+    const data = await response.json();
+    console.log(data);
+    if (data.val) {
+      document.querySelector(".oldPriceTag").style.display = "none";
+      offerAppliedPriceTagValue.textContent = oldPriceTagValue.textContent;
+      Swal.fire({
+        title: "Coupon Removed",
+        text: "Your coupon has been removed successfully.",
+        icon: "success",
+      });
+      couponInput.value = "";
+      couponInput.removeAttribute("readonly");
+      document.querySelector(".btncouponAplly").disabled = false;
+      deleteCouponBtn.style.display = "none";
+      isOfferApplied = false;
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: data.msg,
+      });
+    }
   });
 
-  const data = await response.json();
-  console.log(data)
-  if (data.val) {
-    document.querySelector('.oldPriceTag').style.display = "none";
-    offerAppliedPriceTagValue.textContent = oldPriceTagValue.textContent;
-    Swal.fire({
-      title: "Coupon Removed",
-      text: "Your coupon has been removed successfully.",
-      icon: "success",
-    });
-    couponInput.value = "";
-    couponInput.removeAttribute('readonly');
-    document.querySelector('.btncouponAplly').disabled = false;
-    deleteCouponBtn.style.display = "none";
-    isOfferApplied = false;
-  }else{
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: data.msg,
-    });
-  }
-});
-
-
-
-
-async function sendNotification(title,message,type,status){
-  try{
-    const response = await fetch('/notifications',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
+async function sendNotification(title, message, type, status) {
+  try {
+    const response = await fetch("/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      body:JSON.stringify({
+      body: JSON.stringify({
         title,
         message,
         type,
-        status
-      })
+        status,
+      }),
     });
     const data = await response.json();
-    if(data.val){
-      console.log('Notification sended successfully');
-    }else{
+    if (data.val) {
+      console.log("Notification sended successfully");
+    } else {
       console.log(data.msg);
     }
-  }catch(err){
+  } catch (err) {
     console.log(`Sending notification error :- ${err}`);
   }
 }
