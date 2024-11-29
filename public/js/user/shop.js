@@ -171,6 +171,83 @@ window.addEventListener("scroll", () => {
 let page = 1;
 const limit = 10;
 
+// async function loadMoreProducts() {
+//   loader.style.display = "block";
+//   page++;
+//   try {
+//     const queryParams = new URLSearchParams({
+//       page: page,
+//       limit: limit,
+//       api: true,
+//       sortBy: selectedFilters.sortBy,
+//       price: selectedFilters.price.join(","),
+//       category: selectedFilters.category.join(","),
+//       name: selectedFilters.name,
+//     }).toString();
+//     const response = await fetch(`/shop?${queryParams}`);
+//     const data = await response.json();
+
+//     if (data.products.length > 0) {
+//       data.products.forEach((product) => {
+//         const productContainer = document.querySelector(".products__container");
+//         const productItem = document.createElement("div");
+//         productItem.classList.add("product__item");
+//         productItem.innerHTML = `
+//           <div class="product__banner">
+//             <a href="/details/${product._id}" class="product__images">
+//               <img src="${product.images[0]}" alt="${
+//           product.name
+//         }" class="product__img default" />
+//               <img src="${product.images[1]}" alt="${
+//           product.name
+//         }" class="product__img hover" />
+//             </a>
+//             <div class="product__actions">
+//               <a href="#" class="action__btn" aria-label="Quick View">
+//                 <i class="fi fi-rs-eye"></i>
+//               </a>
+//               <a href="#" class="action__btn" aria-label="Add to Wishlist">
+//                 <i class="fi fi-rs-heart"></i>
+//               </a>
+//             </div>
+//             <div class="product__badge light-pink">Hot</div>
+//           </div>
+//           <div class="product__content">
+//             <span class="product__category">${product.brand}</span>
+//             <h3 class="product__title">${product.name}</h3>
+//             <div class="product__rating">
+//               <i class="fi fi-rs-star"></i>
+//               <i class="fi fi-rs-star"></i>
+//               <i class="fi fi-rs-star"></i>
+//               <i class="fi fi-rs-star"></i>
+//               <i class="fi fi-rs-star"></i>
+//             </div>
+//             <div class="product__price flex">
+//               ${
+//                 product.offerPrice
+//                   ? `<span class="new__price">&#8377;${product.offerPrice}</span><span class="old__price">&#8377;${product.price}</span>`
+//                   : `<span class="new__price">&#8377;${product.price}</span>`
+//               }
+//             </div>
+//             <a href="#" class="action__btn cart__btn" aria-label="Add To Cart">
+//               <i class="fi fi-rs-shopping-bag-add"></i>
+//             </a>
+//           </div>
+//         `;
+//         productContainer.appendChild(productItem);
+//       });
+//     } else {
+//       loader.style.display = "none";
+//     }
+
+//     loader.style.display = "none";
+//   } catch (err) {
+//     console.log(err);
+//     loader.style.display = "none";
+//   }
+// }
+
+
 async function loadMoreProducts() {
   loader.style.display = "block";
   page++;
@@ -180,10 +257,11 @@ async function loadMoreProducts() {
       limit: limit,
       api: true,
       sortBy: selectedFilters.sortBy,
-      price: selectedFilters.price.join(","),
-      category: selectedFilters.category.join(","),
-      name: selectedFilters.name,
+      price: selectedFilters.price.join(","),  
+      category: selectedFilters.category.join(","),  
+      rating: selectedFilters.rating || "",  
     }).toString();
+
     const response = await fetch(`/shop?${queryParams}`);
     const data = await response.json();
 
@@ -195,12 +273,8 @@ async function loadMoreProducts() {
         productItem.innerHTML = `
           <div class="product__banner">
             <a href="/details/${product._id}" class="product__images">
-              <img src="${product.images[0]}" alt="${
-          product.name
-        }" class="product__img default" />
-              <img src="${product.images[1]}" alt="${
-          product.name
-        }" class="product__img hover" />
+              <img src="${product.images[0]}" alt="${product.name}" class="product__img default" />
+              <img src="${product.images[1]}" alt="${product.name}" class="product__img hover" />
             </a>
             <div class="product__actions">
               <a href="#" class="action__btn" aria-label="Quick View">

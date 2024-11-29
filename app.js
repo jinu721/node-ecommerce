@@ -16,6 +16,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const walletRoutes = require('./routes/walletRotes');
 const couponRoutes = require('./routes/couponRoutes');
 const notifyRoutes = require('./routes/notificationRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 require('./services/authServiece'); 
 
 const authCheck = require('./middlewares/authCheck');
@@ -80,9 +81,11 @@ app.use('/',orderRoutes);
 app.use('/',walletRoutes); 
 app.use('/',couponRoutes); 
 app.use('/',notifyRoutes); 
-app.get('/invoice',(req,res)=>{
-    res.render('invoice');
-})
+app.use('/',chatRoutes); 
+
+
+
+
 
 app.listen(3000,()=>{
     console.log('Server started on :- http://localhost:3000/');

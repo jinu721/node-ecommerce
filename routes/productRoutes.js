@@ -24,7 +24,8 @@ router.post('/add-product-color',productController.productColorAddUpdate);
 router.post('/admin/products/update-stock/:productId',productController.productStockUpdate);
 router.get('/product/search',productController.productsearch);
 
-router.get('/product/reviews/:productId',productController.productReviewsload);
+router.get('/product/reviews/:productId',productController.productReviewsLoad);
 router.post('/product/review/add/:productId',productController.productReviewsAdd);
+router.delete('/product/review/delete/:reviewId',productController.productReviewsDelete);
 
 module.exports = router;

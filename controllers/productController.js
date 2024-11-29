@@ -8,9 +8,12 @@ const path = require("path");
 module.exports = {
   async homeLoad(req, res) {
     try {
-      const category = await categoryModel.find({isDeleted:false});
-      const listedCategoryIds = category.map(x=>x._id.toString())
-      const products = await productModel.find({isDeleted:false,category:{$in:listedCategoryIds}}).sort({ _id: -1 }).limit(15);
+      const category = await categoryModel.find({ isDeleted: false });
+      const listedCategoryIds = category.map((x) => x._id.toString());
+      const products = await productModel
+        .find({ isDeleted: false, category: { $in: listedCategoryIds } })
+        .sort({ _id: -1 })
+        .limit(15);
       res.render("index", { category, products });
     } catch (err) {
       console.log(err);
@@ -53,21 +56,38 @@ module.exports = {
           query.category = category._id;
         }
       }
+
+      // if (req.query.rating && req.query.rating !== "") {
+      //   const rating = parseFloat(req.query.rating);
+      //   query.rating = { $gte: rating }; 
+      // }
+
       console.log("Sort By:", req.query.sortBy);
       console.log("Price:", req.query.price);
       console.log("Category:", req.query.category);
       console.log("Name:", req.query.name);
       console.log("Query:", query);
 
-      const unlistedCategories = await categoryModel.find({isDeleted:true});
-      const unlistedCategoryIds = unlistedCategories.map(x=>x._id.toString());
-    
-      
-      query.category = { $nin: unlistedCategoryIds };
+      // const unlistedCategories = await categoryModel.find({ isDeleted: true });
+      // const unlistedCategoryIds = unlistedCategories.map((x) =>
+      //   x._id.toString()
+      // );
 
-      console.log(query)
-      
-      let products = await productModel.find(query).skip(skip).limit(limit).sort(sortBy);
+      if (req.query.category && req.query.category !== "") {
+        const categoryName = req.query.category;
+        const category = await categoryModel.findOne({ name: categoryName });
+        if (category) {
+          query.category = category._id;  
+        }
+      }
+
+      console.log(query);
+
+      let products = await productModel
+        .find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort(sortBy);
       if (req.query.name == "A-Z") {
         products = products.sort((a, b) => {
           if (a.name < b.name) {
@@ -98,7 +118,10 @@ module.exports = {
     try {
       const product = await productModel.findOne({ _id: productId });
       const category = await categoryModel.findOne({ _id: product.category });
-      const isAlreadyWishlist = await wishlistModel.findOne({userId:req.session.currentId,'items.productId':productId});
+      const isAlreadyWishlist = await wishlistModel.findOne({
+        userId: req.session.currentId,
+        "items.productId": productId,
+      });
       const relatedProducts = await productModel
         .find({ category: product.category, brand: product.brand })
         .limit(4);
@@ -107,7 +130,15 @@ module.exports = {
         user: req.session.currentId,
         orderStatus: "delivered",
       });
-      res.status(200).render("details", { product, relatedProducts, category,isBuyedUser:!!isBuyedUser,isAlreadyWishlist });
+      res
+        .status(200)
+        .render("details", {
+          product,
+          relatedProducts,
+          category,
+          isBuyedUser: !!isBuyedUser,
+          isAlreadyWishlist,
+        });
     } catch (err) {
       res.status(500).send("Server side error");
     }
@@ -176,12 +207,10 @@ module.exports = {
             .json({ val: false, msg: `Invalid stock value for size ${size}` });
         }
         if (isNaN(parsedMaxQuantity) || parsedMaxQuantity <= 0) {
-          return res
-            .status(400)
-            .json({
-              val: false,
-              msg: `Invalid max quantity value for size ${size}`,
-            });
+          return res.status(400).json({
+            val: false,
+            msg: `Invalid max quantity value for size ${size}`,
+          });
         }
         if (parsedMaxQuantity > parsedStock) {
           return res.status(400).json({
@@ -414,20 +443,24 @@ module.exports = {
     const { productId } = req.params;
     try {
       const product = await productModel.findOne({ _id: productId });
-      
+
       if (!product) {
         return res.status(404).json({ val: false, msg: "Product not found" });
       }
-  
+
       if (!product.sizes[size]) {
-        return res.status(400).json({ val: false, msg: `Size ${size} not found in product` });
+        return res
+          .status(400)
+          .json({ val: false, msg: `Size ${size} not found in product` });
       }
-  
+
       product.sizes[size].stock += stock;
       product.markModified("sizes");
       await product.save();
-  
-      return res.status(200).json({ val: true, msg: "Product stock updated successfully" });
+
+      return res
+        .status(200)
+        .json({ val: true, msg: "Product stock updated successfully" });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ val: false, msg: "Server error" });
@@ -466,27 +499,34 @@ module.exports = {
       res.status(200).json({ val: false, msg: "Server error" + err });
     }
   },
-  async productReviewsload(req,res){
-    console.log(req.session)
-    const {productId} = req.params
-    try{
-      const reviews = await productModel.findOne({_id:productId});
-      if(!reviews){
-        return res.status(400).json({val:false,msg:'No reviews found'});
+  async productReviewsLoad(req, res) {
+    const { productId } = req.params;
+    try {
+      const product = await productModel.findOne({ _id: productId });
+      if (!product) {
+        return res.status(400).json({ val: false, msg: "No reviews found" });
       }
-      res.status(200).json({val:true,reviews:reviews.reviews});
-    }catch(err){
-      console.log(err);
-      res.status(500),json({val:false,msg:err});
+      res.status(200).json({
+        val: true,
+        reviews: product.reviews,
+        currentUserId: req.session.currentId,
+      });
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ val: false, msg: "An error occurred while fetching reviews" });
     }
   },
-  async productReviewsAdd(req,res){
-    const {productId} = req.params
-    const {comment,rating} = req.body;
-    try{
-      console.log(comment,rating);
-      if(!productId){
-        return res.status(400).json({val:false,msg:'Product id not valid'});
+  async productReviewsAdd(req, res) {
+    const { productId } = req.params;
+    const { comment, rating } = req.body;
+    try {
+      console.log(comment, rating);
+      if (!productId) {
+        return res
+          .status(400)
+          .json({ val: false, msg: "Product id not valid" });
       }
       await productModel.findByIdAndUpdate(
         productId,
@@ -500,12 +540,38 @@ module.exports = {
             },
           },
         },
-        { new: true } 
+        { new: true }
       );
-      res.status(200).json({val:true});
-    }catch(err){
+      res.status(200).json({ val: true });
+    } catch (err) {
       console.log(err);
-      res.status(500),json({val:false,msg:err});
+      res.status(500), json({ val: false, msg: err });
     }
   },
+  async productReviewsDelete(req, res) {
+    const { reviewId } = req.params; 
+
+    try {
+        if (!req.session.currentId) {
+            return res.status(400).json({ val: false, msg: 'Please login first' });
+        }
+        if (!reviewId) {
+            return res.status(400).json({ val: false, msg: 'Review ID not provided or invalid' });
+        }
+        const result = await productModel.updateOne(
+            { 'reviews._id': reviewId, 'reviews.user': req.session.currentId },
+            { $pull: { reviews: { _id: reviewId } } } 
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ val: false, msg: 'Review not found or user not authorized' });
+        }
+
+        res.status(200).json({ val: true, msg: 'Review deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ val: false, msg: 'An error occurred while deleting the review' });
+    }
+}
+,
 };

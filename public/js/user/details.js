@@ -262,16 +262,16 @@ async function removeFromWishlist(cartItemId) {
   }
 }
 
-async function fetchReviews(){
+async function fetchReviews() {
   try {
     const response = await fetch(`/product/reviews/${productId}`);
     const data = await response.json();
-    console.log(data)
+
     if (!data.val) {
       console.log(data.msg);
     } else {
-      reviewShowSection.innerHTML = '';
-      data.reviews.forEach(review=>{
+      reviewShowSection.innerHTML = ''; 
+      data.reviews.forEach(review => {
         const reviewItem = document.createElement('div');
         const reviewDate = new Date(review.reviewDate);
         const formattedDate = reviewDate.toLocaleString('en-US', {
@@ -285,40 +285,96 @@ async function fetchReviews(){
 
         let stars = '';
         for (let i = 1; i <= 5; i++) {
-          if (i <= review.rating) {
-            stars += '<i class="fi fi-rs-star reviewItemActive"></i>'; 
-          } else {
-            stars += '<i class="fi fi-rs-star"></i>'; 
-          }
+          stars += i <= review.rating
+            ? '<i class="fi fi-rs-star reviewItemActive"></i>'
+            : '<i class="fi fi-rs-star"></i>';
         }
+
+        const deleteIcon = review.user === data.currentUserId
+          ? `<i class="fas fa-trash reviewDeleteIcon" data-review-id="${review._id}" title="Delete Review"></i>`
+          : '';
+
         reviewItem.innerHTML = `
           <div class="review__single">
             <div class="reviewProfile">
-              <img 
-                src="/img/icons/image.png"
-                alt=""
-                class="review__img"
-              />
+              <img src="/img/icons/image.png" alt="Profile" class="review__img" />
               <h4 class="review__title">${review.username || 'Anonymous'}</h4>
             </div>
             <div class="review__data">
               <div class="review__rating">
-                ${stars} 
+                ${stars}
               </div>
               <p class="review__description">
                 ${review.comment || 'No comment provided.'}
               </p>
               <span class="review__date">${formattedDate}</span>
+              ${deleteIcon} 
             </div>
           </div>
         `;
+
         reviewShowSection.appendChild(reviewItem);
-      })
+      });
+
+      document.querySelectorAll('.reviewDeleteIcon').forEach(icon => {
+        icon.addEventListener('click', async (event) => {
+          const reviewId = event.target.getAttribute('data-review-id');
+          await deleteReview(reviewId);
+        });
+      });
     }
   } catch (err) {
     console.log(err);
   }
 }
+
+async function deleteReview(reviewId) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Once deleted, you will not be able to recover this review!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await fetch(`/product/review/delete/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      if (!data.val) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: data.msg,
+        });
+      } else {
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Your review has been deleted.',
+          icon: 'success',
+        });
+        fetchReviews();
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while deleting the review.',
+      });
+    }
+  }
+}
+
 
 fetchReviews();
 
@@ -327,7 +383,6 @@ const submitButtonReview = document.querySelector(".btnSubmitReview");
 const commentInput = document.querySelector(".reviewTextarea");
 const stars = document.querySelectorAll(".rate__product i");
 const reviewShowSection = document.querySelector(".reviewShowSection");
-
 
 let selectedRating = 0;
 
@@ -344,11 +399,19 @@ submitButtonReview.addEventListener("click", (event) => {
   event.preventDefault();
   const comment = commentInput.value.trim();
   if (!selectedRating) {
-    alert("Please select a star rating!");
+    Swal.fire({
+      icon: "warning",
+      title: "Rating Required",
+      text: "Please select a star rating!",
+    });
     return;
   }
   if (!comment) {
-    alert("Please write a comment!");
+    Swal.fire({
+      icon: "warning",
+      title: "Comment Required",
+      text: "Please write a comment!",
+    });
     return;
   }
   async function addReview() {
@@ -360,11 +423,11 @@ submitButtonReview.addEventListener("click", (event) => {
         },
         body: JSON.stringify({
           comment,
-          rating: selectedRating
+          rating: selectedRating,
         }),
       });
       const data = await response.json();
-      console.log(data)
+      console.log(data);
       if (!data.val) {
         Swal.fire({
           icon: "error",
@@ -372,18 +435,22 @@ submitButtonReview.addEventListener("click", (event) => {
           text: data.msg,
         });
       } else {
-        // Swal.fire({
-        //   title: "Good job!",
-        //   text: data.msg,
-        //   icon: "success",
-        // });
+        Swal.fire({
+          title: "Review Submitted!",
+          text: "Your review has been added successfully.",
+          icon: "success",
+        });
         fetchReviews();
         form.reset();
       }
     } catch (err) {
       console.log(err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while submitting your review. Please try again later.",
+      });
     }
   }
   addReview();
 });
-

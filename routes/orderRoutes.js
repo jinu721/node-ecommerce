@@ -10,6 +10,7 @@ router.get('/admin/orders/', orderController.adminOrdersLoad);
 router.get('/admin/orders/view/:orderId', orderController.adminOrdersViewLoad);
 router.post('/admin/order/status/:orderId', orderController.adminOrdersStatusUpdate);
 router.post('/verify-payment', orderController.verifyPayment);
+router.post('/retry-payment', orderController.retryPayment);
 router.get('/success', orderController.successPageLoad);
 router.post('/orders/request-return/:orderId', orderController.reqestReturn);
 router.post('/orders/admin/return-request/:orderId', orderController.adminReturnRequest);

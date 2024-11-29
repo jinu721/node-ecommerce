@@ -146,10 +146,10 @@ async function performSearch() {
       console.log(data.results)
       data.results.forEach((item) => {
         const productHTML = `
-          <div class="productItem">
-            <img class="productItemImg" src="/${item.images[0]}" alt="${item.name}">
-            <p class="productItemName">${item.name}</p>
-            <p class="productItemPrice">&#8377;${item.price}</p>
+          <div data-id="${item._id}" class="productItem" onclick="loadDetailsPage(event)">
+            <img data-id="${item._id}" class="productItemImg" src="/${item.images[0]}" alt="${item.name}">
+            <p data-id="${item._id}" class="productItemName">${item.name}</p>
+            <p data-id="${item._id}" class="productItemPrice">&#8377;${item.price}</p>
           </div>
         `;
         resultsContainer.innerHTML += productHTML;
@@ -161,3 +161,10 @@ async function performSearch() {
     console.log(err);
   }
 }
+
+loadDetailsPage = (e)=>{
+  const productId = e.target.getAttribute('data-id');
+  window.location.href = `/details/${productId}`;
+}
+
+

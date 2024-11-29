@@ -431,7 +431,8 @@ module.exports = {
     }
   },
   async verifyPayment(req, res) {
-    const { paymentId, orderId, signature } = req.body;
+    console.log('ITS VERIFY PAYMENT')
+    const { paymentId, orderId, signature,retryOrderId } = req.body;
     const userId = req.session.currentId;
     console.log(paymentId, orderId, signature);
     try {
@@ -453,8 +454,16 @@ module.exports = {
       if (payment.status !== "captured") {
         return res.status(400).json({ val: false, msg: "Payment not captured" });
       }
-
-    let order = await orderModel.findOne({user:userId}).sort({orderedAt:-1});
+      
+    const orderGetId = retryOrderId || userId;
+    let order ;
+    
+    
+    if(retryOrderId){
+      order = await orderModel.findOne({_id:orderGetId});
+    }else{
+      order = await orderModel.findOne({user:orderGetId}).sort({orderedAt:-1});
+    }
 
     order.paymentStatus = 'paid';
 
@@ -581,15 +590,17 @@ module.exports = {
   
     try {
       let order = await orderModel.findOne({ _id: orderId, user: userId });
-      if (!order || order.paymentStatus !== 'failed') {
+      if (!order || order.paymentStatus !== 'pending') {
         return res.status(400).json({
           val: false,
           msg: "Invalid order or the payment was not failed",
         });
       }
+
+      console.log(order)
   
       const razorpayOrder = await razorpay.orders.create({
-        amount: order.amount * 100, 
+        amount: order.totalAmount * 100, 
         currency: "INR",
         receipt: orderId.toString(),
         notes: {
@@ -600,7 +611,7 @@ module.exports = {
         val: true,
         orderId: razorpayOrder.id,
         amount: razorpayOrder.amount,
-        key: "RAZORPAY_KEY", 
+        key: "rzp_test_P7m0ieN3xeK18I", 
       });
     } catch (err) {
       console.error("Error retrying payment:", err);

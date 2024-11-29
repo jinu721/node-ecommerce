@@ -11,6 +11,7 @@
     "mongoose": "^8.7.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
+    "openai": "^4.73.1",
     "otp-generator": "^4.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
