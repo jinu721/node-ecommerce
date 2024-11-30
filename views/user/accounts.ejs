@@ -33,13 +33,14 @@
     <!--=============== MAIN ===============-->
     <main class="main mainPageSection">
       <!--=============== BREADCRUMB ===============-->
-      <section class="breadcrumb">
+      <!-- <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
           <li><a href="/home" class="breadcrumb__link">Home</a></li>
           <li><span class="breadcrumb__link">></span></li>
           <li><span class="breadcrumb__link">Account</span></li>
         </ul>
-      </section>
+      </section> -->
+      <%- include('../layouts/breadcrumbs.ejs')  %>
 
       <!--=============== ACCOUNTS ===============-->
       <section class="accounts section--lg">
@@ -62,11 +63,9 @@
               <i class="fi fi-rs-settings-sliders"></i> Change Password
             </p>
             <% } %>
-            <a href="/logout"
-              ><p class="account__tab">
-                <i class="fi fi-rs-exit"></i> Logout
-              </p></a
-            >
+              <p class="account__tab" data-target="#logout">
+                <i class="fi fi-rs-exit"></i> Logout <i>
+              </p>
           </div>
           <div class="tabs__content">
             <div class="tab__content active-tab" id="dashboard">
@@ -100,14 +99,14 @@
                       value="<%= user.username  %>"
                     />
                     <p class="err error-msg-updateUsername">error msg</p>
-                    <input
+                    <!-- <input
                       type="text"
                       placeholder="Email"
                       class="form__input emailUpdate"
                       name="email"
                       value="<%= user.email  %>"
                     />
-                    <p class="err error-msg-updateEmail">error msg</p>
+                    <p class="err error-msg-updateEmail">error msg</p> -->
                     <input
                       type="text"
                       placeholder="Phone"
@@ -486,29 +485,9 @@
               </div>
             </div>
 
+            
             <!-- <% } %> -->
           </div>
-        </div>
-      </section>
-
-      <!--=============== NEWSLETTER ===============-->
-      <section class="newsletter section">
-        <div class="newsletter__container container grid">
-          <h3 class="newsletter__title flex">
-            <img src="/img/icon-email.svg" alt="" class="newsletter__icon" />
-            Sign in to Newsletter
-          </h3>
-          <p class="newsletter__description">
-            ...and receive $25 coupon for first shopping.
-          </p>
-          <form action="" class="newsletter__form">
-            <input
-              type="text"
-              placeholder="Enter Your Email"
-              class="newsletter__input"
-            />
-            <button type="submit" class="newsletter__btn">Subscribe</button>
-          </form>
         </div>
       </section>
     </main>

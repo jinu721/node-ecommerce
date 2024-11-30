@@ -16,8 +16,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const walletRoutes = require('./routes/walletRotes');
 const couponRoutes = require('./routes/couponRoutes');
 const notifyRoutes = require('./routes/notificationRoutes');
-const chatRoutes = require('./routes/chatRoutes');
 require('./services/authServiece'); 
+
 
 const authCheck = require('./middlewares/authCheck');
 const banCheck = require('./middlewares/banCheck');
@@ -27,6 +27,7 @@ const countCheck = require('./middlewares/countCheck');
 const adminCheck = require('./middlewares/adminAuth');
 const visitorsCheck = require('./middlewares/countViewers');
 const cacheMiddleware = require('./middlewares/cacheHandle');
+const brudCrumbsMiddleware = require('./middlewares/brudCrumbs');
 
 // ~~~ view engine setup ~~~
 app.set('view engine','ejs');
@@ -57,6 +58,7 @@ app.use(hideLogin);
 app.use(countCheck);
 app.use(adminCheck);
 app.use(visitorsCheck);
+app.use(brudCrumbsMiddleware);
 
 
 app.use('/register', (req, res, next) => {
@@ -81,8 +83,6 @@ app.use('/',orderRoutes);
 app.use('/',walletRoutes); 
 app.use('/',couponRoutes); 
 app.use('/',notifyRoutes); 
-app.use('/',chatRoutes); 
-
 
 
 

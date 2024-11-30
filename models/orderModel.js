@@ -70,7 +70,12 @@ const orderSchema = new mongoose.Schema({
   },
   returnRequest: {
     requestStatus:{type:Boolean,default:false},
-    requestMessage:{type:String}
+    requestMessage:{type:String},
+    adminStatus: {
+      type:String,
+      enum: ['approved', 'cancelled', 'pending'],
+      default: 'pending',
+    },
   },
   statusHistory: [
     {

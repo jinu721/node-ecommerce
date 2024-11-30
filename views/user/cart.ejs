@@ -27,7 +27,7 @@
     <!--=============== MAIN ===============-->
     <main class="main mainPageSection">
       <!--=============== BREADCRUMB ===============-->
-      <section class="breadcrumb">
+      <!-- <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
           <li><a href="index.html" class="breadcrumb__link">Home</a></li>
           <li><span class="breadcrumb__link"></span>></li>
@@ -35,7 +35,9 @@
           <li><span class="breadcrumb__link"></span>></li>
           <li><span class="breadcrumb__link">Cart</span></li>
         </ul>
-      </section>
+      </section> -->
+
+      <%- include('../layouts/breadcrumbs.ejs')  %>
 
       <!--=============== CART ===============-->
       <% if(isCartEmpty){ %>
@@ -77,7 +79,7 @@
                         </p>
                       </td>
                       <td>
-                        <span class="table__price">&#8377;<%= item.productId.price %></span>
+                        <span class="table__price">&#8377;<%= item.productId.offerPrice %></span>
                       </td>
                       <td>
                         <input 
@@ -86,13 +88,12 @@
                           class="quantity" 
                           data-id="<%= item._id %>" 
                           min="1" 
-                          max="10" 
                         />
                       </td>
                       <td>
                         <span>
                           &#8377;<span  class="Total" data-id="<%= item._id %>">
-                            <%= item.quantity * item.productId.price %>
+                            <%= item.quantity * item.productId.offerPrice %>
                           </span>
                         </span>
                       </td>

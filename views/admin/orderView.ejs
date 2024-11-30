@@ -58,35 +58,24 @@
               </ul>
             </div>
           </section>
-          <% if(order.returnRequest.requestStatus){ %>
-          <section class="request-return">
-            <div class="container">
-              <div class="read-request-section">
-                <div class="section-header">Read Request</div>
-                <div class="request-details">
-                  <h5>Reason for Return:</h5>
-                  <p>
-                    <%= order.returnRequest.requestMessage %>
-                  </p>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <button
-                    type="button"
-                    class="btn btn-cancel btn-requestCancel"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-approve btn-requestApproved"
-                  >
-                    Approve
-                  </button>
+          <% if (order.returnRequest.requestStatus && order.returnRequest.adminStatus ==='pending') { %>
+            <section class="request-return">
+              <div class="container">
+                <div class="read-request-section">
+                  <div class="section-header">Read Request</div>
+                  <div class="request-details">
+                    <h5>Reason for Return:</h5>
+                    <p><%= order.returnRequest.requestMessage %></p>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-cancel btn-requestCancel">Cancel</button>
+                    <button type="button" class="btn btn-approve btn-requestApproved">Approve</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
           <% } %>
+          
         </div>
         <section class="product-details-section">
           <table class="product-details-table">

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; }
+    #userList { width: 30%; border-right: 1px solid #ccc; padding: 10px; }
+    #chatBox { width: 70%; padding: 10px; }
+    #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; margin-bottom: 10px; padding: 10px; }
+    .user { color: blue; }
+    .admin { color: green; }
+    .user-item { cursor: pointer; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div id="userList">
+    <h2>Users</h2>
+    <div id="users"></div>
+  </div>
+  <div id="chatBox">
+    <h2>Chat Window</h2>
+    <div id="messages"></div>
+    <input id="replyInput" placeholder="Type a reply" />
+    <button onclick="sendReply()">Send</button>
+  </div>
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+    const userList = document.getElementById('users');
+    const messagesBox = document.getElementById('messages');
+    let currentUser = null;
+
+    // Load user list on connect
+    socket.emit('getUserList');
+
+    // Listen for user list
+    socket.on('userList', (users) => {
+      userList.innerHTML = ''; // Clear user list
+      users.forEach(userId => {
+        const userItem = document.createElement('div');
+        userItem.className = 'user-item';
+        userItem.textContent = userId;
+        userItem.onclick = () => selectUser(userId);
+        userList.appendChild(userItem);
+      });
+    });
+
+    // Load message history for selected user
+    function selectUser(userId) {
+      currentUser = userId;
+      messagesBox.innerHTML = ''; // Clear previous messages
+      socket.emit('getUserMessages', { userId });
+    }
+
+    // Listen for message history
+    socket.on('messageHistory', (messages) => {
+      messagesBox.innerHTML = ''; // Clear the chat box
+      messages.forEach(({ sender, message }) => {
+        displayMessage(sender, message);
+      });
+    });
+
+    // Send admin reply
+    function sendReply() {
+      const message = document.getElementById('replyInput').value;
+      if (message.trim() && currentUser) {
+        displayMessage('admin', message);
+        socket.emit('adminReply', { userId: currentUser, message });
+        document.getElementById('replyInput').value = '';
+      } else {
+        alert('Select a user first!');
+      }
+    }
+
+    // Display messages in the chat box
+    function displayMessage(sender, message) {
+      const msg = document.createElement('p');
+      msg.className = `message ${sender}`;
+      msg.textContent = `${sender === 'admin' ? 'You' : 'User'}: ${message}`;
+      messagesBox.appendChild(msg);
+      messagesBox.scrollTop = messagesBox.scrollHeight; // Auto-scroll to the bottom
+    }
+  </script>
+</body>
+</html>

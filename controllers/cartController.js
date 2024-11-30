@@ -7,7 +7,7 @@ module.exports = {
   async cartPageLoad(req, res) {
     try {
       const cart = await cartModel.findOne({ userId: req.session.currentId }).populate('items.productId');
-      console.log(cart.items.map(item => item.productId));
+      // console.log(cart.items.map(item => item.productId));
       if (!cart || cart.items.length === 0) {
         return res.status(200).render("cart", {isCartEmpty: true,msg: "No items found on cart",products: null,cart: null});
       }
@@ -50,6 +50,8 @@ module.exports = {
           msg: `Only ${stock} items available for size ${size}`,
         });
       }
+
+      console.log(cart)
 
       let currentCartQuantity = 0;
       if (cart) {
@@ -159,9 +161,6 @@ module.exports = {
 
     try {
 
-      // if ((quantity) || quantity <= 0) {
-      //   return res.status(400).json({ val: false, msg: "Invalid quantity" });
-      // }
 
       const cart = await cartModel.findOne({ userId: req.session.currentId });
       if (!cart) {
@@ -174,14 +173,36 @@ module.exports = {
       }
 
       const item = cart.items[itemIndex];
+      console.log(item)
       const product = await productModel.findById(item.productId);
       if (!product) {
         return res.status(404).json({ val: false, msg: "Product not found" });
       }
-      item.price = product.price;
-      item.quantity = quantity;
-      item.total = product.price * quantity;
 
+      const selectedSize = product.sizes[item.size];
+      if (!selectedSize) {
+        return res.status(400).json({ val: false, msg: "Invalid size selected" });
+      }
+  
+      if (quantity > selectedSize.stock) {
+        return res.status(400).json({
+          val: false,
+          msg: `Only ${selectedSize.stock} items are available for size ${item.size}`,
+        });
+      }
+  
+      if (quantity > selectedSize.maxQuantity) {
+        return res.status(400).json({
+          val: false,
+          msg: `You can only purchase up to ${selectedSize.maxQuantity} items for size ${item.size}`,
+        });
+      }
+
+      item.price = product.offerPrice;
+      item.quantity = quantity;
+      item.total = product.offerPrice * quantity;
+
+      if(item.size===product.sizes[item.size]&&item.color===product.colors[item.color]&&item.quantity>product.size)
       cart.cartTotal = cart.items.reduce(
         (total, item) => total + item.total,
         0

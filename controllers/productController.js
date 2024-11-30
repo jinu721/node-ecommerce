@@ -10,6 +10,7 @@ module.exports = {
     try {
       const category = await categoryModel.find({ isDeleted: false });
       const listedCategoryIds = category.map((x) => x._id.toString());
+      console.log(category)
       const products = await productModel
         .find({ isDeleted: false, category: { $in: listedCategoryIds } })
         .sort({ _id: -1 })

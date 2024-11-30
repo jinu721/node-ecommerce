@@ -36,16 +36,16 @@
     <!--=============== MAIN ===============-->
     <main class="main mainPageSection">
       <!--=============== BREADCRUMB ===============-->
-      <section class="breadcrumb">
+      <!-- <section class="breadcrumb">
         <ul class="breadcrumb__list flex container">
           <li><a href="index.html" class="breadcrumb__link">Home</a></li>
           <li><span class="breadcrumb__link"></span>></li>
           <li><span class="breadcrumb__link">category</span></li>
           <li><span class="breadcrumb__link"><%= category.name  %></span></li>
         </ul>
-      </section>
+      </section> -->
 
-      
+      <%- include('../layouts/breadcrumbs.ejs')  %>
 
       <!--=============== PRODUCTS ===============-->
       <section class="products container section--lg">

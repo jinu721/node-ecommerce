@@ -12,18 +12,20 @@ module.exports = {
       const currentUser = req.session.currentEmail;
       const user = await userModel.findOne({ email: currentUser });
       res.render("accounts", { user });
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
   },
   async UserUpdate(req, res) {
     try {
-      const { username, email, phone } = req.body;
+      const { username,  phone } = req.body;
       const currentUser = await userModel.findOne({
         email: req.session.currentEmail,
       });
-      const isEmailExist = await userModel.findOne({
-        email,
-        _id: { $ne: currentUser._id },
-      });
+      // const isEmailExist = await userModel.findOne({
+      //   email,
+      //   _id: { $ne: currentUser._id },
+      // });
       const isUsernameExist = await userModel.findOne({
         username,
         _id: { $ne: currentUser._id },
@@ -34,16 +36,12 @@ module.exports = {
           msg: "Username already exist",
           val: false,
         });
-      } else if (isEmailExist) {
-        return res
-          .status(409)
-          .json({ type: "email", msg: "Email already exist", val: false });
       }
-      const updateData = { username, email };
+      const updateData = { username };
       if (phone) updateData.phone = phone;
       await userModel.updateOne({ _id: currentUser._id }, updateData);
       req.session.currentUsername = username;
-      req.session.currentEmail = email;
+      // req.session.currentEmail = email;
       const updatedUser = await userModel.findOne({ _id: currentUser._id });
       return res.status(200).json({ val: true, user: updatedUser });
     } catch (err) {

@@ -129,9 +129,10 @@ module.exports = {
     req.session.destroy((err)=>{
       if(err){
         console.log('Error in logout :-'+err)
+        res.status(200).json({val:false,msg:"Something went wrong , please try again later"});
       }else{
         console.log('Successfully logouted');
-        res.redirect('/');
+        res.status(200).json({val:true});
       }
     })
   }

@@ -8,7 +8,7 @@ router.post('/register',userController.whenRegister);
 router.post('/request-otp',userController.whenRequestOtp);
 router.post('/login',userController.whenLogin);
 router.get('/ban',userController.banPageLogin);
-router.get('/logout',userController.logoutClick);
+router.post('/logout',userController.logoutClick);
 
 
 module.exports = router;

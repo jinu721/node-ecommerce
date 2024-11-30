@@ -148,40 +148,43 @@ function renderCart(cart, products) {
         });
     }
 }
-
 document.querySelectorAll('.quantity').forEach(input => {
-  input.addEventListener('change', async(e)=>{
-      const newQuantity = e.target.value;
-      console.log(newQuantity)
-      const itemId = e.target.getAttribute('data-id');
-      console.log(newQuantity)
-      try{
-        const response = await fetch(`/update-cart-item/${itemId}`,{
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ quantity: newQuantity }),
+  input.addEventListener('change', async (e) => {
+    const newQuantity = e.target.value;
+    const itemId = e.target.getAttribute('data-id');
+    const previousQuantity = e.target.getAttribute('data-prev-quantity') || input.defaultValue;
+
+    try {
+      const response = await fetch(`/update-cart-item/${itemId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+      const data = await response.json();
+
+      if (data.val) {
+        e.target.setAttribute('data-prev-quantity', newQuantity);
+        document.querySelector(`.Total[data-id="${itemId}"]`).textContent = data.updatedTotal;
+        document.querySelectorAll('.cartTotalPrice').forEach(elem => {
+          elem.textContent = data.cartTotal;
         });
-        const data = await response.json();
-        console.log(data)
-        if (data.val) {
-          document.querySelector(`.Total[data-id="${itemId}"]`).textContent = data.updatedTotal;
-          document.querySelectorAll('.cartTotalPrice').forEach(elem=>{
-            elem.textContent = data.cartTotal;
-          })
       } else {
-          Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: data.msg,
-          });
+        e.target.value = previousQuantity;
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: data.msg,
+        });
       }
-      }catch(err){
-        console.log(err);
-      }
+    } catch (err) {
+      console.log(err);
+      e.target.value = previousQuantity;
+    }
   });
 });
+
 
 
 // document.querySelector('.btnProceedToCheckout').addEventListener('click',async ()=>{

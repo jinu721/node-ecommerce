@@ -35,13 +35,13 @@ updateButton.addEventListener("click", (e) => {
   } else {
     usernameError.style.display = "none";
   }
-  if (!emailPattern.test(emailField.value)) {
-    emailError.style.display = "block";
-    emailError.textContent = "Please enter a valid email address.";
-    isValid = false;
-  } else {
-    emailError.style.display = "none";
-  }
+  // if (!emailPattern.test(emailField.value)) {
+  //   emailError.style.display = "block";
+  //   emailError.textContent = "Please enter a valid email address.";
+  //   isValid = false;
+  // } else {
+  //   emailError.style.display = "none";
+  // }
   if (phoneField && phoneField.value.trim() !== "") {
     if (!phonePattern.test(phoneField.value)) {
       phoneError.style.display = "block";
@@ -58,7 +58,7 @@ updateButton.addEventListener("click", (e) => {
   if (isValid) {
     const userInfo = {
       username: usernameField.value,
-      email: emailField.value,
+      // email: emailField.value,
       phone: phoneField.value,
     };
 
@@ -87,12 +87,12 @@ updateButton.addEventListener("click", (e) => {
           }
         } else {
           usernameError.style.display = "none";
-          emailError.style.display = "none";
+          // emailError.style.display = "none";
           phoneError.style.display = "none";
           document.querySelector(".displayUsername").textContent =
             parsedData.user.username;
-          document.querySelector(".displayEmail").textContent =
-            parsedData.user.email;
+          // document.querySelector(".displayEmail").textContent =
+          //   parsedData.user.email;
           document.querySelector(".displayPhone").textContent =
             parsedData.user.phone;
           profileInfo.style.display = "block";
@@ -376,6 +376,29 @@ tabs.forEach((tab) => {
   tab.addEventListener("click", async () => {
     const targetSelector = tab.dataset.target;
     const targetContent = document.querySelector(targetSelector);
+    if (!targetContent) {
+      if (targetSelector === "#logout") {
+        async function fetchData(){
+          try{
+            const response = await fetch('/logout', { method: "POST" });
+            const data = await response.json();
+            if(!data.val){
+              Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: data.msg,
+              });
+            }else{
+              window.location.href = '/';
+            }
+          }catch(err){
+            console.log(err);
+          }
+        }
+        fetchData();
+      }
+      return;
+    }
     tabsContents.forEach((tabsContent) => {
       tabsContent.classList.remove("active-tab");
     });

@@ -50,16 +50,15 @@
             <div class="categories__container swiper">
               <div class="swiper-wrapper">
                 <% category.forEach(data => { %>  
-                  <% if(!data.isDeleted){ %>
-                    <a href="/category/<%= data._id  %>" class="category__item swiper-slide">
-                      <img
+                    <a data-categoryName="<%= data.name %>" class="category__item swiper-slide categoryItem">
+                      <img 
+                        data-categoryName="<%= data.name %>"
                         src="<%= data.image  %>"
                         alt=""
                         class="category__img"
                       />
-                      <h3 class="category__title"><%= data.name  %></h3>
+                      <h3 data-categoryName="<%= data.name %>" class="category__title"><%= data.name  %></h3>
                     </a>
-                  <% } %>
                 <% }); %>
               </div>
     
@@ -425,35 +424,38 @@
       <img src="/img/icons/chat.png" alt="chat" class="chat-icon" />
     </button>
     
-
     <div id="myModal" class="modal-popup">
       <div class="modal-content">
         <span class="modal-close" id="closeModalBtn">&times;</span>
-        <div class="generateTokenSection">
-          <div class="modal-header">
-            <h1>Chat Token Generator</h1>
-            <p>Generate a token to start chatting</p>
-          </div>
-          
-          <div style="display: flex;flex-direction: column;" class="modal-token-input">
-            <div>
-              <input type="text" id="tokenInput" placeholder="Enter reason" />
-              <button id="generateTokenBtn">Generate Token</button>
+    
+        <div class="container">
+          <div class="card chat-app">
+            <div class="chat">
+              <div class="chat-header">
+                <div class="chat-about">
+                  <h6>Admin</h6>
+                  <small>Last seen: 2 hours ago</small>
+                </div>
+              </div>
+    
+              <div class="chat-history" id="chatHistory">
+                <!-- Chat messages will be dynamically loaded here -->
+              </div>
+    
+              <div class="chat-message">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="messageInput" placeholder="Enter text here..." />
+                  <button class="btn" id="sendMessageBtn">
+                    <i class="fa fa-send"></i> Send
+                  </button>
+                </div>
+              </div>
             </div>
-            <div id="responseMessage"></div>
           </div>
         </div>
-
-        <div style="display: none;" class="pendingTokenSection">
-          <p>pending</p>
-        </div>
-        <div style="display: none;" class="chatSection">
-          <%- include('../layouts/chat.ejs')  %>
-        </div>
-
-
       </div>
     </div>
+
 
    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FOOTER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
   <%- include('../layouts/footer.ejs')  %>
@@ -461,8 +463,17 @@
    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SWIPER JS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN JS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
     <script src="/js/user/main.js"></script>
     <script src="/js/user/chat.js"></script>
+    <script>
+      const categoryItems = document.querySelectorAll('.categoryItem');
+      categoryItems.forEach(elem=>{
+        elem.addEventListener('click',(e)=>{
+          const categoryName = e.target.getAttribute('data-categoryName');
+          window.location.href = `/shop?sortBy=Default&price=&category=${categoryName}&name=All&api=true`;
+        })
+      });
+    </script>
   </body>
 </html>

@@ -515,6 +515,7 @@ module.exports = {
           $set: {
             'returnRequest.requestStatus': true,
             'returnRequest.requestMessage': reasonMsg,
+            'returnRequest.adminStatus': 'pending',
           },
         }
       );  
@@ -572,12 +573,14 @@ module.exports = {
       }
       if(status==='approved'){
         order.orderStatus = "returned";
+        order.returnRequest.adminStatus = 'approved';
         order.statusHistory.push({
           status: "returned",
           updatedAt: new Date(),
         });
         await order.save();
       }
+      order.returnRequest.adminStatus = 'cancelled';
       res.status(200).json({ val: true, msg: "Order return request approved" });
     }catch(err){
       console.log(err);
