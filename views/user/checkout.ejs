@@ -257,14 +257,18 @@
                 <tr>
                   <td><span class="order__subtitle">Shipping</span></td>
                   <td colspan="2">
-                    <span class="table__price">Free Shipping</span>
+                    <% if(deliveryCharge){ %>
+                      <span class="table__price">&#8377;<span class="delivaryCharge"><%= deliveryCharge %></span></span>
+                    <% }else{ %>
+                      <span class="table__price delivaryCharge">Free Shipping</span>
+                    <% } %>
                   </td>
                 </tr>
                 <tr>
                   <td><span class="order__subtitle">Total</span></td>
                   <td colspan="2">
-                    <span class="old__price oldPriceTag">&#8377;<span class="oldPriceTagValue"><%= subTotal %></span></span>
-                    <span class="order__grand-total offerAppliedPriceTag">&#8377;<span class="offerAppliedPriceTagValue"><%= subTotal %></span></span>
+                    <span class="old__price oldPriceTag">&#8377;<span class="oldPriceTagValue"><%= subTotal + deliveryCharge %></span></span>
+                    <span class="order__grand-total offerAppliedPriceTag">&#8377;<span class="offerAppliedPriceTagValue"><%= subTotal +  deliveryCharge %></span></span>
                   </td>
                 </tr>
               </tbody>

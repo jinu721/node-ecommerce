@@ -36,8 +36,13 @@
 <body>
   <h1>Sales Report</h1>
   <div class="summary">
-    <p><strong>Start Date:</strong> <%= startDate %></p>
-    <p><strong>End Date:</strong> <%= endDate %></p>
+    <div>
+      <p><strong>Start Date:</strong> <%= startDate %></p>
+      <p><strong>End Date:</strong> <%= endDate %></p>
+    </div>
+    <div>
+      <p><strong>Overall Discount</strong> : &#8377;<%= totalDiscounts %></p>
+    </div>
     <table>
       <thead>
         <tr>

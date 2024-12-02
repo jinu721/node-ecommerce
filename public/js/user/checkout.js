@@ -384,9 +384,23 @@ document.querySelector(".btnPlaceOrder").addEventListener("click", async (e) => 
   console.log(selectedPayment);
   console.log(selectedAddressId);
   const item = e.target.getAttribute("data-item");
+  const delivaryChargeELem = document.querySelector('.delivaryCharge');
+  let delivaryChargePrice = "0"; 
+  if (delivaryChargeELem) {
+    if (delivaryChargeELem.value && delivaryChargeELem.value !== "Free Shipping") {
+      delivaryChargePrice = delivaryChargeELem.value;
+    } else if (delivaryChargeELem.textContent && delivaryChargeELem.textContent !== "Free Shipping") {
+      delivaryChargePrice = delivaryChargeELem.textContent.trim();
+    }
+  }
+
+  console.log(delivaryChargePrice);
   const parsedItem = JSON.parse(item);
   console.log(parsedItem);
   console.log(isOfferApplied, code);
+
+  // parsedItem.delivaryCharge = delivaryChargePrice ;
+  
 
   if (!selectedAddressId) {
     Swal.fire({
@@ -516,7 +530,10 @@ document.querySelector(".btnPlaceOrder").addEventListener("click", async (e) => 
                 icon: "info",
                 title: "Payment Cancelled",
                 text: "You closed the payment window. The order has been placed, but payment was not successful. You can continue the payment from the account section.",
-              }).then(() => {
+              }).then((result) => {
+                if(result.isConfirmed || result.dismiss === Swal.DismissReason.close){
+                  window.location.href = '/account'
+                }
               });
             } else if (paymentSuccess) {
               console.log("Payment was successful!");
@@ -535,8 +552,10 @@ document.querySelector(".btnPlaceOrder").addEventListener("click", async (e) => 
               title: "Payment Incomplete",
               text:
                 "The payment could not be completed. The order has been placed but payment was not successful. Please try again.",
-            }).then(() => {
-              
+            }).then((result) => {
+              if (result.isConfirmed || result.dismiss === Swal.DismissReason.close) {
+                window.location.href = "/account";
+              }
             });
           });
 
@@ -651,9 +670,7 @@ document.querySelector(".btncouponAplly").addEventListener("click", (e) => {
   }
 });
 
-document
-  .querySelector(".btncouponDelete")
-  .addEventListener("click", async (e) => {
+document.querySelector(".btncouponDelete").addEventListener("click", async (e) => {
     e.preventDefault();
     const couponInput = document.querySelector(".couponInput");
     const deleteCouponBtn = document.querySelector(".btncouponDelete");
@@ -696,7 +713,7 @@ document
         text: data.msg,
       });
     }
-  });
+});
 
 async function sendNotification(title, message, type, status) {
   try {

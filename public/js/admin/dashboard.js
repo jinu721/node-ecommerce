@@ -39,6 +39,7 @@ let topSellingBrandsChartInstance = null;
 let lineChartWithDotsInstance = null;
 
 
+
 async function fetchData(url) {
   const dashboardData = document.querySelector(".dashboardData");
   dashboardData.innerHTML = "";
@@ -86,11 +87,11 @@ async function fetchData(url) {
                 <div class="col-sm-4 grid-margin">
                   <div class="card">
                     <div class="card-body">
-                      <h5>Purchase</h5>
+                      <h5>Overall discount</h5>
                       <div class="row">
                         <div class="col-8 col-sm-12 col-xl-8 my-auto">
                           <div class="d-flex d-sm-block d-md-flex align-items-center">
-                            <h2 class="mb-0">$2039</h2>
+                            <h2 class="mb-0">&#8377;${data.dashboard.totalDiscounts}</h2>
                           </div>
                         </div>
                         <div class="col-4 col-sm-12 col-xl-4 text-center text-xl-right">
@@ -166,8 +167,7 @@ async function fetchData(url) {
         
         const generateRandomBorderColor = () =>
           `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`;
-        
-        // Top-Selling Products Chart
+
         const topSellingProductsCtx = document
           .getElementById("topSellingChart")
           .getContext("2d");
@@ -200,7 +200,6 @@ async function fetchData(url) {
           },
         });
         
-        // Top-Selling Categories Chart
         const topSellingCategoriesCtx = document
           .getElementById("topSellingCategoriesChart")
           .getContext("2d");
@@ -233,7 +232,6 @@ async function fetchData(url) {
           },
         });
         
-        // Top-Selling Brands Chart
         const topSellingBrandsCtx = document
           .getElementById("topSellingBrandsChart")
           .getContext("2d");

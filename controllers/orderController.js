@@ -9,9 +9,12 @@ const walletModel = require("../models/walletModel");
 const crypto = require("crypto");
 const couponModel = require("../models/couponModel");
 const notificationModel = require("../models/notificationModel");
-const pdf = require('html-pdf');
-const ejs = require('ejs');
-const path = require('path');
+const pdf = require("html-pdf");
+const ejs = require("ejs");
+const path = require("path");
+
+
+let orderId = 100 ;
 
 module.exports = {
   async placeOrder(req, res) {
@@ -19,7 +22,6 @@ module.exports = {
       req.body;
     const userId = req.session.currentId;
     try {
-
       console.log(isOfferApplied);
 
       if (!item || !selectedAddressId || !selectedPayment) {
@@ -123,16 +125,27 @@ module.exports = {
 
       const amountToSend = discountedPrice || totalAmount;
 
+      const couponDetails = isOfferApplied
+        ? { code, discountApplied: totalAmount - discountedPrice}
+        : null;
+
       if (selectedPayment === "cash_on_delivery") {
-        if(amountToSend>1000){
-          return res.status(400).json({val: false,msg: "COD only available for product less then 1000",});
+        if (amountToSend > 1000) {
+          return res
+            .status(400)
+            .json({
+              val: false,
+              msg: "COD only available for product less then 1000",
+            });
         }
         const order = await orderModel.create({
+          orderId:orderId++,
           user: userId,
           items: isArray ? items : [items],
           totalAmount: amountToSend,
           paymentMethod: selectedPayment,
           shippingAddress: address,
+          coupon: couponDetails,
           orderedAt: new Date(),
           paymentStatus: "pending",
           orderStatus: "processing",
@@ -181,11 +194,13 @@ module.exports = {
           },
         });
         const order = await orderModel.create({
+          orderId:orderId++,
           user: userId,
           items: items,
           totalAmount: amountToSend,
           paymentMethod: selectedPayment,
           shippingAddress: address,
+          coupon: couponDetails,
           razorpayOrderId: razorpayOrder.id,
           orderedAt: new Date(),
           paymentStatus: "pending",
@@ -220,15 +235,17 @@ module.exports = {
           transactionAmount: discountedPrice ? discountedPrice : totalAmount,
           transactionDate: new Date(),
           description: `Purchase of the order ${item.orderId}`,
-        })
+        });
         console.log(wallet);
         await wallet.save();
         const order = await orderModel.create({
+          orderId:orderId++,
           user: userId,
           items: isArray ? items : [items],
           totalAmount: amountToSend,
           paymentMethod: selectedPayment,
           shippingAddress: address,
+          coupon: couponDetails,
           orderedAt: new Date(),
           paymentStatus: "paid",
           orderStatus: "processing",
@@ -288,7 +305,10 @@ module.exports = {
       if (!order) {
         return res.status(404).json({ val: false, msg: "Order not found" });
       }
-      if (order.paymentMethod === "razorpay"||order.paymentMethod === "wallet") {
+      if (
+        (order.paymentMethod === "razorpay" || order.paymentMethod === "wallet") &&
+        order.paymentStatus !== "pending"
+      ) {
         let wallet = await walletModel.findOne({
           userId: currentId,
         });
@@ -376,27 +396,28 @@ module.exports = {
           path: "items.product",
           model: "Products",
         })
-        .sort({orderedAt:-1})
+        .sort({ orderedAt: -1 })
         .skip((currentPage - 1) * ordersPerPage)
         .limit(ordersPerPage);
-  
+
       res.status(200).render("ordersManagment", {
-        order:orders,      
-        currentPage,    
-        totalPages,    
-        pagesToShow: 5, 
+        order: orders,
+        currentPage,
+        totalPages,
+        pagesToShow: 5,
       });
     } catch (err) {
       console.log(err);
       res.status(500).send("Server error");
     }
-  }
-  ,
+  },
   async adminOrdersViewLoad(req, res) {
     const { orderId } = req.params;
     console.log(orderId);
     try {
-      const order = await orderModel.findOne({ _id: orderId }).populate("items.product");
+      const order = await orderModel
+        .findOne({ _id: orderId })
+        .populate("items.product");
       console.log(order);
       res.status(404).render("orderView", { order });
     } catch (err) {
@@ -416,6 +437,9 @@ module.exports = {
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
+      if(order.paymentMethod==='cash_on_delivery'&&newStatus==='delivered'){
+        order.paymentStatus = 'paid';
+      }
       order.orderStatus = newStatus;
       order.statusHistory.push({ status: newStatus, updatedAt: new Date() });
       await order.save();
@@ -431,13 +455,15 @@ module.exports = {
     }
   },
   async verifyPayment(req, res) {
-    console.log('ITS VERIFY PAYMENT')
-    const { paymentId, orderId, signature,retryOrderId } = req.body;
+    console.log("ITS VERIFY PAYMENT");
+    const { paymentId, orderId, signature, retryOrderId } = req.body;
     const userId = req.session.currentId;
     console.log(paymentId, orderId, signature);
     try {
       if (!paymentId || !orderId || !signature) {
-        return res.status(400).json({ val: false, msg: "Missing required fields" });
+        return res
+          .status(400)
+          .json({ val: false, msg: "Missing required fields" });
       }
       const body = orderId + "|" + paymentId;
       const expectedSignature = crypto
@@ -446,29 +472,34 @@ module.exports = {
         .digest("hex");
 
       if (expectedSignature !== signature) {
-        return res.status(400).json({ val: false, msg: "Invalid payment signature" });
+        return res
+          .status(400)
+          .json({ val: false, msg: "Invalid payment signature" });
       }
 
       const payment = await razorpay.payments.fetch(paymentId);
 
       if (payment.status !== "captured") {
-        return res.status(400).json({ val: false, msg: "Payment not captured" });
+        return res
+          .status(400)
+          .json({ val: false, msg: "Payment not captured" });
       }
-      
-    const orderGetId = retryOrderId || userId;
-    let order ;
-    
-    
-    if(retryOrderId){
-      order = await orderModel.findOne({_id:orderGetId});
-    }else{
-      order = await orderModel.findOne({user:orderGetId}).sort({orderedAt:-1});
-    }
 
-    order.paymentStatus = 'paid';
+      const orderGetId = retryOrderId || userId;
+      let order;
 
-    order.markModified('paymentStatus');
-    await order.save();
+      if (retryOrderId) {
+        order = await orderModel.findOne({ _id: orderGetId });
+      } else {
+        order = await orderModel
+          .findOne({ user: orderGetId })
+          .sort({ orderedAt: -1 });
+      }
+
+      order.paymentStatus = "paid";
+
+      order.markModified("paymentStatus");
+      await order.save();
 
       res.status(200).json({
         val: true,
@@ -484,126 +515,161 @@ module.exports = {
       });
     }
   },
-  async successPageLoad(req,res){
-    try{
-      const {currentId} =  req.session;
-      if(!currentId){
+  async successPageLoad(req, res) {
+    try {
+      const { currentId } = req.session;
+      if (!currentId) {
         return res.status(400).json("user not found");
       }
-      const recentOrder = await orderModel.findOne({ user:currentId }).sort({ orderedAt: -1 }) .populate('items.product').lean(); 
+      const recentOrder = await orderModel
+        .findOne({ user: currentId })
+        .sort({ orderedAt: -1 })
+        .populate("items.product")
+        .lean();
 
-      console.log(recentOrder)
-  
+      console.log(recentOrder);
+
       if (!recentOrder) {
         return res.status(404).send("No recent orders found.");
       }
-      res.render('success', {
-        order: recentOrder, 
+      res.render("success", {
+        order: recentOrder,
       });
-    }catch(err){
-      console.log(err)
+    } catch (err) {
+      console.log(err);
     }
   },
-  async reqestReturn(req,res){
-    const {orderId} = req.params;
-    const {reasonMsg} = req.body;
+  async reqestReturn(req, res) {
+    const { orderId } = req.params;
+    const { reasonMsg } = req.body;
     console.log(reasonMsg);
-    try{
+    try {
       const updateResult = await orderModel.updateOne(
         { _id: orderId },
         {
           $set: {
-            'returnRequest.requestStatus': true,
-            'returnRequest.requestMessage': reasonMsg,
-            'returnRequest.adminStatus': 'pending',
+            "returnRequest.requestStatus": true,
+            "returnRequest.requestMessage": reasonMsg,
+            "returnRequest.adminStatus": "pending",
           },
         }
-      );  
-      res.status(200).json({val:true});
-    }catch(err){
+      );
+      res.status(200).json({ val: true });
+    } catch (err) {
       console.log(err);
-      res.status(500).json({val:false,msg:'Something went wrong'});
+      res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
-  async downloadRecipt(req,res){
-    const {orderId} = req.query; 
-    if(!orderId){
+  async downloadRecipt(req, res) {
+    const { orderId } = req.query;
+    if (!orderId) {
       return res.status(400).json("orderId not found");
     }
-    try{
-      const order = await orderModel.findOne({_id:orderId}).sort({orderedAt:-1}).populate('items.product').lean();
+    try {
+      const order = await orderModel
+        .findOne({ _id: orderId })
+        .sort({ orderedAt: -1 })
+        .populate("items.product")
+        .lean();
       console.log(order);
-  
-      const templatePath = path.join(__dirname, "..", "views", "user", "invoice.ejs");
-      ejs.renderFile(templatePath,{order},(err,renderedHTML)=>{
-        if(err){
+
+      const templatePath = path.join(
+        __dirname,
+        "..",
+        "views",
+        "user",
+        "invoice.ejs"
+      );
+      ejs.renderFile(templatePath, { order }, (err, renderedHTML) => {
+        if (err) {
           console.log(err);
-          return res.status(500).json({val:false,msg:'Something went wrong while genrating invoice'});
+          return res
+            .status(500)
+            .json({
+              val: false,
+              msg: "Something went wrong while genrating invoice",
+            });
         }
         const pdfOptions = {
-          heigth:"11.25in",
-          width:"8.5in",
-          header:{height:'20mm'},
-          footer:{height:'20mm'}
-        }
-        pdf.create(renderedHTML,pdfOptions).toFile("pdfrecipt.pdf",(err,result)=>{
-          if(err){
-           return  res.status(500).json({val:false,msg:'Something went wrong while creating invoice pdf'});
-          }
-          return res.download(result.filename,'invoice.pdf',(downloadErr)=>{
-            if(downloadErr){
-              console.log(downloadErr);
-              return  res.status(500).json({val:false,msg:'Something went wrong while downloading invoice'});
+          heigth: "11.25in",
+          width: "8.5in",
+          header: { height: "20mm" },
+          footer: { height: "20mm" },
+        };
+        pdf
+          .create(renderedHTML, pdfOptions)
+          .toFile("pdfrecipt.pdf", (err, result) => {
+            if (err) {
+              return res
+                .status(500)
+                .json({
+                  val: false,
+                  msg: "Something went wrong while creating invoice pdf",
+                });
             }
-          })
-        })
-      })
-    }catch(err){
+            return res.download(
+              result.filename,
+              "invoice.pdf",
+              (downloadErr) => {
+                if (downloadErr) {
+                  console.log(downloadErr);
+                  return res
+                    .status(500)
+                    .json({
+                      val: false,
+                      msg: "Something went wrong while downloading invoice",
+                    });
+                }
+              }
+            );
+          });
+      });
+    } catch (err) {
       console.log(err);
-      res.status(500).json({val:false,msg:err.message});
+      res.status(500).json({ val: false, msg: err.message });
     }
   },
-  async adminReturnRequest(req,res){
-    const {orderId} = req.params;
-    const {status} = req.body;
-    try{
-      const order = await orderModel.findOne({_id:orderId});
-      if(!order){
-        return res.status(400).json({val:false,msg:'Order not found'});
+  async adminReturnRequest(req, res) {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    try {
+      const order = await orderModel.findOne({ _id: orderId });
+      if (!order) {
+        return res.status(400).json({ val: false, msg: "Order not found" });
       }
-      if(status==='approved'){
+      if (status === "approved") {
         order.orderStatus = "returned";
-        order.returnRequest.adminStatus = 'approved';
+        order.returnRequest.adminStatus = "approved";
         order.statusHistory.push({
           status: "returned",
           updatedAt: new Date(),
         });
         await order.save();
       }
-      order.returnRequest.adminStatus = 'cancelled';
+      order.returnRequest.adminStatus = "cancelled";
       res.status(200).json({ val: true, msg: "Order return request approved" });
-    }catch(err){
+    } catch (err) {
       console.log(err);
       res.status(200).json({ val: true, msg: err.message });
     }
   },
   async retryPayment(req, res) {
-    const { orderId } = req.body; 
+    const { orderId } = req.body;
     const userId = req.session.currentId;
-  
+
     try {
       let order = await orderModel.findOne({ _id: orderId, user: userId });
-      if (!order || order.paymentStatus !== 'pending') {
+      if (!order || order.paymentStatus !== "pending") {
         return res.status(400).json({
           val: false,
           msg: "Invalid order or the payment was not failed",
         });
       }
 
-      console.log(order)
-  
+      console.log(order);
+
       const razorpayOrder = await razorpay.orders.create({
-        amount: order.totalAmount * 100, 
+        amount: order.totalAmount * 100,
         currency: "INR",
         receipt: orderId.toString(),
         notes: {
@@ -614,7 +680,7 @@ module.exports = {
         val: true,
         orderId: razorpayOrder.id,
         amount: razorpayOrder.amount,
-        key: "rzp_test_P7m0ieN3xeK18I", 
+        key: "rzp_test_P7m0ieN3xeK18I",
       });
     } catch (err) {
       console.error("Error retrying payment:", err);
@@ -624,6 +690,5 @@ module.exports = {
         error: err.message,
       });
     }
-  }
-  
+  },
 };

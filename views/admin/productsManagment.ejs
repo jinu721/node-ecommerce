@@ -372,79 +372,93 @@
                     <p class="error-message" id="productNameError"></p>
                   </div>
                   <div class="form-group">
-                    <label for="productImages">Images</label>
-                    <input
-                      type="file"
-                      class="form-control product-image"
-                      id="productImage1"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 0)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewSection0"
-                      style="display: none"
-                    >
-                      <img id="cropPreview0" style="max-width: 100%" />
-                      <button type="button" onclick="startCropping(0)">
-                        Crop Image 1
-                      </button>
-                    </div>
+  <label for="productImages">Images</label>
 
-                    <input
-                      type="file"
-                      class="form-control product-image"
-                      id="productImage2"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 1)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewSection1"
-                      style="display: none"
-                    >
-                      <img id="cropPreview1" style="max-width: 100%" />
-                      <button type="button" onclick="startCropping(1)">
-                        Crop Image 2
-                      </button>
-                    </div>
+  <!-- Image 1 -->
+  <div class="image-section">
+    <input
+      type="file"
+      class="form-control product-image"
+      id="productImage1"
+      accept="image/*"
+      onchange="previewAndCrop(event, 0)"
+    />
+    <div id="cropPreviewSection0" class="cropPreviewSection" style="display: none;">
+      <img id="cropPreview0" style="max-width: 100%;" />
+      <button type="button" onclick="startCropping(0)">Crop Image 1</button>
+    </div>
+    <img
+      id="croppedPreview0"
+      class="rounded-img"
+      style="display: none; width: 50px; height: 50px; border-radius: 50%; margin-top: 10px;"
+    />
+    <p class="error-message imageError0" ></p>
+  </div>
 
-                    <input
-                      type="file"
-                      class="form-control product-image"
-                      id="productImage3"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 2)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewSection2"
-                      style="display: none"
-                    >
-                      <img id="cropPreview2" style="max-width: 100%" />
-                      <button type="button" onclick="startCropping(2)">
-                        Crop Image 3
-                      </button>
-                    </div>
+  <!-- Image 2 -->
+  <div class="image-section">
+    <input
+      type="file"
+      class="form-control product-image"
+      id="productImage2"
+      accept="image/*"
+      onchange="previewAndCrop(event, 1)"
+    />
+    <div id="cropPreviewSection1" class="cropPreviewSection" style="display: none;">
+      <img id="cropPreview1" style="max-width: 100%;" />
+      <button type="button" onclick="startCropping(1)">Crop Image 2</button>
+    </div>
+    <img
+      id="croppedPreview1"
+      class="rounded-img"
+      style="display: none; width: 50px; height: 50px; border-radius: 50%; margin-top: 10px;"
+    />
+    <p class="error-message imageError1" ></p>
+  </div>
 
-                    <input
-                      type="file"
-                      class="form-control product-image"
-                      id="productImage4"
-                      accept="image/*"
-                      onchange="previewAndCrop(event, 3)"
-                    />
-                    <div
-                      class="cropPreviewSection"
-                      id="cropPreviewSection3"
-                      style="display: none"
-                    >
-                      <img id="cropPreview3" style="max-width: 100%" />
-                      <button type="button" onclick="startCropping(3)">
-                        Crop Image 4
-                      </button>
-                    </div>
-                  </div>
+  <!-- Image 3 -->
+  <div class="image-section">
+    <input
+      type="file"
+      class="form-control product-image"
+      id="productImage3"
+      accept="image/*"
+      onchange="previewAndCrop(event, 2)"
+    />
+    <div id="cropPreviewSection2" class="cropPreviewSection" style="display: none;">
+      <img id="cropPreview2" style="max-width: 100%;" />
+      <button type="button" onclick="startCropping(2)">Crop Image 3</button>
+    </div>
+    <img
+      id="croppedPreview2"
+      class="rounded-img"
+      style="display: none; width: 50px; height: 50px; border-radius: 50%; margin-top: 10px;"
+    />
+    <p class="error-message imageError2" ></p>
+  </div>
+
+  <!-- Image 4 -->
+  <div class="image-section">
+    <input
+      type="file"
+      class="form-control product-image"
+      id="productImage4"
+      accept="image/*"
+      onchange="previewAndCrop(event, 3)"
+    />
+    <div id="cropPreviewSection3" class="cropPreviewSection" style="display: none;">
+      <img id="cropPreview3" style="max-width: 100%;" />
+      <button type="button" onclick="startCropping(3)">Crop Image 4</button>
+    </div>
+    <img
+      id="croppedPreview3"
+      class="rounded-img"
+      style="display: none; width: 50px; height: 50px; border-radius: 50%; margin-top: 10px;"
+    />
+  </div>
+  <p class="error-message imageError3" ></p>
+</div>
+
                   <div class="form-group">
                     <label for="productDesc">Description</label>
                     <input

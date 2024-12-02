@@ -20,16 +20,33 @@ const tagsRegex = /^#([a-zA-Z0-9]+(?:\s#[a-zA-Z0-9]+)*)$/;
 
 function previewAndCrop(event, index) {
   const file = event.target.files[0];
-  if (!file) return;
-
+  const errorMsg = document.querySelector(`.imageError${index}`);
   const cropPreview = document.getElementById(`cropPreview${index}`);
   const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
+  if (errorMsg) errorMsg.textContent = "";
+
+  if (!file) {
+    return;
+  }
+
+  if (!["image/png", "image/jpg", "image/jpeg"].includes(file.type)) {
+    errorMsg.textContent = "Only jpg, png, and jpeg formats are allowed.";
+    errorMsg.style.display = "block";
+    event.target.value = ""; 
+    return;
+  }
+
+  if (errorMsg) {
+    errorMsg.style.display = "none";
+  }
 
   cropPreview.src = URL.createObjectURL(file);
   cropPreviewSection.style.display = "block";
+
   if (cropperInstances[index]) {
-    cropperInstances[index].destroy();
+    cropperInstances[index].destroy(); 
   }
+
   cropperInstances[index] = new Cropper(cropPreview, {
     aspectRatio: 1,
     viewMode: 1,
@@ -44,14 +61,48 @@ function previewAndCrop(event, index) {
 
 function startCropping(index) {
   const cropper = cropperInstances[index];
-  if (!cropper) return;
+  const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
+  const croppedPreview = document.getElementById(`croppedPreview${index}`);
 
+  if (!cropper) return;
   cropper.getCroppedCanvas().toBlob((blob) => {
-      croppedImages[index] = blob; 
-      const cropPreviewSection = document.getElementById(`cropPreviewSection${index}`);
-      cropPreviewSection.style.display = "none";
-      console.log("Cropped image stored for upload or further use.");
+    croppedImages[index] = blob;
+    const croppedURL = URL.createObjectURL(blob);
+
+    croppedPreview.src = croppedURL;
+    croppedPreview.style.display = "block";
+    cropPreviewSection.style.display = "none";
+
+    console.log(`Cropped image for index ${index} saved.`);
   });
+}
+
+function validateImages() {
+  let allImagesValid = true;
+
+  document.querySelectorAll(".productImgInput").forEach((input, index) => {
+    const errorMsg = document.getElementById(`imageError${index}`);
+    const file = input.files[0];
+    if (errorMsg) errorMsg.textContent = "";
+
+    if (!file) {
+      if (errorMsg) {
+        errorMsg.textContent = `Image ${index + 1} is required.`;
+        errorMsg.style.display = "block";
+      }
+      allImagesValid = false;
+    } else if (!["image/png", "image/jpg", "image/jpeg"].includes(file.type)) {
+      if (errorMsg) {
+        errorMsg.textContent = "Only jpg, png, and jpeg formats are allowed.";
+        errorMsg.style.display = "block";
+      }
+      allImagesValid = false;
+    } else {
+      if (errorMsg) errorMsg.style.display = "none";
+    }
+  });
+
+  return allImagesValid;
 }
 
 
@@ -181,7 +232,12 @@ function validateAndSubmit() {
 
   if (!nameRegex.test(name.value)) {
     showError(name, "Product name must be at least 3 characters long and alphanumeric.");
-  } else if (description.value.length < 5) {
+    return;
+  }
+
+  
+  
+  if (description.value.length < 5) {
     showError(description, "Description must be at least 5 characters long.");
   } else if (categorySelect.value === "") {
     showError(categorySelect, "Please select a category.");
@@ -196,22 +252,6 @@ function validateAndSubmit() {
       "Original Price must be a valid number with up to 2 decimal places."
     );
   } else {
-    const imageFiles = document.querySelectorAll('input[type="file"]');
-    let validImages = true;
-    imageFiles.forEach((fileInput) => {
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const fileType = file.type.split("/")[1];
-        if (!["jpeg", "jpg", "png"].includes(fileType)) {
-          validImages = false;
-          showError(fileInput, "Only PNG, JPG, or JPEG files are allowed.");
-        }
-      }
-    });
-
-    if (!validImages) return;
-
-
     const stockData = collectStockData();
     const formData = new FormData();
     formData.append("name", name.value);
@@ -257,7 +297,6 @@ function validateAndSubmit() {
   }
 }
 
-
 function showError(input, message) {
   const error = document.createElement("p");
   error.className = "error-message";
@@ -265,6 +304,7 @@ function showError(input, message) {
   error.textContent = message;
   input.parentElement.appendChild(error);
 }
+
 
 document.querySelector(".btn-CreateProduct").addEventListener("click", (event) => {
   event.preventDefault(); 

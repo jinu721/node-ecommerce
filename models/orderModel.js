@@ -51,6 +51,14 @@ const orderSchema = new mongoose.Schema({
     enum: ['processing', 'shipped', 'delivered', 'cancelled','returned'],
     default: 'processing',
   },
+  orderId:{
+    type:Number,
+    required:true,
+  },
+  coupon: {
+    code: { type: String },
+    discountApplied: { type: Number }
+  },
   shippingAddress: {
     street: { type: String },
     country: { type: String, required: true },

@@ -213,6 +213,11 @@
                           <td>
                             <a href="/admin/category/update/<%= data._id %>"><div class="badge badge-outline-warning">Update</div></a>
                           </td>
+                          <td>
+                            <button class="btn btn-info btn-addOffer" data-bs-toggle="modal" data-bs-target="#offerModal" data-category-id="<%= data._id %>">
+                              Add Offer
+                            </button>                            
+                          </td>
                         </tr>
                       <% }) %>
                     </tbody>
@@ -276,8 +281,33 @@
           </div>
         </div>
       </div>
+
   </div>
   
+
+  <div class="modal fade" id="offerModal" tabindex="-1" aria-labelledby="offerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="offerModalLabel">Add Offer to Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="offerForm">
+            <input type="hidden" id="categoryIdInput" name="categoryId">
+            <div class="mb-3">
+              <label for="offerValue" class="form-label">Offer (Amount or Percentage)</label>
+              <input type="text" class="form-control" id="offerValue" placeholder="Enter amount or percentage (e.g. 10 or 39%)" required>
+              <p class="error-message errCategoryOffer"></p>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Offer</button>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 <ul class="pagination" style="position: absolute; bottom: 0; width: 100%; padding: 10px 0; display: flex; justify-content: center;">
   <% let startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2)); %>

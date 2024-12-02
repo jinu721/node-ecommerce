@@ -1,5 +1,7 @@
 // ~~~~~~~~~~~~~~~~~~ update profile section ~~~~~~~~~~~~~~~~~~
 
+console.log('shui')
+
 const profileInfo = document.querySelector(".profile-info");
 const updateForm = document.querySelector(".updateform");
 const editButton = document.querySelector(".edit-profile");
@@ -766,7 +768,7 @@ async function fetchOrders(page = 1) {
     if (!data.orders || data.orders.length === 0) {
       const orderNullTr = document.createElement("tr");
       orderNullTr.classList.add("order-null-item");
-      orderNullTr.innerHTML = `<td colspan="7">No orders yet!</td>`; // Adjusted for new column
+      orderNullTr.innerHTML = `<td colspan="7">No orders yet!</td>`; 
       orderContainer.appendChild(orderNullTr);
     } else {
       data.orders.forEach((order, index) => {
@@ -776,16 +778,16 @@ async function fetchOrders(page = 1) {
           month: "long",
           day: "numeric",
         });
-
+      
         const orderRow = document.createElement("tr");
         orderRow.classList.add("order-item");
         orderRow.innerHTML = `
-          <td>${index + 1 + (page - 1) * 4}</td> <!-- Adjusted pagination index -->
+          <td>#${order.orderId}</td> 
           <td>${formattedDate}</td>
           <td>${order.orderStatus}</td>
           <td>
-          ${order.paymentStatus}
-          ${order.paymentStatus === "pending" ? `<a class="btnRetryPayment" data-id="${order._id}"><i class="fa fa-sync-alt"></i></a>` : ""}
+            ${order.paymentStatus}
+            ${order.paymentStatus === "pending" && order.paymentMethod && order.paymentMethod.trim().toLowerCase() === "razorpay" ? `<a class="btnRetryPayment" data-id="${order._id}"><i class="fa fa-sync-alt"></i></a>` : ""}
           </td>
           <td>&#8377;${order.totalAmount}</td>
           <td>
@@ -797,9 +799,9 @@ async function fetchOrders(page = 1) {
             </a>
           </td>
         `;
-
+      
         orderContainer.append(orderRow);
-
+      
         orderRow.querySelector('.btnCancelOrder').addEventListener('click', (event) => {
           if (order.orderStatus === 'delivered') {
             requestReturn(event);
@@ -807,13 +809,17 @@ async function fetchOrders(page = 1) {
             cancelOrders(event);
           }
         });
-
+      
         if (order.paymentStatus === "pending") {
-          orderRow.querySelector('.btnRetryPayment').addEventListener('click', (event) => {
-            retryPayment(event);
-          });
+          const retryBtn = orderRow.querySelector('.btnRetryPayment');
+          if (retryBtn) {
+            retryBtn.addEventListener('click', (event) => {
+              retryPayment(event);
+            });
+          }
         }
       });
+      
 
       renderPagination(data.currentPage, data.totalPages);
     }
@@ -873,7 +879,7 @@ function cancelOrders(e) {
           const response = await fetch(`/cancel-order/${orderId}`, {
             method: "DELETE",
           });
-          const data = await response.json({});
+          const data = await response.json();
           if (data.val) {
             fetchOrders();
             sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');

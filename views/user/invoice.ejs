@@ -101,6 +101,10 @@
         color: #007bff;
         margin-bottom: 20px;
       }
+      .discount{
+        font-size: 10px;
+        color: grey;
+      }
     </style>
   </head>
   <body>
@@ -136,6 +140,9 @@
         </tbody>
       </table>
       <div class="totals">
+        <% if(order.coupon){ %>
+          <p class="discount">Discount: -&#8377;<%= order.coupon.discountApplied %></p>
+        <% } %>
         <p class="total-amount">Total: &#8377;<%= order.totalAmount %></p>
       </div>
       <div class="thank-you">Thank you for your Purchase!</div>

@@ -49,7 +49,7 @@ module.exports = {
           "_id"
         ),
         orderModel.aggregate([
-          { $match: { ...dateFilter, orderStatus: "delivered" } },
+          { $match: { ...dateFilter, paymentStatus: "paid" } },
           {
             $group: {
               _id: null,
@@ -59,7 +59,7 @@ module.exports = {
           },
         ]),
         orderModel.aggregate([
-          { $match: { ...dateFilter, paymentMethod: "cash_on_delivery" } },
+          { $match: { ...dateFilter, paymentMethod: "cash_on_delivery",paymentStatus:'pending' } },
           {
             $group: {
               _id: null,
@@ -189,7 +189,16 @@ module.exports = {
       ]);
       
 
-      console.log(topSellingBrands)
+      const totalDiscounts = await orderModel.aggregate([
+        { $match: { ...dateFilter, "coupon.code": { $exists: true } } },
+        {
+          $group: {
+            _id: null,
+            totalDiscount: { $sum: "$coupon.discountApplied" },
+          },
+        },
+      ]);
+
       
   
       const vistors = await visitorModel.find({});
@@ -202,6 +211,7 @@ module.exports = {
         totalRevenue,
         totalPendingMoney,
         categories: categoryData,
+        totalDiscounts: totalDiscounts[0]?.totalDiscount || 0,
         topSellingProducts,
         topSellingCategories,
         topSellingBrands,
@@ -281,6 +291,16 @@ module.exports = {
           createdAt: { $gte: start, $lte: end },
         })
         .populate("items.product", "name price");
+
+        const totalDiscounts = await orderModel.aggregate([
+          { $match: { createdAt: { $gte: start, $lte: end }, "coupon.code": { $exists: true } } },
+          {
+            $group: {
+              _id: null,
+              totalDiscount: { $sum: "$coupon.discountApplied" },
+            },
+          },
+        ]);
   
       console.log("Sales Data:", salesData);
       console.log("Number of Detailed Orders:", detailedOrders.length);
@@ -292,6 +312,7 @@ module.exports = {
         {
           salesData,
           detailedOrders,
+          totalDiscounts: totalDiscounts[0]?.totalDiscount || 0,
           startDate: start.toISOString().split("T")[0],
           endDate: end.toISOString().split("T")[0],  
         },

@@ -6,6 +6,7 @@ const upload = require('../utils/multerConfig');
 
 router.get('/admin/categories',categoryController.categoryLoadAdmin)
 router.post('/admin/category/add',upload.single('categoryImage'),categoryController.categoryAdd);
+router.post('/admin/category/offer/add',categoryController.categoryOfferAdd);
 router.get('/category/:categoryId/',categoryController.categoryLoad);
 router.get('/admin/category/unlist', categoryController.categoryUnlist);
 router.get('/admin/category/update/:categoryId', categoryController.categoryUpdateload);

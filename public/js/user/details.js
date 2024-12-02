@@ -87,7 +87,7 @@ const btAddToCart = document.querySelector(".btAddToCart");
 
 btAddToCart.addEventListener("click", async (e) => {
   const quantity = document.querySelector(".quantity").value;
-  const price = document.querySelector(".currentPrice").textContent;
+  const price = document.querySelector(".offerPriceProduct").textContent;
   console.log(price);
   const productId = e.target.getAttribute("data-id");
   console.log(quantity);

@@ -173,11 +173,15 @@
                     </tr>
                     <tr>
                       <td><span class="cart__total-title">Shipping</span></td>
-                      <td><span class="cart__total-price">Free</span></td>
+                      <% if(deliveryCharge){ %>
+                        <td><span class="cart__total-price">&#8377;<%= deliveryCharge %></span></td>
+                      <% }else{ %>
+                         <td><span class="cart__total-price">Free</span></td>
+                      <% } %>
                     </tr>
                     <tr>
                       <td><span class="cart__total-title">Total</span></td>
-                      <td><span class="cart__total-price">&#8377; <span class="cartTotalPrice"><%= cart.cartTotal %></span></span></td>
+                      <td><span class="cart__total-price">&#8377; <span class="cartTotalPrice"><%= cart.cartTotal+deliveryCharge %></span></span></td>
                     </tr>
                 </table>
                 <a href="/checkout" class="btn flex btn--md btnProceedToCheckout">

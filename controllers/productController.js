@@ -25,9 +25,10 @@ module.exports = {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
-
-      let query = {};
+  
+      let query = { isDeleted: false };
       let sortBy = {};
+
       if (req.query.sortBy === "Popularity") {
         sortBy.popularity = -1;
       } else if (req.query.sortBy === "Average rating") {
@@ -41,6 +42,7 @@ module.exports = {
       } else {
         sortBy.createdAt = -1;
       }
+  
       if (req.query.price && req.query.price !== "") {
         const priceRange = req.query.price.split(" - ");
         const minPrice = parseInt(priceRange[0].replace("₹", "").trim(), 10);
@@ -49,71 +51,49 @@ module.exports = {
           : Infinity;
         query.price = { $gte: minPrice, $lte: maxPrice };
       }
-
+  
+      // Fetch only active categories
+      const activeCategories = await categoryModel.find({ isDeleted: false });
+      const activeCategoryIds = activeCategories.map((cat) => cat._id.toString());
+  
+      // Filter by category if specified in the query
       if (req.query.category && req.query.category !== "") {
-        const categoryName = req.query.category;
-        const category = await categoryModel.findOne({ name: categoryName });
+        const category = activeCategories.find((cat) => cat.name === req.query.category);
         if (category) {
           query.category = category._id;
+        } else {
+          query.category = null; // No matching category found
         }
+      } else {
+        query.category = { $in: activeCategoryIds }; // Only include active categories
       }
-
-      // if (req.query.rating && req.query.rating !== "") {
-      //   const rating = parseFloat(req.query.rating);
-      //   query.rating = { $gte: rating }; 
-      // }
-
-      console.log("Sort By:", req.query.sortBy);
-      console.log("Price:", req.query.price);
-      console.log("Category:", req.query.category);
-      console.log("Name:", req.query.name);
-      console.log("Query:", query);
-
-      // const unlistedCategories = await categoryModel.find({ isDeleted: true });
-      // const unlistedCategoryIds = unlistedCategories.map((x) =>
-      //   x._id.toString()
-      // );
-
-      if (req.query.category && req.query.category !== "") {
-        const categoryName = req.query.category;
-        const category = await categoryModel.findOne({ name: categoryName });
-        if (category) {
-          query.category = category._id;  
-        }
-      }
-
-      console.log(query);
-
+  
+      // Fetch products with the refined query
       let products = await productModel
         .find(query)
         .skip(skip)
         .limit(limit)
         .sort(sortBy);
-      if (req.query.name == "A-Z") {
+  
+      // Alphabetical sorting if specified
+      if (req.query.name === "A-Z") {
         products = products.sort((a, b) => {
-          if (a.name < b.name) {
-            return -1;
-          }
-          if (a.name > b.name) {
-            return 1;
-          }
-          return 0;
+          return a.name.localeCompare(b.name);
         });
       }
-
-      // console.log(products)
-
-      const category = await categoryModel.find({});
+  
+      // Send active categories and filtered products
       if (req.query.api) {
-        return res.status(200).json({ products, category });
+        return res.status(200).json({ products, category: activeCategories });
       } else {
-        res.status(200).render("shop", { products, category });
+        res.status(200).render("shop", { products, category: activeCategories });
       }
     } catch (err) {
       console.error(err);
       res.status(500).send("Error loading shop data");
     }
-  },
+  }
+  ,
   async productDetailesLoad(req, res) {
     const productId = req.params.id;
     try {
@@ -131,6 +111,7 @@ module.exports = {
         user: req.session.currentId,
         orderStatus: "delivered",
       });
+      console.log(product)
       res
         .status(200)
         .render("details", {
@@ -150,7 +131,7 @@ module.exports = {
     const skip = (page - 1) * limit;
 
     try {
-      const products = await productModel.find({}).skip(skip).limit(limit);
+      const products = await productModel.find({}).skip(skip).limit(limit).sort({createdAt:-1});
       const totalProducts = await productModel.countDocuments();
       const totalPages = Math.ceil(totalProducts / limit);
       const category = await categoryModel.find({});
@@ -489,6 +470,7 @@ module.exports = {
             { tags: { $regex: key, $options: "i" } },
             { brand: { $regex: key, $options: "i" } },
           ],
+          isDeleted:false
         })
         .limit(10);
       if (!results) {

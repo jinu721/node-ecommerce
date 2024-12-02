@@ -16,12 +16,16 @@ module.exports = {
         try {
             let cart;
             console.log(`hei mahn : --- ${isBuyNow}`)
+            let deliveryCharge = 0;
             if (isBuyNow) {
                 const { productId, price, quantity, size, color } = req.session.tempCart;
                 const product = await productModel.findById(productId);
                 req.session.tempCart = null;
                 console.log(product)  
-                return res.render('checkout', { product, quantity, size, color });
+                if (price * quantity < 2000) {
+                    deliveryCharge = 100;  
+                }
+                return res.render('checkout', { product, quantity, size, color, deliveryCharge });
             } else {
                 cart = await cartModel.findOne({ userId: req.session.currentId });
                 if (!cart || cart.items.length === 0) {
@@ -36,11 +40,16 @@ module.exports = {
                         ...product._doc, 
                         quantity: item.quantity,
                         size: item.size,
-                        color: item.color
+                        color: item.color,
+                        
                     };
                 });
+                const cartTotal = cart.items.reduce((total, item) => total + item.total, 0);
+                if (cartTotal < 2000) {
+                    deliveryCharge = 100;  
+                }
                 console.log(cartItems)
-                return res.render('checkout', { cartItems }); 
+                return res.render('checkout', { cartItems, deliveryCharge }); 
             }
         } catch (err) {
             console.log(err);

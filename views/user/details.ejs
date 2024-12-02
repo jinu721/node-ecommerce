@@ -93,7 +93,7 @@
             <p class="details__brand">Brand: <span><%= product.brand %></span></p>
             <div class="details__price flex">
               <% if(product.offerPrice !== 0) { %>
-                <span class="new__price">&#8377;<%= product.offerPrice %></span>
+                <span class="new__price offerPriceProduct">&#8377;<%= product.offerPrice %></span>
                 <span class="old__price">&#8377;<%= product.price %></span>
                 <span class="save__price">
                   <%= parseInt(((product.price - product.offerPrice) / product.price) * 100) %>% Off

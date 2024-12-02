@@ -58,11 +58,11 @@ loginaccountTxt.addEventListener("click", () => {
   registerSection.style.display = "none";
 });
 
-loginRegBreadcrumb.addEventListener("click", () => {
-  introSection.style.display = "flex";
-  loginSection.style.display = "none";
-  registerSection.style.display = "none";
-});
+// loginRegBreadcrumb.addEventListener("click", () => {
+//   introSection.style.display = "flex";
+//   loginSection.style.display = "none";
+//   registerSection.style.display = "none";
+// });
 
 btnOtpReg.addEventListener("click", (e) => {
   e.preventDefault();

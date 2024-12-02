@@ -7,15 +7,24 @@ module.exports = {
   async cartPageLoad(req, res) {
     try {
       const cart = await cartModel.findOne({ userId: req.session.currentId }).populate('items.productId');
-      // console.log(cart.items.map(item => item.productId));
       if (!cart || cart.items.length === 0) {
         return res.status(200).render("cart", {isCartEmpty: true,msg: "No items found on cart",products: null,cart: null});
       }
+      cart.items = cart.items.filter(item => !item.productId.isDeleted);
+      if (cart.items.length === 0) {
+        return res.status(200).render("cart", { isCartEmpty: true, msg: "No valid items in cart", products: null, cart: null });
+      }
+      
       const productIds = cart.items.map((item) => item.productId);
       const products = await productModel.find({ _id: { $in: productIds } });
+      let deliveryCharge = 0;
+      if (cart.cartTotal < 2000) {
+        deliveryCharge = 100;
+      }
+      console.log(deliveryCharge)
       return res
         .status(200)
-        .render("cart", { isCartEmpty: false, msg: null, cart });
+        .render("cart", { isCartEmpty: false, msg: null, cart,deliveryCharge });
     } catch (err) {
       console.log(err);
     }
@@ -202,11 +211,8 @@ module.exports = {
       item.quantity = quantity;
       item.total = product.offerPrice * quantity;
 
-      if(item.size===product.sizes[item.size]&&item.color===product.colors[item.color]&&item.quantity>product.size)
-      cart.cartTotal = cart.items.reduce(
-        (total, item) => total + item.total,
-        0
-      );
+      cart.cartTotal = cart.items.reduce((total, item) => total + item.total, 0);
+
 
       await cart.save();
 

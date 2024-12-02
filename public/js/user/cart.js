@@ -163,7 +163,7 @@ document.querySelectorAll('.quantity').forEach(input => {
         body: JSON.stringify({ quantity: newQuantity }),
       });
       const data = await response.json();
-
+      console.log(data)
       if (data.val) {
         e.target.setAttribute('data-prev-quantity', newQuantity);
         document.querySelector(`.Total[data-id="${itemId}"]`).textContent = data.updatedTotal;
