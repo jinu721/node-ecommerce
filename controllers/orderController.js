@@ -17,30 +17,311 @@ const path = require("path");
 let orderId = 100 ;
 
 module.exports = {
+  // async placeOrder(req, res) {
+  //   const { item, selectedAddressId, selectedPayment, isOfferApplied, code } =
+  //     req.body;
+  //   const userId = req.session.currentId;
+  //   try {
+  //     console.log(isOfferApplied);
+
+  //     if (!item || !selectedAddressId || !selectedPayment) {
+  //       return res
+  //         .status(400)
+  //         .json({ val: false, msg: "Missing required fields" });
+  //     }
+  //     let parsedItem;
+  //     try {
+  //       parsedItem = JSON.parse(item);
+  //     } catch (err) {
+  //       return res.status(400).json({ val: false, msg: "Invalid item format" });
+  //     }
+
+  //     console.log(`parsed item :----------- ${parsedItem}`);
+
+  //     const isArray = Array.isArray(parsedItem);
+  //     let items, totalAmount;
+
+  //     const validateItem = (product) => {
+  //       if (
+  //         !product._id ||
+  //         typeof product.quantity !== "number" ||
+  //         typeof product.offerPrice !== "number" ||
+  //         !product.size ||
+  //         !product.color
+  //       ) {
+  //         console.log(product._id);
+  //         console.log(typeof product.quantity !== "number");
+  //         console.log(typeof product.offerPrice !== "number");
+  //         console.log(product.size);
+  //         console.log(product.color);
+  //         return res
+  //           .status(400)
+  //           .json({ val: false, msg: "Invalid product data" });
+  //       }
+  //     };
+
+  //     if (isArray) {
+  //       parsedItem.forEach(validateItem);
+  //       items = parsedItem.map((product) => ({
+  //         product: new mongoose.Types.ObjectId(product._id),
+  //         quantity: product.quantity,
+  //         offerPrice: product.offerPrice,
+  //         size: product.size,
+  //         color: product.color,
+  //       }));
+  //       totalAmount = items.reduce(
+  //         (sum, item) => sum + Number(item.offerPrice) * Number(item.quantity),
+  //         0
+  //       );
+  //       await cartModel.deleteMany({ userId });
+  //     } else {
+  //       validateItem(parsedItem);
+  //       items = {
+  //         product: new mongoose.Types.ObjectId(parsedItem._id),
+  //         quantity: parsedItem.quantity,
+  //         offerPrice: parsedItem.offerPrice,
+  //         size: parsedItem.size,
+  //         color: parsedItem.color,
+  //       };
+  //       totalAmount = Number(items.offerPrice) * Number(items.quantity);
+  //       await cartModel.deleteOne({
+  //         userId,
+  //         "items.product": parsedItem._id,
+  //       });
+  //     }
+
+  //     const user = await userModel.findOne({ _id: userId });
+  //     const address = user.address.find(
+  //       (addr) => addr._id.toString() === selectedAddressId
+  //     );
+  //     if (!address) {
+  //       return res.status(400).json({ val: false, msg: "Invalid address ID" });
+  //     }
+
+  //     let discountedPrice = totalAmount;
+
+  //     console.log(isOfferApplied, code);
+  //     console.log(totalAmount);
+  //     if (isOfferApplied) {
+  //       const coupon = await couponModel.findOne({});
+  //       console.log("Its offer Applied");
+  //       if (coupon.discountType === "percentage") {
+  //         const discountPercentage = parseFloat(coupon.discountValue);
+  //         let discountAmount = (totalAmount * discountPercentage) / 100;
+  //         if (coupon.maxDiscount) {
+  //           discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+  //         }
+  //         discountedPrice = totalAmount - discountAmount;
+  //       } else if (coupon.discountType === "flat") {
+  //         const flatDiscount = parseFloat(coupon.discountValue);
+  //         discountedPrice = totalAmount - flatDiscount;
+  //       }
+  //       discountedPrice = Math.max(discountedPrice, 0);
+  //     } else {
+  //       console.log("not offer Applied");
+  //     }
+
+  //     console.log(discountedPrice);
+
+  //     const amountToSend = discountedPrice || totalAmount;
+
+  //     const couponDetails = isOfferApplied
+  //       ? { code, discountApplied: totalAmount - discountedPrice}
+  //       : null;
+
+  //     if (selectedPayment === "cash_on_delivery") {
+  //       if (amountToSend > 1000) {
+  //         return res
+  //           .status(400)
+  //           .json({
+  //             val: false,
+  //             msg: "COD only available for product less then 1000",
+  //           });
+  //       }
+  //       const order = await orderModel.create({
+  //         orderId:orderId++,
+  //         user: userId,
+  //         items: isArray ? items : [items],
+  //         totalAmount: amountToSend,
+  //         paymentMethod: selectedPayment,
+  //         shippingAddress: address,
+  //         coupon: couponDetails,
+  //         orderedAt: new Date(),
+  //         paymentStatus: "pending",
+  //         orderStatus: "processing",
+  //         statusHistory: [{ status: "processing", updatedAt: new Date() }],
+  //       });
+  //       for (let i = 0; i < (isArray ? items : [items]).length; i++) {
+  //         const {
+  //           product: productId,
+  //           size,
+  //           quantity: quantityOrdered,
+  //         } = isArray ? items[i] : items;
+  //         const product = await productModel.findById(productId);
+
+  //         if (!product || !product.sizes[size]) {
+  //           return res
+  //             .status(404)
+  //             .json({ val: false, msg: "Product or size not found" });
+  //         }
+
+  //         if (product.sizes[size].stock >= quantityOrdered) {
+  //           product.sizes[size].stock -= quantityOrdered;
+  //           product.markModified("sizes");
+  //           await product.save();
+  //         } else {
+  //           return res.status(400).json({
+  //             val: false,
+  //             msg: `Not enough stock for size ${size}`,
+  //           });
+  //         }
+  //       }
+
+  //       return res.status(200).json({
+  //         val: true,
+  //         msg: "Order placed successfully with Cash on Delivery",
+  //       });
+  //     } else if (selectedPayment === "razorpay") {
+  //       const razorpayOrder = await razorpay.orders.create({
+  //         amount: Math.round(discountedPrice * 100),
+  //         currency: "INR",
+  //         receipt: `order_rcptid_${Math.random()
+  //           .toString(36)
+  //           .substring(2, 15)}`,
+  //         notes: {
+  //           userId,
+  //           addressId: selectedAddressId,
+  //         },
+  //       });
+  //       const order = await orderModel.create({
+  //         orderId:orderId++,
+  //         user: userId,
+  //         items: items,
+  //         totalAmount: amountToSend,
+  //         paymentMethod: selectedPayment,
+  //         shippingAddress: address,
+  //         coupon: couponDetails,
+  //         razorpayOrderId: razorpayOrder.id,
+  //         orderedAt: new Date(),
+  //         paymentStatus: "pending",
+  //         orderStatus: "processing",
+  //         statusHistory: [{ status: "processing", updatedAt: new Date() }],
+  //       });
+  //       console.log(razorpayOrder);
+  //       return res.status(200).json({
+  //         val: true,
+  //         msg: "Razorpay order created successfully",
+  //         order: razorpayOrder,
+  //         key: "rzp_test_P7m0ieN3xeK18I",
+  //       });
+  //     } else if (selectedPayment === "wallet") {
+  //       let wallet = await walletModel.findOne({
+  //         userId: req.session.currentId,
+  //       });
+  //       if (!wallet) {
+  //         return res.status(404).json({ val: false, msg: "Wallet not found" });
+  //       }
+  //       console.log(wallet.balance);
+  //       console.log(amountToSend);
+  //       if (wallet.balance < amountToSend) {
+  //         return res
+  //           .status(404)
+  //           .json({ val: false, msg: "Not enough money in wallet" });
+  //       }
+
+  //       wallet.balance -= discountedPrice ? discountedPrice : totalAmount;
+  //       wallet.transactionHistory.push({
+  //         transactionType: "purchase",
+  //         transactionAmount: discountedPrice ? discountedPrice : totalAmount,
+  //         transactionDate: new Date(),
+  //         description: `Purchase of the order ${item.orderId}`,
+  //       });
+  //       console.log(wallet);
+  //       await wallet.save();
+  //       const order = await orderModel.create({
+  //         orderId:orderId++,
+  //         user: userId,
+  //         items: isArray ? items : [items],
+  //         totalAmount: amountToSend,
+  //         paymentMethod: selectedPayment,
+  //         shippingAddress: address,
+  //         coupon: couponDetails,
+  //         orderedAt: new Date(),
+  //         paymentStatus: "paid",
+  //         orderStatus: "processing",
+  //         statusHistory: [{ status: "processing", updatedAt: new Date() }],
+  //       });
+  //       for (let i = 0; i < (isArray ? items : [items]).length; i++) {
+  //         const {
+  //           product: productId,
+  //           size,
+  //           quantity: quantityOrdered,
+  //         } = isArray ? items[i] : items;
+  //         const product = await productModel.findById(productId);
+
+  //         if (!product || !product.sizes[size]) {
+  //           return res
+  //             .status(404)
+  //             .json({ val: false, msg: "Product or size not found" });
+  //         }
+
+  //         if (product.sizes[size].stock >= quantityOrdered) {
+  //           product.sizes[size].stock -= quantityOrdered;
+  //           product.markModified("sizes");
+  //           await product.save();
+  //         } else {
+  //           return res.status(400).json({
+  //             val: false,
+  //             msg: `Not enough stock for size ${size}`,
+  //           });
+  //         }
+  //       }
+
+  //       return res.status(200).json({
+  //         val: true,
+  //         order,
+  //         msg: "Order placed successfully with wallet",
+  //       });
+  //     } else {
+  //       return res
+  //         .status(400)
+  //         .json({ val: false, msg: "Invalid payment method" });
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     return res
+  //       .status(500)
+  //       .json({ val: false, msg: "Server error", error: err.message });
+  //   }
+  // },
+  
+
   async placeOrder(req, res) {
     const { item, selectedAddressId, selectedPayment, isOfferApplied, code } =
       req.body;
     const userId = req.session.currentId;
+    
     try {
       console.log(isOfferApplied);
-
+  
       if (!item || !selectedAddressId || !selectedPayment) {
         return res
           .status(400)
           .json({ val: false, msg: "Missing required fields" });
       }
+      
       let parsedItem;
       try {
         parsedItem = JSON.parse(item);
       } catch (err) {
         return res.status(400).json({ val: false, msg: "Invalid item format" });
       }
-
+  
       console.log(`parsed item :----------- ${parsedItem}`);
-
+  
       const isArray = Array.isArray(parsedItem);
       let items, totalAmount;
-
+  
       const validateItem = (product) => {
         if (
           !product._id ||
@@ -59,9 +340,12 @@ module.exports = {
             .json({ val: false, msg: "Invalid product data" });
         }
       };
-
+  
       if (isArray) {
-        parsedItem.forEach(validateItem);
+        parsedItem.forEach((product) => {
+          const result = validateItem(product);
+          if (result) return result; 
+        });
         items = parsedItem.map((product) => ({
           product: new mongoose.Types.ObjectId(product._id),
           quantity: product.quantity,
@@ -75,7 +359,8 @@ module.exports = {
         );
         await cartModel.deleteMany({ userId });
       } else {
-        validateItem(parsedItem);
+        const result = validateItem(parsedItem);
+        if (result) return result; 
         items = {
           product: new mongoose.Types.ObjectId(parsedItem._id),
           quantity: parsedItem.quantity,
@@ -89,7 +374,7 @@ module.exports = {
           "items.product": parsedItem._id,
         });
       }
-
+  
       const user = await userModel.findOne({ _id: userId });
       const address = user.address.find(
         (addr) => addr._id.toString() === selectedAddressId
@@ -97,9 +382,9 @@ module.exports = {
       if (!address) {
         return res.status(400).json({ val: false, msg: "Invalid address ID" });
       }
-
+  
       let discountedPrice = totalAmount;
-
+  
       console.log(isOfferApplied, code);
       console.log(totalAmount);
       if (isOfferApplied) {
@@ -120,26 +405,26 @@ module.exports = {
       } else {
         console.log("not offer Applied");
       }
-
+  
       console.log(discountedPrice);
-
+  
       const amountToSend = discountedPrice || totalAmount;
-
+  
       const couponDetails = isOfferApplied
-        ? { code, discountApplied: totalAmount - discountedPrice}
+        ? { code, discountApplied: totalAmount - discountedPrice }
         : null;
-
+  
       if (selectedPayment === "cash_on_delivery") {
         if (amountToSend > 1000) {
           return res
             .status(400)
             .json({
               val: false,
-              msg: "COD only available for product less then 1000",
+              msg: "COD only available for product less than 1000",
             });
         }
         const order = await orderModel.create({
-          orderId:orderId++,
+          orderId: orderId++,
           user: userId,
           items: isArray ? items : [items],
           totalAmount: amountToSend,
@@ -158,13 +443,13 @@ module.exports = {
             quantity: quantityOrdered,
           } = isArray ? items[i] : items;
           const product = await productModel.findById(productId);
-
+  
           if (!product || !product.sizes[size]) {
             return res
               .status(404)
               .json({ val: false, msg: "Product or size not found" });
           }
-
+  
           if (product.sizes[size].stock >= quantityOrdered) {
             product.sizes[size].stock -= quantityOrdered;
             product.markModified("sizes");
@@ -176,7 +461,7 @@ module.exports = {
             });
           }
         }
-
+  
         return res.status(200).json({
           val: true,
           msg: "Order placed successfully with Cash on Delivery",
@@ -194,7 +479,7 @@ module.exports = {
           },
         });
         const order = await orderModel.create({
-          orderId:orderId++,
+          orderId: orderId++,
           user: userId,
           items: items,
           totalAmount: amountToSend,
@@ -228,7 +513,7 @@ module.exports = {
             .status(404)
             .json({ val: false, msg: "Not enough money in wallet" });
         }
-
+  
         wallet.balance -= discountedPrice ? discountedPrice : totalAmount;
         wallet.transactionHistory.push({
           transactionType: "purchase",
@@ -239,7 +524,7 @@ module.exports = {
         console.log(wallet);
         await wallet.save();
         const order = await orderModel.create({
-          orderId:orderId++,
+          orderId: orderId++,
           user: userId,
           items: isArray ? items : [items],
           totalAmount: amountToSend,
@@ -258,13 +543,13 @@ module.exports = {
             quantity: quantityOrdered,
           } = isArray ? items[i] : items;
           const product = await productModel.findById(productId);
-
+  
           if (!product || !product.sizes[size]) {
             return res
               .status(404)
               .json({ val: false, msg: "Product or size not found" });
           }
-
+  
           if (product.sizes[size].stock >= quantityOrdered) {
             product.sizes[size].stock -= quantityOrdered;
             product.markModified("sizes");
@@ -276,24 +561,22 @@ module.exports = {
             });
           }
         }
-
+  
         return res.status(200).json({
           val: true,
-          order,
-          msg: "Order placed successfully with wallet",
+          msg: "Order placed successfully with Wallet payment",
         });
       } else {
-        return res
-          .status(400)
-          .json({ val: false, msg: "Invalid payment method" });
+        return res.status(400).json({ val: false, msg: "Invalid payment method" });
       }
     } catch (err) {
-      console.error(err);
-      return res
-        .status(500)
-        .json({ val: false, msg: "Server error", error: err.message });
+      console.error("Error in placing order:", err);
+      return res.status(500).json({ val: false, msg: "Server error" });
     }
-  },
+  },  
+
+
+  
   async cancelOrder(req, res) {
     const { orderId } = req.params;
     const { currentId } = req.session;
@@ -645,12 +928,14 @@ module.exports = {
           updatedAt: new Date(),
         });
         await order.save();
+        return res.status(200).json({ val: true, msg: "Order return request approved" });
       }
       order.returnRequest.adminStatus = "cancelled";
-      res.status(200).json({ val: true, msg: "Order return request approved" });
+      await order.save();
+      res.status(200).json({ val: true, msg: "Order return request canceled" });
     } catch (err) {
       console.log(err);
-      res.status(200).json({ val: true, msg: err.message });
+      res.status(200).json({ val: false, msg: err.message });
     }
   },
   async retryPayment(req, res) {

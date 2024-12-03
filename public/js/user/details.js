@@ -163,7 +163,7 @@ const btnBuyNow = document.querySelector(".btn-buynow");
 
 btnBuyNow.addEventListener("click", async (e) => {
   const quantity = document.querySelector(".quantity").value;
-  const price = document.querySelector(".currentPrice").textContent;
+  const price = document.querySelector(".offerPriceProduct").textContent;
   console.log(price);
   const productId = e.target.getAttribute("data-id");
   console.log(quantity);
@@ -229,6 +229,11 @@ async function addToWishlist(productId) {
     const data = await response.json();
     if (data.val) {
       console.log("Added to wishlist");
+      Swal.fire({
+        title: 'Added!',
+        text: 'Item added to wishlist.',
+        icon: 'success',
+      });
       wishlistButton.setAttribute("data-wishlist-item-id", data.wishlistItemId);
     } else {
       Swal.fire({

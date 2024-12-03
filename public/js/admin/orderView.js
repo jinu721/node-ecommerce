@@ -142,6 +142,7 @@ document.querySelector(".btn-requestApproved").addEventListener("click", async (
         "order",
         "success"
       );
+      window.location.href = `/admin/orders/view/${orderId}`;
     } else {
       Swal.fire("Error", data.message || "Something went wrong!", "error");
     }
@@ -169,17 +170,17 @@ document.querySelector(".btn-requestCancel").addEventListener("click", async () 
         icon: "info",
         confirmButtonText: "OK",
       });
-
       await sendNotification(
         "Request Cancelled",
         "Your return request has been cancelled by the admin.",
         "order",
         "failed"
       );
+      window.location.href = `/admin/orders/view/${orderId}`;
     } else {
       Swal.fire(
         "Error",
-        data.message || "Failed to cancel the request.",
+        data.msg || "Failed to cancel the request.",
         "error"
       );
     }

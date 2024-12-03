@@ -135,5 +135,8 @@ module.exports = {
         res.status(200).json({val:true});
       }
     })
-  }
+  },
+  aboutLoad(req, res) {
+    res.render("about");
+  },
 };

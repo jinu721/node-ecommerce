@@ -33,58 +33,58 @@ module.exports = {
       console.log(err);
     }
   },
-  async addToWishlist(req, res) {
-    const { productId } = req.params;
-    const { size, color } = req.body;
+  // async addToWishlist(req, res) {
+  //   const { productId } = req.params;
+  //   const { size, color } = req.body;
 
-    try {
-      if (!req.session.loggedIn) {
-        return res.status(400).json({ val: false, msg: "Please login first" });
-      }
+  //   try {
+  //     if (!req.session.loggedIn) {
+  //       return res.status(400).json({ val: false, msg: "Please login first" });
+  //     }
 
-      let wishlist = await wishlistModel.findOne({
-        userId: req.session.currentId,
-      });
+  //     let wishlist = await wishlistModel.findOne({
+  //       userId: req.session.currentId,
+  //     });
 
-      if (!wishlist) {
-        wishlist = await wishlistModel.create({
-          userId: req.session.currentId,
-          items: [{ productId, size, color }],
-        });
+  //     if (!wishlist) {
+  //       wishlist = await wishlistModel.create({
+  //         userId: req.session.currentId,
+  //         items: [{ productId, size, color }],
+  //       });
 
-        const addedItemId = wishlist.items[0]._id;
-        return res
-          .status(200)
-          .json({
-            val: true,
-            msg: "Item added to wishlist",
-            wishlistItemId: addedItemId,
-          });
-      }
+  //       const addedItemId = wishlist.items[0]._id;
+  //       return res
+  //         .status(200)
+  //         .json({
+  //           val: true,
+  //           msg: "Item added to wishlist",
+  //           wishlistItemId: addedItemId,
+  //         });
+  //     }
 
-      const index = wishlist.items.findIndex(
-        (item) => item.productId.toString() === productId
-      );
+  //     const index = wishlist.items.findIndex(
+  //       (item) => item.productId.toString() === productId
+  //     );
 
-      const newItem = { productId, size, color };
-      wishlist.items.push(newItem);
-      await wishlist.save();
+  //     const newItem = { productId, size, color };
+  //     wishlist.items.push(newItem);
+  //     await wishlist.save();
 
-      const addedItemId = wishlist.items[wishlist.items.length - 1]._id;
-      return res
-        .status(200)
-        .json({
-          val: true,
-          msg: "Item added to wishlist",
-          wishlistItemId: addedItemId,
-        });
-    } catch (err) {
-      console.error(err);
-      return res
-        .status(500)
-        .json({ val: false, msg: "An error occurred", error: err.message });
-    }
-  },
+  //     const addedItemId = wishlist.items[wishlist.items.length - 1]._id;
+  //     return res
+  //       .status(200)
+  //       .json({
+  //         val: true,
+  //         msg: "Item added to wishlist",
+  //         wishlistItemId: addedItemId,
+  //       });
+  //   } catch (err) {
+  //     console.error(err);
+  //     return res
+  //       .status(500)
+  //       .json({ val: false, msg: "An error occurred", error: err.message });
+  //   }
+  // },
 
   async removeFromWishlist(req, res) {
     console.log("shhshshs");

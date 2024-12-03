@@ -28,7 +28,7 @@ module.exports = {
       req.session.userEmail = user.email; 
       req.session.loggedIn = true; 
       req.session.currentId = user._id ;
-      return res.redirect('/account'); 
+      return res.redirect('/'); 
     })(req, res, next);
   }
 };

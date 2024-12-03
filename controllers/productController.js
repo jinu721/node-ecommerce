@@ -8,14 +8,47 @@ const path = require("path");
 module.exports = {
   async homeLoad(req, res) {
     try {
-      const category = await categoryModel.find({ isDeleted: false });
-      const listedCategoryIds = category.map((x) => x._id.toString());
-      console.log(category)
-      const products = await productModel
-        .find({ isDeleted: false, category: { $in: listedCategoryIds } })
-        .sort({ _id: -1 })
-        .limit(15);
-      res.render("index", { category, products });
+      const products = await productModel.find(); 
+
+      const category = await categoryModel.find(); 
+      const topSellingProducts = await orderModel.aggregate([
+        { $match: { orderStatus: "delivered" } },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.product",
+            totalQuantity: { $sum: "$items.quantity" },
+          },
+        },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "product",
+          },
+        },
+        {
+          $project: {
+            product: { $arrayElemAt: ["$product", 0] },
+            totalQuantity: 1,
+          },
+        },
+      ]);
+      const hotReleases = products.slice(0, 5);
+      const dealsAndOutfits = products.slice(5, 10);
+
+      console.log(hotReleases)
+
+      res.render("index", {
+        products: products,
+        category: category,
+        hotReleases:hotReleases,
+        dealsAndOutfits:dealsAndOutfits,
+        topSellingProducts: topSellingProducts,
+      });
     } catch (err) {
       console.log(err);
     }
@@ -25,7 +58,7 @@ module.exports = {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
-  
+
       let query = { isDeleted: false };
       let sortBy = {};
 
@@ -42,7 +75,7 @@ module.exports = {
       } else {
         sortBy.createdAt = -1;
       }
-  
+
       if (req.query.price && req.query.price !== "") {
         const priceRange = req.query.price.split(" - ");
         const minPrice = parseInt(priceRange[0].replace("₹", "").trim(), 10);
@@ -51,14 +84,18 @@ module.exports = {
           : Infinity;
         query.price = { $gte: minPrice, $lte: maxPrice };
       }
-  
+
       // Fetch only active categories
       const activeCategories = await categoryModel.find({ isDeleted: false });
-      const activeCategoryIds = activeCategories.map((cat) => cat._id.toString());
-  
+      const activeCategoryIds = activeCategories.map((cat) =>
+        cat._id.toString()
+      );
+
       // Filter by category if specified in the query
       if (req.query.category && req.query.category !== "") {
-        const category = activeCategories.find((cat) => cat.name === req.query.category);
+        const category = activeCategories.find(
+          (cat) => cat.name === req.query.category
+        );
         if (category) {
           query.category = category._id;
         } else {
@@ -67,33 +104,34 @@ module.exports = {
       } else {
         query.category = { $in: activeCategoryIds }; // Only include active categories
       }
-  
+
       // Fetch products with the refined query
       let products = await productModel
         .find(query)
         .skip(skip)
         .limit(limit)
         .sort(sortBy);
-  
+
       // Alphabetical sorting if specified
       if (req.query.name === "A-Z") {
         products = products.sort((a, b) => {
           return a.name.localeCompare(b.name);
         });
       }
-  
+
       // Send active categories and filtered products
       if (req.query.api) {
         return res.status(200).json({ products, category: activeCategories });
       } else {
-        res.status(200).render("shop", { products, category: activeCategories });
+        res
+          .status(200)
+          .render("shop", { products, category: activeCategories });
       }
     } catch (err) {
       console.error(err);
       res.status(500).send("Error loading shop data");
     }
-  }
-  ,
+  },
   async productDetailesLoad(req, res) {
     const productId = req.params.id;
     try {
@@ -111,16 +149,14 @@ module.exports = {
         user: req.session.currentId,
         orderStatus: "delivered",
       });
-      console.log(product)
-      res
-        .status(200)
-        .render("details", {
-          product,
-          relatedProducts,
-          category,
-          isBuyedUser: !!isBuyedUser,
-          isAlreadyWishlist,
-        });
+      console.log(product);
+      res.status(200).render("details", {
+        product,
+        relatedProducts,
+        category,
+        isBuyedUser: !!isBuyedUser,
+        isAlreadyWishlist,
+      });
     } catch (err) {
       res.status(500).send("Server side error");
     }
@@ -131,7 +167,11 @@ module.exports = {
     const skip = (page - 1) * limit;
 
     try {
-      const products = await productModel.find({}).skip(skip).limit(limit).sort({createdAt:-1});
+      const products = await productModel
+        .find({})
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
       const totalProducts = await productModel.countDocuments();
       const totalPages = Math.ceil(totalProducts / limit);
       const category = await categoryModel.find({});
@@ -470,7 +510,7 @@ module.exports = {
             { tags: { $regex: key, $options: "i" } },
             { brand: { $regex: key, $options: "i" } },
           ],
-          isDeleted:false
+          isDeleted: false,
         })
         .limit(10);
       if (!results) {
@@ -532,29 +572,37 @@ module.exports = {
     }
   },
   async productReviewsDelete(req, res) {
-    const { reviewId } = req.params; 
+    const { reviewId } = req.params;
 
     try {
-        if (!req.session.currentId) {
-            return res.status(400).json({ val: false, msg: 'Please login first' });
-        }
-        if (!reviewId) {
-            return res.status(400).json({ val: false, msg: 'Review ID not provided or invalid' });
-        }
-        const result = await productModel.updateOne(
-            { 'reviews._id': reviewId, 'reviews.user': req.session.currentId },
-            { $pull: { reviews: { _id: reviewId } } } 
-        );
+      if (!req.session.currentId) {
+        return res.status(400).json({ val: false, msg: "Please login first" });
+      }
+      if (!reviewId) {
+        return res
+          .status(400)
+          .json({ val: false, msg: "Review ID not provided or invalid" });
+      }
+      const result = await productModel.updateOne(
+        { "reviews._id": reviewId, "reviews.user": req.session.currentId },
+        { $pull: { reviews: { _id: reviewId } } }
+      );
 
-        if (result.modifiedCount === 0) {
-            return res.status(404).json({ val: false, msg: 'Review not found or user not authorized' });
-        }
+      if (result.modifiedCount === 0) {
+        return res
+          .status(404)
+          .json({ val: false, msg: "Review not found or user not authorized" });
+      }
 
-        res.status(200).json({ val: true, msg: 'Review deleted successfully' });
+      res.status(200).json({ val: true, msg: "Review deleted successfully" });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ val: false, msg: 'An error occurred while deleting the review' });
+      console.error(err);
+      res
+        .status(500)
+        .json({
+          val: false,
+          msg: "An error occurred while deleting the review",
+        });
     }
-}
-,
+  },
 };

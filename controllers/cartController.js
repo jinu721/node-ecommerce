@@ -146,11 +146,13 @@ module.exports = {
       if (!cart || cart.items.length === 0) {
         return res.status(200).json({
           val: true,
-          msg: "Item removed from cart",
+          msg: "Item not found in cart",
           cart,
           products: [],
         });
       }
+      cart.cartTotal = cart.items.reduce((total, item) => total + item.total, 0);
+      cart.save();
       const productIds = cart.items.map((item) => item.productId);
       const products = await productModel.find({ _id: { $in: productIds } });
       res

@@ -1,6 +1,6 @@
 // ~~~~~~~~~~~~~~~~~~ update profile section ~~~~~~~~~~~~~~~~~~
 
-console.log('shui')
+console.log("shui");
 
 const profileInfo = document.querySelector(".profile-info");
 const updateForm = document.querySelector(".updateform");
@@ -142,9 +142,9 @@ const createAddressText = document.querySelector(".createAddress");
 const textPattern = /^[a-zA-Z\s]+$/;
 const pincodePattern = /^[0-9]{6}$/;
 
-const addressDisplaySection = document.querySelector('.addressDisplaySection');
-const addressCreateSection = document.querySelector('.address-form-create');
-const addressEditSection = document.querySelector('.address-form-edit');
+const addressDisplaySection = document.querySelector(".addressDisplaySection");
+const addressCreateSection = document.querySelector(".address-form-create");
+const addressEditSection = document.querySelector(".address-form-edit");
 
 createAddressText.addEventListener("click", () => {
   addressDisplaySection.style.display = "none";
@@ -380,20 +380,20 @@ tabs.forEach((tab) => {
     const targetContent = document.querySelector(targetSelector);
     if (!targetContent) {
       if (targetSelector === "#logout") {
-        async function fetchData(){
-          try{
-            const response = await fetch('/logout', { method: "POST" });
+        async function fetchData() {
+          try {
+            const response = await fetch("/logout", { method: "POST" });
             const data = await response.json();
-            if(!data.val){
+            if (!data.val) {
               Swal.fire({
                 icon: "error",
                 title: "Oops...",
                 text: data.msg,
               });
-            }else{
-              window.location.href = '/';
+            } else {
+              window.location.href = "/";
             }
-          }catch(err){
+          } catch (err) {
             console.log(err);
           }
         }
@@ -472,7 +472,7 @@ async function fetchWallet() {
             hour12: true,
           };
 
-          return date.toLocaleString("en-US", options); 
+          return date.toLocaleString("en-US", options);
         }
         function capitalize(str) {
           return str.replace(/\b\w/g, function (char) {
@@ -485,12 +485,16 @@ async function fetchWallet() {
         div.innerHTML = `
         <div class="transaction-item">
               <div class="transaction-info">
-                <div class="transaction-icon ${x.transactionType==='refund'?'icon-receive':'icon-send'}">${x.transactionType==='refund'?'↓':'↑'}</div>
+                <div class="transaction-icon ${
+                  x.transactionType === "refund" ? "icon-receive" : "icon-send"
+                }">${x.transactionType === "refund" ? "↓" : "↑"}</div>
                 <div class="transaction-details">
                   <span class="transaction-title"
                     >${capitalize(x.transactionType)}</span
                   >
-                  <span class="transaction-date">${formatDate(x.transactionDate)}</span>
+                  <span class="transaction-date">${formatDate(
+                    x.transactionDate
+                  )}</span>
                 </div>
               </div>
               <div
@@ -498,7 +502,9 @@ async function fetchWallet() {
                 style="text-align: right"
               >
                 <span class="transaction-amount amount-received"
-                  >${x.transactionType==='refund'?'+':'-'}&#8377;${x.transactionAmount}</span
+                  >${x.transactionType === "refund" ? "+" : "-"}&#8377;${
+          x.transactionAmount
+        }</span
                 >
                 <span class="transaction-status status-completed"
                   >Completed</span
@@ -743,7 +749,6 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
 //           }
 //         });
 //       });
-      
 
 //       renderPagination(data.currentPage, data.totalPages);
 //     }
@@ -768,7 +773,7 @@ async function fetchOrders(page = 1) {
     if (!data.orders || data.orders.length === 0) {
       const orderNullTr = document.createElement("tr");
       orderNullTr.classList.add("order-null-item");
-      orderNullTr.innerHTML = `<td colspan="7">No orders yet!</td>`; 
+      orderNullTr.innerHTML = `<td colspan="7">No orders yet!</td>`;
       orderContainer.appendChild(orderNullTr);
     } else {
       data.orders.forEach((order, index) => {
@@ -778,7 +783,7 @@ async function fetchOrders(page = 1) {
           month: "long",
           day: "numeric",
         });
-      
+
         const orderRow = document.createElement("tr");
         orderRow.classList.add("order-item");
         orderRow.innerHTML = `
@@ -787,39 +792,69 @@ async function fetchOrders(page = 1) {
           <td>${order.orderStatus}</td>
           <td>
             ${order.paymentStatus}
-            ${order.paymentStatus === "pending" && order.paymentMethod && order.paymentMethod.trim().toLowerCase() === "razorpay" ? `<a class="btnRetryPayment" data-id="${order._id}"><i class="fa fa-sync-alt"></i></a>` : ""}
+            ${
+              order.paymentStatus === "pending" &&
+              order.paymentMethod &&
+              order.paymentMethod.trim().toLowerCase() === "razorpay"
+                ? `<a class="btnRetryPayment" data-id="${order._id}"><i class="fa fa-sync-alt"></i></a>`
+                : ""
+            }
           </td>
           <td>&#8377;${order.totalAmount}</td>
           <td>
-            <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${order._id}">View</a>
+            <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${
+              order._id
+            }">View</a>
           </td>
           <td>
             <a class="view__order btnCancelOrder" data-id="${order._id}">
-              ${order.orderStatus === "delivered" ? "Request Return" : "Cancel Order"}
+      ${
+        order.orderStatus === "delivered"
+          ? "Request Return"
+          : order.orderStatus === "returned"
+          ? "Order Returned"
+          : order.orderStatus === "cancelled"
+          ? "Order Canceled"
+          : "Cancel Order"
+      }
             </a>
           </td>
         `;
-      
+
         orderContainer.append(orderRow);
-      
-        orderRow.querySelector('.btnCancelOrder').addEventListener('click', (event) => {
-          if (order.orderStatus === 'delivered') {
+        orderRow.querySelector(".btnCancelOrder").addEventListener("click", (event) => {
+          if (order.orderStatus === "delivered") {
             requestReturn(event);
-          } else {
+          } 
+          else if (order.orderStatus === "returned") {
+            Swal.fire({
+              icon: "info",
+              title: "Order Returned",
+              text: "This order has already been returned.",
+            });
+          } 
+          else if (order.orderStatus === "cancelled") {
+            Swal.fire({
+              icon: "info",
+              title: "Order Canceled",
+              text: "This order has already been canceled.",
+            });
+          } 
+          else {
             cancelOrders(event);
           }
         });
-      
+        
+
         if (order.paymentStatus === "pending") {
-          const retryBtn = orderRow.querySelector('.btnRetryPayment');
+          const retryBtn = orderRow.querySelector(".btnRetryPayment");
           if (retryBtn) {
-            retryBtn.addEventListener('click', (event) => {
+            retryBtn.addEventListener("click", (event) => {
               retryPayment(event);
             });
           }
         }
       });
-      
 
       renderPagination(data.currentPage, data.totalPages);
     }
@@ -828,7 +863,6 @@ async function fetchOrders(page = 1) {
   }
 }
 
-
 function renderPagination(currentPage, totalPages) {
   const paginationContainer = document.querySelector(".pagination");
   paginationContainer.innerHTML = "";
@@ -836,7 +870,7 @@ function renderPagination(currentPage, totalPages) {
   if (currentPage > 1) {
     const prevButton = document.createElement("button");
     prevButton.classList.add("pagination-btn");
-    prevButton.innerText = '<';
+    prevButton.innerText = "<";
     prevButton.addEventListener("click", () => fetchOrders(currentPage - 1));
     paginationContainer.appendChild(prevButton);
   }
@@ -858,12 +892,8 @@ function renderPagination(currentPage, totalPages) {
   }
 }
 
-
-
-
-
 function cancelOrders(e) {
-  e.target.addEventListener("click",(e) => {
+  e.target.addEventListener("click", (e) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -871,7 +901,7 @@ function cancelOrders(e) {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Cancel"
+      confirmButtonText: "Yes, Cancel",
     }).then(async (result) => {
       if (result.isConfirmed) {
         const orderId = e.target.getAttribute("data-id");
@@ -882,7 +912,12 @@ function cancelOrders(e) {
           const data = await response.json();
           if (data.val) {
             fetchOrders();
-            sendNotification('Order Canceled','We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!','order','failed');
+            sendNotification(
+              "Order Canceled",
+              "We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!",
+              "order",
+              "failed"
+            );
           } else {
             console.log(data.msg);
           }
@@ -892,7 +927,7 @@ function cancelOrders(e) {
         Swal.fire({
           title: "Canceled!",
           text: "Your order has been canceled.",
-          icon: "success"
+          icon: "success",
         });
       }
     });
@@ -901,24 +936,24 @@ function cancelOrders(e) {
 function requestReturn(event) {
   const orderId = event.target.getAttribute("data-id");
   Swal.fire({
-    title: 'Request Return',
+    title: "Request Return",
     html: `
       <div class="swalInput">
         <textarea id="returnReason" class="returnReason" placeholder="Enter your reason"></textarea>
       </div>
     `,
     showCancelButton: true,
-    confirmButtonText: 'Submit',
-    cancelButtonText: 'Close',
+    confirmButtonText: "Submit",
+    cancelButtonText: "Close",
     focusConfirm: false,
     customClass: {
-      title: 'custom-title',
-      popup: 'swalPopupCustom'
+      title: "custom-title",
+      popup: "swalPopupCustom",
     },
     preConfirm: () => {
-      const reason = document.getElementById('returnReason').value.trim();
+      const reason = document.getElementById("returnReason").value.trim();
       if (!reason) {
-        Swal.showValidationMessage('Please enter a reason for the return');
+        Swal.showValidationMessage("Please enter a reason for the return");
         return false;
       }
       return { reason };
@@ -926,57 +961,55 @@ function requestReturn(event) {
   }).then((result) => {
     if (result.isConfirmed) {
       const reason = result.value.reason;
-      async function requestReturn(){
-        try{
-          const response = await fetch(`/orders/request-return/${orderId}`,{
-            method:'POST',
-            headers:{
-              'Content-Type':'application/json'
+      async function requestReturn() {
+        try {
+          const response = await fetch(`/orders/request-return/${orderId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-            body:JSON.stringify({
-              reasonMsg:reason
-            })
+            body: JSON.stringify({
+              reasonMsg: reason,
+            }),
           });
           const data = await response.json();
-          if(!data.val){
+          if (!data.val) {
             Swal.fire({
               icon: "error",
               title: "Oops...",
               text: data.msg,
             });
-          }else{
+          } else {
             Swal.fire({
-              icon: 'success',
-              title: 'Submitted!',
-              text: 'Your return request has been sent.',
-              confirmButtonText: 'OK',
+              icon: "success",
+              title: "Submitted!",
+              text: "Your return request has been sent.",
+              confirmButtonText: "OK",
               customClass: {
-                title: 'custom-title'
-              }
+                title: "custom-title",
+              },
             });
           }
-        }catch(err){
+        } catch (err) {
           console.log(err);
         }
       }
       requestReturn();
     } else if (result.dismiss === Swal.DismissReason.cancel) {
-      console.log('Return request canceled');
+      console.log("Return request canceled");
     }
   });
-  
-  
 }
 
 async function retryPayment(event) {
   const orderId = event.target.getAttribute("data-id");
   Swal.fire({
-    title: 'Retry Payment',
-    text: 'Do you want to retry the payment for this order?',
-    icon: 'question',
+    title: "Retry Payment",
+    text: "Do you want to retry the payment for this order?",
+    icon: "question",
     showCancelButton: true,
-    confirmButtonText: 'Retry Payment',
-    cancelButtonText: 'Cancel',
+    confirmButtonText: "Retry Payment",
+    cancelButtonText: "Cancel",
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
@@ -992,11 +1025,11 @@ async function retryPayment(event) {
 
         if (data.val) {
           const options = {
-            key: data.key, 
-            amount: data.amount, 
+            key: data.key,
+            amount: data.amount,
             currency: "INR",
-            order_id: data.orderId, 
-            handler: async function(paymentResponse) {
+            order_id: data.orderId,
+            handler: async function (paymentResponse) {
               try {
                 const verifyResponse = await fetch(`/verify-payment`, {
                   method: "POST",
@@ -1007,7 +1040,7 @@ async function retryPayment(event) {
                     paymentId: paymentResponse.razorpay_payment_id,
                     orderId: paymentResponse.razorpay_order_id,
                     signature: paymentResponse.razorpay_signature,
-                    retryOrderId:orderId
+                    retryOrderId: orderId,
                   }),
                 });
 
@@ -1036,9 +1069,9 @@ async function retryPayment(event) {
               }
             },
             prefill: {
-              name: "User Name", 
+              name: "User Name",
               email: "user@example.com",
-              contact: "1234567890", 
+              contact: "1234567890",
             },
             theme: {
               color: "#3399cc",
@@ -1046,7 +1079,7 @@ async function retryPayment(event) {
           };
 
           const rzp = new Razorpay(options);
-          rzp.open(); 
+          rzp.open();
         } else {
           Swal.fire({
             icon: "error",
@@ -1066,10 +1099,7 @@ async function retryPayment(event) {
   });
 }
 
-
-
-const btnViewOrder = document.querySelectorAll('.btnViewOrder');
-
+const btnViewOrder = document.querySelectorAll(".btnViewOrder");
 
 async function viewOrderedProduct(e) {
   document.querySelector(".ordersInfo").style.display = "none";
@@ -1131,28 +1161,27 @@ function toggleEye(inputId, iconElement) {
   iconElement.classList.toggle("fa-eye-slash");
 }
 
-
-async function sendNotification(title,message,type,status){
-  try{
-    const response = await fetch('/notifications',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
+async function sendNotification(title, message, type, status) {
+  try {
+    const response = await fetch("/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      body:JSON.stringify({
+      body: JSON.stringify({
         title,
         message,
         type,
-        status
-      })
+        status,
+      }),
     });
     const data = await response.json();
-    if(data.val){
-      console.log('Notification sended successfully');
-    }else{
+    if (data.val) {
+      console.log("Notification sended successfully");
+    } else {
       console.log(data.msg);
     }
-  }catch(err){
+  } catch (err) {
     console.log(`Sending notification error :- ${err}`);
   }
 }

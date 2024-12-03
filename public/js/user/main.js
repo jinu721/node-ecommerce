@@ -149,7 +149,7 @@ async function performSearch() {
           <div data-id="${item._id}" class="productItem" onclick="loadDetailsPage(event)">
             <img data-id="${item._id}" class="productItemImg" src="/${item.images[0]}" alt="${item.name}">
             <p data-id="${item._id}" class="productItemName">${item.name}</p>
-            <p data-id="${item._id}" class="productItemPrice">&#8377;${item.price}</p>
+            <p data-id="${item._id}" class="productItemPrice">&#8377;${item.offerPrice}</p>
           </div>
         `;
         resultsContainer.innerHTML += productHTML;

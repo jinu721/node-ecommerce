@@ -39,7 +39,7 @@
             <p class="home__description">
               Save more with coupons & up tp 20% off
             </p>
-            <a href="shop.html" class="btn">Shop Now</a>
+            <a href="/shop" class="btn">Shop Now</a>
           </div>
         </div>
       </section>
@@ -50,7 +50,7 @@
             <div class="categories__container swiper">
               <div class="swiper-wrapper">
                 <% category.forEach(data => { %>  
-                    <a data-categoryName="<%= data.name %>" class="category__item swiper-slide categoryItem">
+                    <a href="/category/<%= data._id %>" data-categoryName="<%= data.name %>" class="category__item swiper-slide categoryItem">
                       <img 
                         data-categoryName="<%= data.name %>"
                         src="<%= data.image  %>"
@@ -153,271 +153,96 @@
         <div class="showcase__container container grid">
           <div class="showcase__wrapper">
             <h3 class="section__title">Hot Releases</h3>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/products/sheo1-0.jpeg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">
-                    Floral Print Casual Cotton Dress
-                  </h4>
+            <% hotReleases.forEach(product => { %>
+              <div class="showcase__item">
+                <a href="/details/<%= product._id %>" class="showcase__img-box">
+                  <img src="<%= product.images[0] %>" alt="<%= product.name %>" class="showcase__img" />
                 </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
+                <div class="showcase__content">
+                  <a href="/details/<%= product._id %>">
+                    <h4 class="showcase__title"><%= product.name %></h4>
+                  </a>
+                  <div class="showcase__price flex">
+                    <span class="new__price">&#8377;<%= product.price %></span>
+                    <% if (product.oldPrice) { %>
+                      <span class="old__price">&#8377;<%= product.oldPrice %></span>
+                    <% } %>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/products/shirt1-0.jpeg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">
-                    Ruffled Solid Long Sleeve Blouse
-                  </h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/products/shirt3-0.jpeg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">
-                    Multi-Color Print V-neck T-shirt
-                  </h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
+            <% }); %>
           </div>
+      
           <div class="showcase__wrapper">
             <h3 class="section__title">Deals & Outlet</h3>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-4.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">Fish Print Patched T-shirt</h4>
+            <% dealsAndOutfits.forEach(product => { %>
+              <div class="showcase__item">
+                <a href="/details/<%= product._id %>" class="showcase__img-box">
+                  <img src="<%= product.images[0] %>" alt="<%= product.name %>" class="showcase__img" />
                 </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
+                <div class="showcase__content">
+                  <a href="/details/<%= product._id %>">
+                    <h4 class="showcase__title"><%= product.name %></h4>
+                  </a>
+                  <div class="showcase__price flex">
+                    <span class="new__price">&#8377;<%= product.price %></span>
+                    <% if (product.oldPrice) { %>
+                      <span class="old__price">&#8377;<%= product.oldPrice %></span>
+                    <% } %>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-5.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">Fintage Floral Print Dress</h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-6.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">
-                    Multi-Color Stripe Circle T-shirt
-                  </h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
+            <% }); %>
           </div>
+
           <div class="showcase__wrapper">
             <h3 class="section__title">Top Selling</h3>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-7.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">
-                    Geometric Printed Long Sleeve Blouse
-                  </h4>
+            <% topSellingProducts.forEach(item => { %>
+              <div class="showcase__item">
+                <a href="/details/<%= item.product._id %>" class="showcase__img-box">
+                  <img src="<%= item.product.images[0] %>" alt="<%= item.product.name %>" class="showcase__img" />
                 </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
+                <div class="showcase__content">
+                  <a href="/details/<%= item.product._id %>">
+                    <h4 class="showcase__title"><%= item.product.name %></h4>
+                  </a>
+                  <div class="showcase__price flex">
+                    <span class="new__price">&#8377;<%= item.product.price %></span>
+                    <% if (item.product.oldPrice) { %>
+                      <span class="old__price">&#8377;<%= item.product.oldPrice %></span>
+                    <% } %>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/products/shirt3-1.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">Print Patchwork Maxi Dress</h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-9.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">
-                    Daisy Floral Print Straps Jumpsuit
-                  </h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
+            <% }); %>
           </div>
+      
           <div class="showcase__wrapper">
             <h3 class="section__title">Trendy</h3>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-7.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">Floral Print Casual Cotton</h4>
+            <% products.slice(0, 3).forEach(product => { %>
+              <div class="showcase__item">
+                <a href="/details/<%= product._id %>" class="showcase__img-box">
+                  <img src="<%= product.images[0] %>" alt="<%= product.name %>" class="showcase__img" />
                 </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
+                <div class="showcase__content">
+                  <a href="/details/<%= product._id %>">
+                    <h4 class="showcase__title"><%= product.name %></h4>
+                  </a>
+                  <div class="showcase__price flex">
+                    <span class="new__price">&#8377;<%= product.price %></span>
+                    <% if (product.oldPrice) { %>
+                      <span class="old__price">&#8377;<%= product.oldPrice %></span>
+                    <% } %>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/products/shirt3-0.jpeg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">Ruffled Solid Long Sleeve</h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
-            <div class="showcase__item">
-              <a href="details.html" class="showcase__img-box">
-                <img
-                  src=".//img/showcase-img-9.jpg"
-                  alt=""
-                  class="showcase__img"
-                />
-              </a>
-              <div class="showcase__content">
-                <a href="details.html">
-                  <h4 class="showcase__title">Multi-Color Print V-neck</h4>
-                </a>
-                <div class="showcase__price flex">
-                  <span class="new__price">$238.85</span>
-                  <span class="old__price">$245.8</span>
-                </div>
-              </div>
-            </div>
+            <% }); %>
           </div>
+          
         </div>
       </section>
+      
 
-      <!--=============== NEWSLETTER ===============-->
-      <section class="newsletter section home__newsletter">
-        <div class="newsletter__container container grid">
-          <h3 class="newsletter__title flex">
-            <img
-              src=".//img/icon-email.svg"
-              alt=""
-              class="newsletter__icon"
-            />
-            Sign in to Newsletter
-          </h3>
-          <p class="newsletter__description">
-            ...and receive $25 coupon for first shopping.
-          </p>
-          <form action="" class="newsletter__form">
-            <input
-              type="text"
-              placeholder="Enter Your Email"
-              class="newsletter__input"
-            />
-            <button type="submit" class="newsletter__btn">Subscribe</button>
-          </form>
-        </div>
-      </section>
     </main>
 
     <button class="chat-button" id="openModalBtn">
@@ -467,13 +292,13 @@
     <script src="/js/user/main.js"></script>
     <script src="/js/user/chat.js"></script>
     <script>
-      const categoryItems = document.querySelectorAll('.categoryItem');
-      categoryItems.forEach(elem=>{
-        elem.addEventListener('click',(e)=>{
-          const categoryName = e.target.getAttribute('data-categoryName');
-          window.location.href = `/shop?sortBy=Default&price=&category=${categoryName}&name=All&api=true`;
-        })
-      });
+      // const categoryItems = document.querySelectorAll('.categoryItem');
+      // categoryItems.forEach(elem=>{
+      //   elem.addEventListener('click',(e)=>{
+      //     const categoryName = e.target.getAttribute('data-categoryName');
+      //     window.location.href = `/shop?sortBy=Default&price=&category=${categoryName}&name=All&api=true`;
+      //   })
+      // });
     </script>
   </body>
 </html>

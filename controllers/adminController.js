@@ -358,7 +358,7 @@ module.exports = {
     const limit = 7;
     const skip = (page - 1) * limit;
     try {
-      const users = await userModel.find().skip(skip).limit(limit);
+      const users = await userModel.find({role:'user'}).skip(skip).limit(limit);
       const totalUsers = await userModel.countDocuments();
       const totalPages = Math.ceil(totalUsers / limit);
       return res.status(200).render("usersManagement", {
