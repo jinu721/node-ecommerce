@@ -42,7 +42,7 @@ module.exports = {
       const dateFilter = { createdAt: { $gte: start, $lt: end } };
   
       const [users, products, orders, sales, pendingMoney, categoryData] = await Promise.all([
-        userModel.find({...dateFilter}),
+        userModel.find({}),
         productModel.find({}, "_id"),
         orderModel.find(
           { ...dateFilter, orderStatus: { $not: { $in: ["cancelled", "delivered"] } } },

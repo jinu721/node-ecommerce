@@ -203,7 +203,7 @@
           <a href="/"><button class="home-btn">Back to Home</button></a>
           <button
             class="pdf-btn"
-            onclick="window.location.href='/download-receipt?orderId=<%= order._id %>'"
+            onclick="window.location.href='/orders/download/invoice/<%= order._id %>'"
           >
             Get PDF Receipt
           </button>

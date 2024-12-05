@@ -13,8 +13,7 @@ const pdf = require("html-pdf");
 const ejs = require("ejs");
 const path = require("path");
 
-
-let orderId = 100 ;
+let orderId = 100;
 
 module.exports = {
   // async placeOrder(req, res) {
@@ -294,34 +293,33 @@ module.exports = {
   //       .json({ val: false, msg: "Server error", error: err.message });
   //   }
   // },
-  
 
   async placeOrder(req, res) {
     const { item, selectedAddressId, selectedPayment, isOfferApplied, code } =
       req.body;
     const userId = req.session.currentId;
-    
+
     try {
       console.log(isOfferApplied);
-  
+
       if (!item || !selectedAddressId || !selectedPayment) {
         return res
           .status(400)
           .json({ val: false, msg: "Missing required fields" });
       }
-      
+
       let parsedItem;
       try {
         parsedItem = JSON.parse(item);
       } catch (err) {
         return res.status(400).json({ val: false, msg: "Invalid item format" });
       }
-  
+
       console.log(`parsed item :----------- ${parsedItem}`);
-  
+
       const isArray = Array.isArray(parsedItem);
       let items, totalAmount;
-  
+
       const validateItem = (product) => {
         if (
           !product._id ||
@@ -340,11 +338,11 @@ module.exports = {
             .json({ val: false, msg: "Invalid product data" });
         }
       };
-  
+
       if (isArray) {
         parsedItem.forEach((product) => {
           const result = validateItem(product);
-          if (result) return result; 
+          if (result) return result;
         });
         items = parsedItem.map((product) => ({
           product: new mongoose.Types.ObjectId(product._id),
@@ -360,7 +358,7 @@ module.exports = {
         await cartModel.deleteMany({ userId });
       } else {
         const result = validateItem(parsedItem);
-        if (result) return result; 
+        if (result) return result;
         items = {
           product: new mongoose.Types.ObjectId(parsedItem._id),
           quantity: parsedItem.quantity,
@@ -374,7 +372,7 @@ module.exports = {
           "items.product": parsedItem._id,
         });
       }
-  
+
       const user = await userModel.findOne({ _id: userId });
       const address = user.address.find(
         (addr) => addr._id.toString() === selectedAddressId
@@ -382,9 +380,9 @@ module.exports = {
       if (!address) {
         return res.status(400).json({ val: false, msg: "Invalid address ID" });
       }
-  
+
       let discountedPrice = totalAmount;
-  
+
       console.log(isOfferApplied, code);
       console.log(totalAmount);
       if (isOfferApplied) {
@@ -405,23 +403,21 @@ module.exports = {
       } else {
         console.log("not offer Applied");
       }
-  
+
       console.log(discountedPrice);
-  
+
       const amountToSend = discountedPrice || totalAmount;
-  
+
       const couponDetails = isOfferApplied
         ? { code, discountApplied: totalAmount - discountedPrice }
         : null;
-  
+
       if (selectedPayment === "cash_on_delivery") {
         if (amountToSend > 1000) {
-          return res
-            .status(400)
-            .json({
-              val: false,
-              msg: "COD only available for product less than 1000",
-            });
+          return res.status(400).json({
+            val: false,
+            msg: "COD only available for product less than 1000",
+          });
         }
         const order = await orderModel.create({
           orderId: orderId++,
@@ -443,13 +439,13 @@ module.exports = {
             quantity: quantityOrdered,
           } = isArray ? items[i] : items;
           const product = await productModel.findById(productId);
-  
+
           if (!product || !product.sizes[size]) {
             return res
               .status(404)
               .json({ val: false, msg: "Product or size not found" });
           }
-  
+
           if (product.sizes[size].stock >= quantityOrdered) {
             product.sizes[size].stock -= quantityOrdered;
             product.markModified("sizes");
@@ -461,7 +457,7 @@ module.exports = {
             });
           }
         }
-  
+
         return res.status(200).json({
           val: true,
           msg: "Order placed successfully with Cash on Delivery",
@@ -513,7 +509,7 @@ module.exports = {
             .status(404)
             .json({ val: false, msg: "Not enough money in wallet" });
         }
-  
+
         wallet.balance -= discountedPrice ? discountedPrice : totalAmount;
         wallet.transactionHistory.push({
           transactionType: "purchase",
@@ -543,13 +539,13 @@ module.exports = {
             quantity: quantityOrdered,
           } = isArray ? items[i] : items;
           const product = await productModel.findById(productId);
-  
+
           if (!product || !product.sizes[size]) {
             return res
               .status(404)
               .json({ val: false, msg: "Product or size not found" });
           }
-  
+
           if (product.sizes[size].stock >= quantityOrdered) {
             product.sizes[size].stock -= quantityOrdered;
             product.markModified("sizes");
@@ -561,22 +557,22 @@ module.exports = {
             });
           }
         }
-  
+
         return res.status(200).json({
           val: true,
           msg: "Order placed successfully with Wallet payment",
         });
       } else {
-        return res.status(400).json({ val: false, msg: "Invalid payment method" });
+        return res
+          .status(400)
+          .json({ val: false, msg: "Invalid payment method" });
       }
     } catch (err) {
       console.error("Error in placing order:", err);
       return res.status(500).json({ val: false, msg: "Server error" });
     }
-  },  
+  },
 
-
-  
   async cancelOrder(req, res) {
     const { orderId } = req.params;
     const { currentId } = req.session;
@@ -589,7 +585,8 @@ module.exports = {
         return res.status(404).json({ val: false, msg: "Order not found" });
       }
       if (
-        (order.paymentMethod === "razorpay" || order.paymentMethod === "wallet") &&
+        (order.paymentMethod === "razorpay" ||
+          order.paymentMethod === "wallet") &&
         order.paymentStatus !== "pending"
       ) {
         let wallet = await walletModel.findOne({
@@ -666,6 +663,27 @@ module.exports = {
       });
     }
   },
+  async reqestReturn(req, res) {
+    const { orderId } = req.params;
+    const { reasonMsg } = req.body;
+    console.log(reasonMsg);
+    try {
+      const updateResult = await orderModel.updateOne(
+        { _id: orderId },
+        {
+          $set: {
+            "returnRequest.requestStatus": true,
+            "returnRequest.requestMessage": reasonMsg,
+            "returnRequest.adminStatus": "pending",
+          },
+        }
+      );
+      res.status(200).json({ val: true });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ val: false, msg: "Something went wrong" });
+    }
+  },
   async adminOrdersLoad(req, res) {
     try {
       const currentPage = parseInt(req.query.page) || 1;
@@ -720,8 +738,11 @@ module.exports = {
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-      if(order.paymentMethod==='cash_on_delivery'&&newStatus==='delivered'){
-        order.paymentStatus = 'paid';
+      if (
+        order.paymentMethod === "cash_on_delivery" &&
+        newStatus === "delivered"
+      ) {
+        order.paymentStatus = "paid";
       }
       order.orderStatus = newStatus;
       order.statusHistory.push({ status: newStatus, updatedAt: new Date() });
@@ -822,29 +843,8 @@ module.exports = {
       console.log(err);
     }
   },
-  async reqestReturn(req, res) {
-    const { orderId } = req.params;
-    const { reasonMsg } = req.body;
-    console.log(reasonMsg);
-    try {
-      const updateResult = await orderModel.updateOne(
-        { _id: orderId },
-        {
-          $set: {
-            "returnRequest.requestStatus": true,
-            "returnRequest.requestMessage": reasonMsg,
-            "returnRequest.adminStatus": "pending",
-          },
-        }
-      );
-      res.status(200).json({ val: true });
-    } catch (err) {
-      console.log(err);
-      res.status(500).json({ val: false, msg: "Something went wrong" });
-    }
-  },
   async downloadRecipt(req, res) {
-    const { orderId } = req.query;
+    const { orderId } = req.params;
     if (!orderId) {
       return res.status(400).json("orderId not found");
     }
@@ -866,12 +866,10 @@ module.exports = {
       ejs.renderFile(templatePath, { order }, (err, renderedHTML) => {
         if (err) {
           console.log(err);
-          return res
-            .status(500)
-            .json({
-              val: false,
-              msg: "Something went wrong while genrating invoice",
-            });
+          return res.status(500).json({
+            val: false,
+            msg: "Something went wrong while genrating invoice",
+          });
         }
         const pdfOptions = {
           heigth: "11.25in",
@@ -883,12 +881,10 @@ module.exports = {
           .create(renderedHTML, pdfOptions)
           .toFile("pdfrecipt.pdf", (err, result) => {
             if (err) {
-              return res
-                .status(500)
-                .json({
-                  val: false,
-                  msg: "Something went wrong while creating invoice pdf",
-                });
+              return res.status(500).json({
+                val: false,
+                msg: "Something went wrong while creating invoice pdf",
+              });
             }
             return res.download(
               result.filename,
@@ -896,12 +892,10 @@ module.exports = {
               (downloadErr) => {
                 if (downloadErr) {
                   console.log(downloadErr);
-                  return res
-                    .status(500)
-                    .json({
-                      val: false,
-                      msg: "Something went wrong while downloading invoice",
-                    });
+                  return res.status(500).json({
+                    val: false,
+                    msg: "Something went wrong while downloading invoice",
+                  });
                 }
               }
             );
@@ -928,7 +922,9 @@ module.exports = {
           updatedAt: new Date(),
         });
         await order.save();
-        return res.status(200).json({ val: true, msg: "Order return request approved" });
+        return res
+          .status(200)
+          .json({ val: true, msg: "Order return request approved" });
       }
       order.returnRequest.adminStatus = "cancelled";
       await order.save();
@@ -974,6 +970,152 @@ module.exports = {
         msg: "Payment retry failed",
         error: err.message,
       });
+    }
+  },
+  async cancelIndividualOrder(req, res) {
+    const { orderId } = req.params;
+    const { itemId } = req.body;
+    const { currentId } = req.session;
+
+    try {
+      const order = await orderModel.findOne({ _id: orderId });
+      if (!order)
+        return res.status(404).json({ val: false, msg: "Order not found" });
+
+      const item = order.items.find((i) => i._id.toString() === itemId);
+      if (!item)
+        return res
+          .status(404)
+          .json({ val: false, msg: "Item not found in order" });
+
+      if (item.itemStatus === "cancelled") {
+        return res
+          .status(400)
+          .json({ val: false, msg: "Item already canceled" });
+      }
+
+      item.itemStatus = "cancelled";
+      order.totalAmount -= item.offerPrice * item.quantity;
+
+      if (order.paymentMethod !== "COD") {
+        let wallet = await walletModel.findOne({ userId: currentId });
+        if (!wallet) {
+          wallet = await walletModel.create({
+            userId: currentId,
+            balance: item.offerPrice * item.quantity,
+            transactionHistory: [
+              {
+                transactionType: "refund",
+                transactionAmount: item.offerPrice * item.quantity,
+                transactionDate: new Date(),
+                description: `Refund for canceled item ${itemId} in order ${orderId}`,
+              },
+            ],
+          });
+        } else {
+          wallet.balance += item.offerPrice * item.quantity;
+          wallet.transactionHistory.push({
+            transactionType: "refund",
+            transactionAmount: item.offerPrice * item.quantity,
+            transactionDate: new Date(),
+            description: `Refund for canceled item ${itemId} in order ${orderId}`,
+          });
+          await wallet.save();
+        }
+      }
+
+      const allItemsCanceled = order.items.every(
+        (i) => i.itemStatus === "cancelled"
+      );
+      if (allItemsCanceled) {
+        order.orderStatus = "cancelled";
+        order.statusHistory.push({
+          status: "cancelled",
+          updatedAt: new Date(),
+        });
+      }
+
+      await order.save();
+      return res
+        .status(200)
+        .json({ val: true, msg: "Item canceled successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ val: false, msg: "Failed to cancel item" });
+    }
+  },
+  async requestIndividualReturn(req, res) {
+    console.log("hii");
+    const { orderId } = req.params;
+    const { reason, itemId } = req.body;
+
+    console.log(orderId);
+    console.log(reason, itemId);
+
+    try {
+      const order = await orderModel.findOne({ _id: orderId });
+      if (!order)
+        return res.status(404).json({ val: false, msg: "Order not found" });
+
+      const item = order.items.find((i) => i._id.toString() === itemId);
+      if (!item)
+        return res
+          .status(404)
+          .json({ val: false, msg: "Item not found in order" });
+
+      if (item.itemStatus !== "delivered") {
+        return res
+          .status(400)
+          .json({ val: false, msg: "Only delivered items can be returned" });
+      }
+
+      item.returnRequest = {
+        requestStatus: true,
+        requestMessage: reason,
+        adminStatus: "pending",
+      };
+
+      await order.save();
+      res.status(200).json({ val: true, msg: "Return request submitted" });
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ val: false, msg: "Failed to submit return request" });
+    }
+  },
+  async requestIndividualReturnAdmin(req, res) {
+    try {
+      const { orderId, itemId } = req.params;
+      const { status } = req.body;
+
+      const order = await orderModel.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ val:false,msg: "Order not found" });
+      }
+
+      const item = order.items.find((item) => item._id.toString() === itemId);
+      if (
+        !item ||
+        !item.returnRequest ||
+        item.returnRequest.adminStatus !== "pending"
+      ) {
+        return res
+          .status(400)
+          .json({ val:false,msg: "Invalid return request or already processed" });
+      }
+
+      if (status === "approved") {
+        item.returnRequest.adminStatus = "approved";
+        await order.save();
+        return res.status(200).json({val:true, msg: "Return request approved successfully" });
+      }
+      item.returnRequest.adminStatus = "cancelled";
+      await order.save();
+      res.status(200).json({ val:true,msg: "Return request canceled successfully" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ val:false,msg: "Something went wrong" });
     }
   },
 };

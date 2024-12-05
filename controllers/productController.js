@@ -8,7 +8,7 @@ const path = require("path");
 module.exports = {
   async homeLoad(req, res) {
     try {
-      const products = await productModel.find(); 
+      const products = await productModel.find({isDeleted:false}); 
 
       const category = await categoryModel.find(); 
       const topSellingProducts = await orderModel.aggregate([

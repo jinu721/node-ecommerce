@@ -215,3 +215,91 @@ async function sendNotification(title, message, type, status) {
     console.error("Error sending notification:", error);
   }
 }
+
+
+function viewModal(e) {
+  const returnReason = e.target.getAttribute('data-return-reason');
+  const itemId = e.target.getAttribute('data-item-id');
+
+  document.getElementById('return-reason').innerText = `Reason: ${returnReason}`;
+  document.querySelector('.btn-cancel-return').setAttribute('data-item-id', itemId);
+  document.querySelector('.btn-approve-return').setAttribute('data-item-id', itemId);
+
+  const modal = new bootstrap.Modal(document.getElementById('returnModal'));
+  modal.show();
+}
+
+
+
+
+document.querySelectorAll('.btn-notify').forEach((button) => {
+  button.addEventListener('click', () => {
+    const returnReason = button.getAttribute('data-return-reason');
+    const itemId = button.getAttribute('data-item-id');
+
+    document.getElementById('return-reason').innerText = `Reason: ${returnReason}`;
+    document.querySelector('.btn-cancel-return').setAttribute('data-item-id', itemId);
+    document.querySelector('.btn-approve-return').setAttribute('data-item-id', itemId);
+  });
+});
+
+document.querySelector('.btn-approve-return').addEventListener('click', async (event) => {
+  const itemId = event.target.getAttribute('data-item-id');
+  try {
+    const response = await fetch(`/order/${orderId}/return/${itemId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'approved' }),
+    });
+
+    const data = await response.json();
+    if (data.val) {
+      Swal.fire('Approved', 'The return request has been approved.', 'success');
+      await sendNotification(
+        'Return Request Approved',
+        `Your return request for item #${itemId} in order #${orderId} has been approved.`,
+        'order',
+        'success'
+      );
+      // location.reload();
+    } else {
+      Swal.fire('Error', data.msg || 'Failed to approve request.', 'error');
+    }
+  } catch (error) {
+    console.error(error);
+    Swal.fire('Error', 'An unexpected error occurred.', 'error');
+  }
+});
+
+document.querySelector('.btn-cancel-return').addEventListener('click', async (event) => {
+  const itemId = event.target.getAttribute('data-item-id');
+  try {
+    const response = await fetch(`/order/${orderId}/return/${itemId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
+
+    const data = await response.json();
+    if (data.val) {
+      Swal.fire('Cancelled', 'The return request has been cancelled.', 'info');
+      await sendNotification(
+        'Return Request Cancelled',
+        `Your return request for item #${itemId} in order #${orderId} has been cancelled.`,
+        'order',
+        'failed'
+      );
+      // location.reload();
+    } else {
+      Swal.fire('Error', data.msg || 'Failed to cancel request.', 'error');
+    }
+  } catch (error) {
+    console.error(error);
+    Swal.fire('Error', 'An unexpected error occurred.', 'error');
+  }
+});
+

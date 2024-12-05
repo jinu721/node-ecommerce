@@ -819,32 +819,37 @@ async function fetchOrders(page = 1) {
       }
             </a>
           </td>
+          <td>
+            <a  onclick="downloadInvoice(event)" class="view__order btnDownloadInvoice" data-id="${
+              order._id
+            }">
+               Download invoice
+            </a>
+          </td>
         `;
 
         orderContainer.append(orderRow);
-        orderRow.querySelector(".btnCancelOrder").addEventListener("click", (event) => {
-          if (order.orderStatus === "delivered") {
-            requestReturn(event);
-          } 
-          else if (order.orderStatus === "returned") {
-            Swal.fire({
-              icon: "info",
-              title: "Order Returned",
-              text: "This order has already been returned.",
-            });
-          } 
-          else if (order.orderStatus === "cancelled") {
-            Swal.fire({
-              icon: "info",
-              title: "Order Canceled",
-              text: "This order has already been canceled.",
-            });
-          } 
-          else {
-            cancelOrders(event);
-          }
-        });
-        
+        orderRow
+          .querySelector(".btnCancelOrder")
+          .addEventListener("click", (event) => {
+            if (order.orderStatus === "delivered") {
+              requestReturn(event);
+            } else if (order.orderStatus === "returned") {
+              Swal.fire({
+                icon: "info",
+                title: "Order Returned",
+                text: "This order has already been returned.",
+              });
+            } else if (order.orderStatus === "cancelled") {
+              Swal.fire({
+                icon: "info",
+                title: "Order Canceled",
+                text: "This order has already been canceled.",
+              });
+            } else {
+              cancelOrders(event);
+            }
+          });
 
         if (order.paymentStatus === "pending") {
           const retryBtn = orderRow.querySelector(".btnRetryPayment");
@@ -1099,6 +1104,32 @@ async function retryPayment(event) {
   });
 }
 
+async function downloadInvoice(e) {
+  const orderId = e.target.getAttribute("data-id");
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You want to download invoice now!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, Download",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        window.location.href = `/orders/download/invoice/${orderId}`;
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: err,
+        });
+      }
+    }
+  });
+}
+
 const btnViewOrder = document.querySelectorAll(".btnViewOrder");
 
 async function viewOrderedProduct(e) {
@@ -1144,13 +1175,161 @@ async function viewOrderedProduct(e) {
           <td><a href="/details/${
             x.product._id
           }" class="view__order">View</a></td>
+          <td>
+            <a class="view__order btnAction" data-orderId="${orderId}" data-itemId="${
+          x._id
+        }">
+                ${
+                  x.itemStatus === "delivered"
+                    ? "Request Return"
+                    : x.itemStatus === "returned"
+                    ? "Order Returned"
+                    : x.itemStatus === "cancelled"
+                    ? "Order Canceled"
+                    : "Cancel Order"
+                }
+            </a>
+          </td>
         `;
         productDetailsTbody.appendChild(orderDetailTr);
+
+        orderDetailTr.querySelector(".btnAction").addEventListener("click", (event) => {
+            if (x.itemStatus === "delivered") {
+              requestIndividualReturn(event);
+            } else if (x.itemStatus === "returned") {
+              Swal.fire({
+                icon: "info",
+                title: "Order Returned",
+                text: "This order has already been returned.",
+              });
+            } else if (x.itemStatus === "cancelled") {
+              Swal.fire({
+                icon: "info",
+                title: "Order Canceled",
+                text: "This order has already been canceled.",
+              });
+            } else {
+              cancelIndividualOrders(event);
+            }
+          });
       });
     }
   } catch (err) {
     console.log(err);
   }
+}
+
+async function cancelIndividualOrders(e) {
+  e.target.addEventListener("click", (e) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const orderId = e.target.getAttribute("data-orderId");
+        const itemId = e.target.getAttribute("data-itemId");
+        try {
+          const response = await fetch(`/item/cancel-order/${orderId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ itemId }),
+          });
+          const data = await response.json();
+          if (data.val) {
+            fetchOrders();
+            sendNotification(
+              "Order Canceled",
+              "We’ve processed the cancellation of your order #123 as requested. If this was done in error or you need assistance with placing a new order, please don’t hesitate to contact our support team. Thank you for shopping with us, and we hope to serve you again soon!",
+              "order",
+              "failed"
+            );
+          } else {
+            console.log(data.msg);
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        Swal.fire({
+          title: "Canceled!",
+          text: "Your order has been canceled.",
+          icon: "success",
+        });
+      }
+    });
+  });
+}
+async function requestIndividualReturn(e) {
+  Swal.fire({
+    title: "Request Return",
+    html: `
+      <div class="swalInput">
+        <textarea id="returnReason" class="returnReason" placeholder="Enter your reason"></textarea>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "Submit",
+    cancelButtonText: "Close",
+    focusConfirm: false,
+    customClass: {
+      title: "custom-title",
+      popup: "swalPopupCustom",
+    },
+    preConfirm: () => {
+      const reason = document.getElementById("returnReason").value.trim();
+      if (!reason) {
+        Swal.showValidationMessage("Please enter a reason for the return");
+        return false;
+      }
+      return { reason };
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const reason = result.value.reason;
+      async function requestReturn() {
+        try {
+          const orderId = e.target.getAttribute("data-orderId");
+          const itemId = e.target.getAttribute("data-itemId");
+          const response = await fetch(`/item/return-order/${orderId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ itemId,reason }),
+          });
+          const data = await response.json();
+          if (!data.val) {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: data.msg,
+            });
+          } else {
+            Swal.fire({
+              icon: "success",
+              title: "Submitted!",
+              text: "Your return request has been sent.",
+              confirmButtonText: "OK",
+              customClass: {
+                title: "custom-title",
+              },
+            });
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      }
+      requestReturn();
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      console.log("Return request canceled");
+    }
+  });
 }
 
 function toggleEye(inputId, iconElement) {

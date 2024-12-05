@@ -30,6 +30,20 @@ const orderSchema = new mongoose.Schema({
       color: {
         type: String,
       },
+      itemStatus: {
+        type: String,
+        enum: ['processing', 'shipped', 'delivered', 'cancelled','returned'],
+        default: 'processing',
+      },
+      returnRequest: {
+        requestStatus: { type: Boolean, default: false },
+        requestMessage: { type: String },
+        adminStatus: {
+          type: String,
+          enum: ['approved', 'cancelled', 'pending'],
+          default: 'pending',
+        },
+      },
     },
   ],
   totalAmount: {
