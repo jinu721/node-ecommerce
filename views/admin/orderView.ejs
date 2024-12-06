@@ -40,7 +40,6 @@
                 <option class="shippedSt" value="shipped">Shipped</option>
                 <option class="deliveredSt" value="delivered">Delivered</option>
                 <option class="cancelledSt" value="cancelled">Cancelled</option>
-                <option class="ReturnedSt" value="returned">Returned</option>
               </select>
               <button class="update-status-btn">Update Status</button>
             </div>
@@ -158,27 +157,8 @@
           <div class="modal-body">
             <p id="return-reason"></p>
             <div class="d-flex justify-content-between">
-              <button type="button" class="btn btn-danger btn-cancel-return">Cancel</button>
-              <button type="button" class="btn btn-success btn-approve-return">Approve</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="returnModalLabel">Return Request</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p id="return-reason"></p>
-            <div class="d-flex justify-content-between">
-              <button type="button" class="btn btn-danger btn-cancel-return">Cancel</button>
-              <button type="button" class="btn btn-success btn-approve-return">Approve</button>
+              <button onclick="btnIndividualCancel()" type="button" class="btn btn-danger btn-cancel-return">Cancel</button>
+              <button onclick="btnIndividualApprove()" type="button" class="btn btn-success btn-approve-return ">Approve</button>
             </div>
           </div>
         </div>

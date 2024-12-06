@@ -696,66 +696,6 @@ document.querySelector(".btn-saveChangePass").addEventListener("click", (e) => {
   }
 });
 
-// async function fetchOrders(page = 1) {
-//   document.querySelector(".ordersInfo").style.display = "block";
-//   document.querySelector(".detailsOfOrders").style.display = "none";
-//   document.querySelector(".orderedAddrressInfo").style.display = "none";
-//   document.querySelector(".pagination").style.display = "flex";
-
-//   try {
-//     const response = await fetch(`/account/orders?page=${page}&limit=4`);
-//     const data = await response.json();
-
-//     const orderContainer = document.querySelector(".ordersParant");
-//     orderContainer.innerHTML = "";
-
-//     if (!data.orders || data.orders.length === 0) {
-//       const orderNullTr = document.createElement("tr");
-//       orderNullTr.classList.add("order-null-item");
-//       orderNullTr.innerHTML = `<td colspan="6">No orders yet!</td>`;
-//       orderContainer.appendChild(orderNullTr);
-//     } else {
-//       data.orders.forEach((data, index) => {
-//         const orderDate = new Date(data.orderedAt);
-//         const formattedDate = orderDate.toLocaleDateString("en-US", {
-//           year: "numeric",
-//           month: "long",
-//           day: "numeric",
-//         });
-
-//         const orderRow = document.createElement("tr");
-//         orderRow.classList.add("order-item");
-//         orderRow.innerHTML = `
-//           <td>${index + 1 + (page - 1) * 10}</td>
-//           <td>${formattedDate}</td>
-//           <td>${data.orderStatus}</td>
-//           <td>${data.paymentStatus}</td>
-//           <td>&#8377;${data.totalAmount}</td>
-//           <td>
-//             <a onclick="viewOrderedProduct(event)" class="view__order btnViewOrder" data-id="${data._id}">View</a>
-//           </td>
-//           <td>
-//             <a class="view__order btnCancelOrder" data-id="${data._id}">
-//               ${data.orderStatus === "delivered" ? "Request Return" : "Cancel Order"}
-//             </a>
-//           </td>
-//         `;
-//         orderContainer.append(orderRow);
-//         orderRow.querySelector('.btnCancelOrder').addEventListener('click', (event) => {
-//           if (data.orderStatus === 'delivered') {
-//             requestReturn(event);
-//           } else {
-//             cancelOrders(event);
-//           }
-//         });
-//       });
-
-//       renderPagination(data.currentPage, data.totalPages);
-//     }
-//   } catch (err) {
-//     console.error("Error fetching orders:", err);
-//   }
-// }
 
 async function fetchOrders(page = 1) {
   document.querySelector(".ordersInfo").style.display = "block";

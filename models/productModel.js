@@ -1,5 +1,13 @@
 const mongoose = require("mongoose");
 
+
+// ~~~ Product Schema ~~~
+// Purpose: Defines the structure for storing product details in the database.
+// Features:
+// - Supports product details, pricing, categories, and reviews.
+// - Allows flexible options like sizes, colors, and additional attributes (warranty, return policy, etc.).
+
+
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -25,8 +33,6 @@ const productSchema = new mongoose.Schema({
     },
   ],
   isDeleted: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model('Products',productSchema);

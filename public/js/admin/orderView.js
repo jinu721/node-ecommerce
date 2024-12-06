@@ -217,14 +217,20 @@ async function sendNotification(title, message, type, status) {
 }
 
 
-function viewModal(e) {
-  const returnReason = e.target.getAttribute('data-return-reason');
-  const itemId = e.target.getAttribute('data-item-id');
 
+
+function viewModal(event){
+  const returnReason = event.target.getAttribute('data-return-reason');
+  const itemId = event.target.getAttribute('data-item-id');
+  
+  console.log(returnReason)
+  console.log(itemId)
+  console.log(document.querySelector('.btn-approve-return'))
+  console.log(document.querySelector('.btn-cancel-return'))
+  
   document.getElementById('return-reason').innerText = `Reason: ${returnReason}`;
   document.querySelector('.btn-cancel-return').setAttribute('data-item-id', itemId);
   document.querySelector('.btn-approve-return').setAttribute('data-item-id', itemId);
-
   const modal = new bootstrap.Modal(document.getElementById('returnModal'));
   modal.show();
 }
@@ -232,18 +238,20 @@ function viewModal(e) {
 
 
 
-document.querySelectorAll('.btn-notify').forEach((button) => {
-  button.addEventListener('click', () => {
-    const returnReason = button.getAttribute('data-return-reason');
-    const itemId = button.getAttribute('data-item-id');
 
-    document.getElementById('return-reason').innerText = `Reason: ${returnReason}`;
-    document.querySelector('.btn-cancel-return').setAttribute('data-item-id', itemId);
-    document.querySelector('.btn-approve-return').setAttribute('data-item-id', itemId);
-  });
-});
+// document.querySelectorAll('.btn-notify').forEach((button) => {
+//   button.addEventListener('click', () => {
+//     const returnReason = button.getAttribute('data-return-reason');
+//     const itemId = button.getAttribute('data-item-id');
 
-document.querySelector('.btn-approve-return').addEventListener('click', async (event) => {
+//     document.getElementById('return-reason').innerText = `Reason: ${returnReason}`;
+//     document.querySelector('.btn-cancel-return').setAttribute('data-item-id', itemId);
+//     document.querySelector('.btn-approve-return').setAttribute('data-item-id', itemId);
+//   });
+// });
+
+
+async function btnIndividualApprove(){
   const itemId = event.target.getAttribute('data-item-id');
   try {
     const response = await fetch(`/order/${orderId}/return/${itemId}`, {
@@ -271,9 +279,11 @@ document.querySelector('.btn-approve-return').addEventListener('click', async (e
     console.error(error);
     Swal.fire('Error', 'An unexpected error occurred.', 'error');
   }
-});
+}
 
-document.querySelector('.btn-cancel-return').addEventListener('click', async (event) => {
+
+
+async function btnIndividualCancel(){
   const itemId = event.target.getAttribute('data-item-id');
   try {
     const response = await fetch(`/order/${orderId}/return/${itemId}`, {
@@ -283,7 +293,7 @@ document.querySelector('.btn-cancel-return').addEventListener('click', async (ev
       },
       body: JSON.stringify({ status: 'cancelled' }),
     });
-
+  
     const data = await response.json();
     if (data.val) {
       Swal.fire('Cancelled', 'The return request has been cancelled.', 'info');
@@ -301,5 +311,5 @@ document.querySelector('.btn-cancel-return').addEventListener('click', async (ev
     console.error(error);
     Swal.fire('Error', 'An unexpected error occurred.', 'error');
   }
-});
+}
 

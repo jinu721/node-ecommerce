@@ -6,11 +6,14 @@ const wishlistModel = require("../models/wishlistModel");
 const path = require("path");
 
 module.exports = {
+  // ~~~ Home Page Load ~~~
+  // Purpose: Loads the homepage with products, categories, top-selling products, and other key sections.
+  // Response: Renders the homepage with various product categories and top-selling products.
   async homeLoad(req, res) {
     try {
-      const products = await productModel.find({isDeleted:false}); 
+      const products = await productModel.find({ isDeleted: false });
 
-      const category = await categoryModel.find(); 
+      const category = await categoryModel.find();
       const topSellingProducts = await orderModel.aggregate([
         { $match: { orderStatus: "delivered" } },
         { $unwind: "$items" },
@@ -40,19 +43,22 @@ module.exports = {
       const hotReleases = products.slice(0, 5);
       const dealsAndOutfits = products.slice(5, 10);
 
-      console.log(hotReleases)
+      console.log(hotReleases);
 
       res.render("index", {
         products: products,
         category: category,
-        hotReleases:hotReleases,
-        dealsAndOutfits:dealsAndOutfits,
+        hotReleases: hotReleases,
+        dealsAndOutfits: dealsAndOutfits,
         topSellingProducts: topSellingProducts,
       });
     } catch (err) {
       console.log(err);
     }
   },
+  // ~~~ Shop Page Load ~~~
+  // Purpose: Loads the shop page with products based on filters like sort by, price range, and category.
+  // Response: Renders the shop page with filtered products and categories.
   async shopLoad(req, res) {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -132,6 +138,9 @@ module.exports = {
       res.status(500).send("Error loading shop data");
     }
   },
+  // ~~~ Product Details Load ~~~
+  // Purpose: Loads the details page of a specific product based on the product ID.
+  // Response: Renders the product details page with information such as product details, related products, and wishlist status.
   async productDetailesLoad(req, res) {
     const productId = req.params.id;
     try {
@@ -161,6 +170,9 @@ module.exports = {
       res.status(500).send("Server side error");
     }
   },
+  // ~~~ Product Management Page Load ~~~
+  // Purpose: Loads the page for managing products with pagination and filtering.
+  // Response: Renders the product management page with products, categories, and pagination details.
   async productsPageLoad(req, res) {
     const { page = 1 } = req.query;
     const limit = 7;
@@ -195,6 +207,9 @@ module.exports = {
       });
     }
   },
+  // ~~~ Add Product ~~~
+  // Purpose: Allows adding a new product to the database with various details like name, price, images, etc.
+  // Response: Returns a success message if the product is successfully added, or an error message if failed.
   async productsAdd(req, res) {
     try {
       let {
@@ -299,6 +314,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Internal server error" });
     }
   },
+  // ~~~ Load Product Update Page ~~~
+  // Purpose: Loads the product update page with the product details and categories to allow the admin to edit the product.
+  // Response: Renders the product update page with the product and category data.
   async productUpdateLoad(req, res) {
     const { productId } = req.params;
     console.log(productId);
@@ -313,6 +331,9 @@ module.exports = {
       console.log(err);
     }
   },
+  // ~~~ Unlist or Relist Product ~~~
+  // Purpose: Marks a product as deleted (unlisted) or available (listed) based on the "val" query parameter.
+  // Response: Returns a success message if the product is successfully unlisted or relisted.
   async productUnlist(req, res) {
     const { id, val } = req.query;
     try {
@@ -326,6 +347,9 @@ module.exports = {
       res.status(500).json({ val: false });
     }
   },
+  // ~~~ Get Product Stock for Specific Size ~~~
+  // Purpose: Retrieves the stock for a specific size of a product based on the product ID and size.
+  // Response: Returns the stock of the selected size for the given product.
   async productStock(req, res) {
     const { id, size } = req.query;
     try {
@@ -345,6 +369,9 @@ module.exports = {
       console.log(err);
     }
   },
+  // ~~~ Update Product Image ~~~
+  // Purpose: Updates the image of a product based on the given index and product ID.
+  // Response: Returns a success message after updating the image, or an error if something goes wrong.
   async productImageUpdate(req, res) {
     try {
       const { productIndex } = req.body;
@@ -375,6 +402,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Remove Product Color ~~~
+  // Purpose: Removes a specific color option from a product based on the color's index and product ID.
+  // Response: Returns a success message if the color is removed, or an error if the product is not found.
   async productColorRemove(req, res) {
     try {
       const { productId, index } = req.params;
@@ -394,6 +424,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Add or Update Product Color ~~~
+  // Purpose: Adds a new color option to a product or updates an existing one based on the provided product ID and color.
+  // Response: Returns a success message if the color is successfully added, or an error message if the product is not found.
   async productColorAddUpdate(req, res) {
     try {
       const productId = req.query.productId;
@@ -414,6 +447,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Update Product Data ~~~
+  // Purpose: Updates the details of a product (such as name, description, price, etc.) based on the product ID.
+  // Response: Returns a success message after the product details are updated or an error if the product is not found.
   async productDataUpdate(req, res) {
     let {
       name,
@@ -460,6 +496,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Update Product Stock for Specific Size ~~~
+  // Purpose: Updates the stock for a specific size of a product.
+  // Response: Returns a success message if the stock is updated, or an error message if something goes wrong.
   async productStockUpdate(req, res) {
     let { size, stock } = req.body;
     const { productId } = req.params;
@@ -471,9 +510,7 @@ module.exports = {
       }
 
       if (!product.sizes[size]) {
-        return res
-          .status(400)
-          .json({ val: false, msg: `Size ${size} not found in product` });
+        product.sizes[size] = { stock: 0 };
       }
 
       product.sizes[size].stock += stock;
@@ -488,6 +525,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Load Category Update Page ~~~
+  // Purpose: Loads the page to update the product categories.
+  // Response: Renders the "updateCategory" page with the existing categories to allow admin updates.
   async categoryUpdateLoad(req, res) {
     const { categoryId } = req.params;
     console.log(categoryId);
@@ -499,6 +539,9 @@ module.exports = {
       console.log(err);
     }
   },
+  // ~~~ Search Products ~~~
+  // Purpose: Searches products based on the provided keyword from the query. It checks the name, tags, and brand for matching results.
+  // Response: Returns the matched products or an error message if no items are found.
   async productsearch(req, res) {
     const { key } = req.query;
     console.log(key);
@@ -522,6 +565,9 @@ module.exports = {
       res.status(200).json({ val: false, msg: "Server error" + err });
     }
   },
+  // ~~~ Load Product Reviews ~~~
+  // Purpose: Retrieves all reviews for a specific product based on its ID.
+  // Response: Returns the product reviews along with the current user's ID to display the reviews.
   async productReviewsLoad(req, res) {
     const { productId } = req.params;
     try {
@@ -541,6 +587,9 @@ module.exports = {
         .json({ val: false, msg: "An error occurred while fetching reviews" });
     }
   },
+  // ~~~ Add Product Review ~~~
+  // Purpose: Adds a new review for a specific product based on the provided product ID, comment, and rating.
+  // Response: Returns a success message if the review is successfully added, or an error message if the product ID is invalid or review cannot be added.
   async productReviewsAdd(req, res) {
     const { productId } = req.params;
     const { comment, rating } = req.body;
@@ -571,6 +620,9 @@ module.exports = {
       res.status(500), json({ val: false, msg: err });
     }
   },
+  // ~~~ Delete Product Review ~~~
+  // Purpose: Deletes a specific review from a product based on the review ID and ensures the user is the one who posted it.
+  // Response: Returns a success message if the review is successfully deleted, or an error message if the review ID is not valid or the user is unauthorized.
   async productReviewsDelete(req, res) {
     const { reviewId } = req.params;
 
@@ -597,12 +649,10 @@ module.exports = {
       res.status(200).json({ val: true, msg: "Review deleted successfully" });
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({
-          val: false,
-          msg: "An error occurred while deleting the review",
-        });
+      res.status(500).json({
+        val: false,
+        msg: "An error occurred while deleting the review",
+      });
     }
   },
 };

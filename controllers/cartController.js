@@ -1,34 +1,59 @@
 const cartModel = require("../models/cartModel");
 const productModel = require("../models/productModel");
-const userModel = require("../models/userModel");
-const path = require("path");
 
 module.exports = {
+  // ~~~ Cart Page Load ~~~
+  // Purpose: Displays the cart page with items, handles empty or invalid cart scenarios.
+  // Response: Renders the cart page, showing a message if the cart is empty or if no valid items are found.
   async cartPageLoad(req, res) {
     try {
-      const cart = await cartModel.findOne({ userId: req.session.currentId }).populate('items.productId');
+      const cart = await cartModel
+        .findOne({ userId: req.session.currentId })
+        .populate("items.productId");
       if (!cart || cart.items.length === 0) {
-        return res.status(200).render("cart", {isCartEmpty: true,msg: "No items found on cart",products: null,cart: null});
+        return res
+          .status(200)
+          .render("cart", {
+            isCartEmpty: true,
+            msg: "No items found on cart",
+            products: null,
+            cart: null,
+          });
       }
-      cart.items = cart.items.filter(item => !item.productId.isDeleted);
+      cart.items = cart.items.filter((item) => !item.productId.isDeleted);
       if (cart.items.length === 0) {
-        return res.status(200).render("cart", { isCartEmpty: true, msg: "No valid items in cart", products: null, cart: null });
+        return res
+          .status(200)
+          .render("cart", {
+            isCartEmpty: true,
+            msg: "No valid items in cart",
+            products: null,
+            cart: null,
+          });
       }
-      
+
       const productIds = cart.items.map((item) => item.productId);
       const products = await productModel.find({ _id: { $in: productIds } });
       let deliveryCharge = 0;
       if (cart.cartTotal < 2000) {
         deliveryCharge = 100;
       }
-      console.log(deliveryCharge)
+      console.log(deliveryCharge);
       return res
         .status(200)
-        .render("cart", { isCartEmpty: false, msg: null, cart,deliveryCharge });
+        .render("cart", {
+          isCartEmpty: false,
+          msg: null,
+          cart,
+          deliveryCharge,
+        });
     } catch (err) {
       console.log(err);
     }
   },
+  // ~~~ Add to Cart ~~~
+  // Purpose: Adds a product to the user's cart, checks stock and cart limits.
+  // Response: Updates cart or creates a new one, and handles errors (e.g., login required, stock or quantity issues).
   async addToCart(req, res) {
     const { productId, price, quantity, size, color, isBuyNow } = req.body;
     console.log(productId, price, quantity, size, color);
@@ -60,11 +85,16 @@ module.exports = {
         });
       }
 
-      console.log(cart)
+      console.log(cart);
 
       let currentCartQuantity = 0;
       if (cart) {
-        const existingItem = cart.items.find((item) =>item.productId.toString() === productId && item.size === size && item.color === color);
+        const existingItem = cart.items.find(
+          (item) =>
+            item.productId.toString() === productId &&
+            item.size === size &&
+            item.color === color
+        );
         if (existingItem) {
           currentCartQuantity = existingItem.quantity;
         }
@@ -135,6 +165,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Internal server error" });
     }
   },
+  // ~~~ Delete from Cart ~~~
+  // Purpose: Removes a specific item from the cart.
+  // Response: Updates the cart after removal and recalculates the total.
   async deleteFromCart(req, res) {
     const { cartItemId } = req.params;
     try {
@@ -151,7 +184,10 @@ module.exports = {
           products: [],
         });
       }
-      cart.cartTotal = cart.items.reduce((total, item) => total + item.total, 0);
+      cart.cartTotal = cart.items.reduce(
+        (total, item) => total + item.total,
+        0
+      );
       cart.save();
       const productIds = cart.items.map((item) => item.productId);
       const products = await productModel.find({ _id: { $in: productIds } });
@@ -164,6 +200,9 @@ module.exports = {
         .json({ val: false, msg: err.message, cart: null, products: [] });
     }
   },
+  // ~~~ Update Cart Item ~~~
+  // Purpose: Updates the quantity of an item in the cart, checks stock and max purchase limits.
+  // Response: Updates item details and recalculates the total.
   async updateCartItem(req, res) {
     const { itemId } = req.params;
     const { quantity } = req.body;
@@ -171,20 +210,22 @@ module.exports = {
     console.log(itemId, quantity);
 
     try {
-
-
       const cart = await cartModel.findOne({ userId: req.session.currentId });
       if (!cart) {
         return res.status(404).json({ val: false, msg: "Cart not found" });
       }
 
-      const itemIndex = cart.items.findIndex((item) => item._id.toString() === itemId);
+      const itemIndex = cart.items.findIndex(
+        (item) => item._id.toString() === itemId
+      );
       if (itemIndex === -1) {
-        return res.status(404).json({ val: false, msg: "Item not found in cart" });
+        return res
+          .status(404)
+          .json({ val: false, msg: "Item not found in cart" });
       }
 
       const item = cart.items[itemIndex];
-      console.log(item)
+      console.log(item);
       const product = await productModel.findById(item.productId);
       if (!product) {
         return res.status(404).json({ val: false, msg: "Product not found" });
@@ -192,16 +233,18 @@ module.exports = {
 
       const selectedSize = product.sizes[item.size];
       if (!selectedSize) {
-        return res.status(400).json({ val: false, msg: "Invalid size selected" });
+        return res
+          .status(400)
+          .json({ val: false, msg: "Invalid size selected" });
       }
-  
+
       if (quantity > selectedSize.stock) {
         return res.status(400).json({
           val: false,
           msg: `Only ${selectedSize.stock} items are available for size ${item.size}`,
         });
       }
-  
+
       if (quantity > selectedSize.maxQuantity) {
         return res.status(400).json({
           val: false,
@@ -213,8 +256,10 @@ module.exports = {
       item.quantity = quantity;
       item.total = product.offerPrice * quantity;
 
-      cart.cartTotal = cart.items.reduce((total, item) => total + item.total, 0);
-
+      cart.cartTotal = cart.items.reduce(
+        (total, item) => total + item.total,
+        0
+      );
 
       await cart.save();
 
@@ -224,7 +269,7 @@ module.exports = {
         cartTotal: cart.cartTotal,
       });
     } catch (err) {
-      console.log(err)
+      console.log(err);
       res.status(500).json({ val: false, msg: err.message });
     }
   },

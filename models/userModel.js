@@ -1,7 +1,21 @@
 const mongoose = require("mongoose");
-const connect = require("../config/mongo");
 
-connect();
+
+// ~~~ User Schema ~~~
+// Purpose: Defines the structure and constraints for user data stored in the database.
+// Fields:
+// - `username`: The name of the user (required).
+// - `email`: The email address of the user (required, unique).
+// - `password`: The hashed password of the user.
+// - `phone`: The user's phone number.
+// - `address`: An array of address objects containing detailed address information such as street, country, state, district, city, house number, landmark, and pin code.
+// - `role`: Specifies the role of the user (default: "user").
+// - `isDeleted`: A flag indicating if the user is deactivated or banned (default: false).
+// - `isGoogleLogin`: Indicates if the user registered via Google (default: false).
+// - `googleId`: Stores the Google ID for users registered via Google.
+// - `createdAt`: The timestamp for when the user was created (default: current date).
+// - `updatedAt`: The timestamp for when the user was last updated (default: current date).
+
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -22,8 +36,6 @@ const userSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
   isGoogleLogin: { type: Boolean, default: false },
   googleId: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("Users", userSchema);

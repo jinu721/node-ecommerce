@@ -16,284 +16,9 @@ const path = require("path");
 let orderId = 100;
 
 module.exports = {
-  // async placeOrder(req, res) {
-  //   const { item, selectedAddressId, selectedPayment, isOfferApplied, code } =
-  //     req.body;
-  //   const userId = req.session.currentId;
-  //   try {
-  //     console.log(isOfferApplied);
-
-  //     if (!item || !selectedAddressId || !selectedPayment) {
-  //       return res
-  //         .status(400)
-  //         .json({ val: false, msg: "Missing required fields" });
-  //     }
-  //     let parsedItem;
-  //     try {
-  //       parsedItem = JSON.parse(item);
-  //     } catch (err) {
-  //       return res.status(400).json({ val: false, msg: "Invalid item format" });
-  //     }
-
-  //     console.log(`parsed item :----------- ${parsedItem}`);
-
-  //     const isArray = Array.isArray(parsedItem);
-  //     let items, totalAmount;
-
-  //     const validateItem = (product) => {
-  //       if (
-  //         !product._id ||
-  //         typeof product.quantity !== "number" ||
-  //         typeof product.offerPrice !== "number" ||
-  //         !product.size ||
-  //         !product.color
-  //       ) {
-  //         console.log(product._id);
-  //         console.log(typeof product.quantity !== "number");
-  //         console.log(typeof product.offerPrice !== "number");
-  //         console.log(product.size);
-  //         console.log(product.color);
-  //         return res
-  //           .status(400)
-  //           .json({ val: false, msg: "Invalid product data" });
-  //       }
-  //     };
-
-  //     if (isArray) {
-  //       parsedItem.forEach(validateItem);
-  //       items = parsedItem.map((product) => ({
-  //         product: new mongoose.Types.ObjectId(product._id),
-  //         quantity: product.quantity,
-  //         offerPrice: product.offerPrice,
-  //         size: product.size,
-  //         color: product.color,
-  //       }));
-  //       totalAmount = items.reduce(
-  //         (sum, item) => sum + Number(item.offerPrice) * Number(item.quantity),
-  //         0
-  //       );
-  //       await cartModel.deleteMany({ userId });
-  //     } else {
-  //       validateItem(parsedItem);
-  //       items = {
-  //         product: new mongoose.Types.ObjectId(parsedItem._id),
-  //         quantity: parsedItem.quantity,
-  //         offerPrice: parsedItem.offerPrice,
-  //         size: parsedItem.size,
-  //         color: parsedItem.color,
-  //       };
-  //       totalAmount = Number(items.offerPrice) * Number(items.quantity);
-  //       await cartModel.deleteOne({
-  //         userId,
-  //         "items.product": parsedItem._id,
-  //       });
-  //     }
-
-  //     const user = await userModel.findOne({ _id: userId });
-  //     const address = user.address.find(
-  //       (addr) => addr._id.toString() === selectedAddressId
-  //     );
-  //     if (!address) {
-  //       return res.status(400).json({ val: false, msg: "Invalid address ID" });
-  //     }
-
-  //     let discountedPrice = totalAmount;
-
-  //     console.log(isOfferApplied, code);
-  //     console.log(totalAmount);
-  //     if (isOfferApplied) {
-  //       const coupon = await couponModel.findOne({});
-  //       console.log("Its offer Applied");
-  //       if (coupon.discountType === "percentage") {
-  //         const discountPercentage = parseFloat(coupon.discountValue);
-  //         let discountAmount = (totalAmount * discountPercentage) / 100;
-  //         if (coupon.maxDiscount) {
-  //           discountAmount = Math.min(discountAmount, coupon.maxDiscount);
-  //         }
-  //         discountedPrice = totalAmount - discountAmount;
-  //       } else if (coupon.discountType === "flat") {
-  //         const flatDiscount = parseFloat(coupon.discountValue);
-  //         discountedPrice = totalAmount - flatDiscount;
-  //       }
-  //       discountedPrice = Math.max(discountedPrice, 0);
-  //     } else {
-  //       console.log("not offer Applied");
-  //     }
-
-  //     console.log(discountedPrice);
-
-  //     const amountToSend = discountedPrice || totalAmount;
-
-  //     const couponDetails = isOfferApplied
-  //       ? { code, discountApplied: totalAmount - discountedPrice}
-  //       : null;
-
-  //     if (selectedPayment === "cash_on_delivery") {
-  //       if (amountToSend > 1000) {
-  //         return res
-  //           .status(400)
-  //           .json({
-  //             val: false,
-  //             msg: "COD only available for product less then 1000",
-  //           });
-  //       }
-  //       const order = await orderModel.create({
-  //         orderId:orderId++,
-  //         user: userId,
-  //         items: isArray ? items : [items],
-  //         totalAmount: amountToSend,
-  //         paymentMethod: selectedPayment,
-  //         shippingAddress: address,
-  //         coupon: couponDetails,
-  //         orderedAt: new Date(),
-  //         paymentStatus: "pending",
-  //         orderStatus: "processing",
-  //         statusHistory: [{ status: "processing", updatedAt: new Date() }],
-  //       });
-  //       for (let i = 0; i < (isArray ? items : [items]).length; i++) {
-  //         const {
-  //           product: productId,
-  //           size,
-  //           quantity: quantityOrdered,
-  //         } = isArray ? items[i] : items;
-  //         const product = await productModel.findById(productId);
-
-  //         if (!product || !product.sizes[size]) {
-  //           return res
-  //             .status(404)
-  //             .json({ val: false, msg: "Product or size not found" });
-  //         }
-
-  //         if (product.sizes[size].stock >= quantityOrdered) {
-  //           product.sizes[size].stock -= quantityOrdered;
-  //           product.markModified("sizes");
-  //           await product.save();
-  //         } else {
-  //           return res.status(400).json({
-  //             val: false,
-  //             msg: `Not enough stock for size ${size}`,
-  //           });
-  //         }
-  //       }
-
-  //       return res.status(200).json({
-  //         val: true,
-  //         msg: "Order placed successfully with Cash on Delivery",
-  //       });
-  //     } else if (selectedPayment === "razorpay") {
-  //       const razorpayOrder = await razorpay.orders.create({
-  //         amount: Math.round(discountedPrice * 100),
-  //         currency: "INR",
-  //         receipt: `order_rcptid_${Math.random()
-  //           .toString(36)
-  //           .substring(2, 15)}`,
-  //         notes: {
-  //           userId,
-  //           addressId: selectedAddressId,
-  //         },
-  //       });
-  //       const order = await orderModel.create({
-  //         orderId:orderId++,
-  //         user: userId,
-  //         items: items,
-  //         totalAmount: amountToSend,
-  //         paymentMethod: selectedPayment,
-  //         shippingAddress: address,
-  //         coupon: couponDetails,
-  //         razorpayOrderId: razorpayOrder.id,
-  //         orderedAt: new Date(),
-  //         paymentStatus: "pending",
-  //         orderStatus: "processing",
-  //         statusHistory: [{ status: "processing", updatedAt: new Date() }],
-  //       });
-  //       console.log(razorpayOrder);
-  //       return res.status(200).json({
-  //         val: true,
-  //         msg: "Razorpay order created successfully",
-  //         order: razorpayOrder,
-  //         key: "rzp_test_P7m0ieN3xeK18I",
-  //       });
-  //     } else if (selectedPayment === "wallet") {
-  //       let wallet = await walletModel.findOne({
-  //         userId: req.session.currentId,
-  //       });
-  //       if (!wallet) {
-  //         return res.status(404).json({ val: false, msg: "Wallet not found" });
-  //       }
-  //       console.log(wallet.balance);
-  //       console.log(amountToSend);
-  //       if (wallet.balance < amountToSend) {
-  //         return res
-  //           .status(404)
-  //           .json({ val: false, msg: "Not enough money in wallet" });
-  //       }
-
-  //       wallet.balance -= discountedPrice ? discountedPrice : totalAmount;
-  //       wallet.transactionHistory.push({
-  //         transactionType: "purchase",
-  //         transactionAmount: discountedPrice ? discountedPrice : totalAmount,
-  //         transactionDate: new Date(),
-  //         description: `Purchase of the order ${item.orderId}`,
-  //       });
-  //       console.log(wallet);
-  //       await wallet.save();
-  //       const order = await orderModel.create({
-  //         orderId:orderId++,
-  //         user: userId,
-  //         items: isArray ? items : [items],
-  //         totalAmount: amountToSend,
-  //         paymentMethod: selectedPayment,
-  //         shippingAddress: address,
-  //         coupon: couponDetails,
-  //         orderedAt: new Date(),
-  //         paymentStatus: "paid",
-  //         orderStatus: "processing",
-  //         statusHistory: [{ status: "processing", updatedAt: new Date() }],
-  //       });
-  //       for (let i = 0; i < (isArray ? items : [items]).length; i++) {
-  //         const {
-  //           product: productId,
-  //           size,
-  //           quantity: quantityOrdered,
-  //         } = isArray ? items[i] : items;
-  //         const product = await productModel.findById(productId);
-
-  //         if (!product || !product.sizes[size]) {
-  //           return res
-  //             .status(404)
-  //             .json({ val: false, msg: "Product or size not found" });
-  //         }
-
-  //         if (product.sizes[size].stock >= quantityOrdered) {
-  //           product.sizes[size].stock -= quantityOrdered;
-  //           product.markModified("sizes");
-  //           await product.save();
-  //         } else {
-  //           return res.status(400).json({
-  //             val: false,
-  //             msg: `Not enough stock for size ${size}`,
-  //           });
-  //         }
-  //       }
-
-  //       return res.status(200).json({
-  //         val: true,
-  //         order,
-  //         msg: "Order placed successfully with wallet",
-  //       });
-  //     } else {
-  //       return res
-  //         .status(400)
-  //         .json({ val: false, msg: "Invalid payment method" });
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     return res
-  //       .status(500)
-  //       .json({ val: false, msg: "Server error", error: err.message });
-  //   }
-  // },
-
+  // ~~~ Place Order Controller ~~~
+  // Purpose: Handles the placing of an order for the user, including validation of items, and total amount calculation.
+  // Response: Returns a success or failure response based on the order process.
   async placeOrder(req, res) {
     const { item, selectedAddressId, selectedPayment, isOfferApplied, code } =
       req.body;
@@ -572,7 +297,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
-
+  // ~~~ Cancel Order Controller ~~~
+  // Purpose: Handles the cancellation of an order, including wallet refund if applicable.
+  // Response: Returns a success or failure message based on the cancellation process.
   async cancelOrder(req, res) {
     const { orderId } = req.params;
     const { currentId } = req.session;
@@ -621,6 +348,9 @@ module.exports = {
         status: "cancelled",
         updatedAt: new Date(),
       });
+      order.items.forEach((item) => {
+        item.itemStatus = "cancelled";
+      });
       await order.save();
 
       res.status(200).json({ val: true, msg: "Order cancellation completed" });
@@ -629,6 +359,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Order cancellation failed" });
     }
   },
+  // ~~~ View Order Details Controller ~~~
+  // Purpose: Retrieves and displays the details of an order by its ID.
+  // Response: Returns the order details with shipping address and items, or an error message if not found.
   async viewOrderDetails(req, res) {
     const { orderId } = req.params;
     console.log(orderId);
@@ -663,6 +396,9 @@ module.exports = {
       });
     }
   },
+  // ~~~ Request Return Controller ~~~
+  // Purpose: Initiates a return request for an order, including reason for return.
+  // Response: Returns a success or failure message based on the update process.
   async reqestReturn(req, res) {
     const { orderId } = req.params;
     const { reasonMsg } = req.body;
@@ -684,6 +420,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
+  // ~~~ Admin Orders Load Controller ~~~
+  // Purpose: Loads the list of orders for the admin, with pagination.
+  // Response: Returns a rendered page with orders and pagination details.
   async adminOrdersLoad(req, res) {
     try {
       const currentPage = parseInt(req.query.page) || 1;
@@ -712,6 +451,9 @@ module.exports = {
       res.status(500).send("Server error");
     }
   },
+  // ~~~ Admin Orders View Load Controller ~~~
+  // Purpose: Loads the details of a specific order for the admin.
+  // Response: Returns a rendered page with the detailed order information.
   async adminOrdersViewLoad(req, res) {
     const { orderId } = req.params;
     console.log(orderId);
@@ -725,6 +467,9 @@ module.exports = {
       console.log(err);
     }
   },
+  // ~~~ Admin Orders Status Update Controller ~~~
+  // Purpose: Updates the status of an order by the admin (e.g., processing, shipped, delivered, cancelled).
+  // Response: Returns a success or failure message based on the status update.
   async adminOrdersStatusUpdate(req, res) {
     const { orderId } = req.params;
     const { newStatus } = req.body;
@@ -745,6 +490,9 @@ module.exports = {
         order.paymentStatus = "paid";
       }
       order.orderStatus = newStatus;
+      order.items.forEach((item) => {
+        item.itemStatus = newStatus;
+      });
       order.statusHistory.push({ status: newStatus, updatedAt: new Date() });
       await order.save();
       return res.json({
@@ -758,8 +506,10 @@ module.exports = {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   },
+  // ~~~ Verify Payment ~~~
+  // Purpose: Verifies the payment for an order using Razorpay's payment gateway.
+  // Response: Returns a success message if payment is verified or an error message if failed.
   async verifyPayment(req, res) {
-    console.log("ITS VERIFY PAYMENT");
     const { paymentId, orderId, signature, retryOrderId } = req.body;
     const userId = req.session.currentId;
     console.log(paymentId, orderId, signature);
@@ -819,6 +569,9 @@ module.exports = {
       });
     }
   },
+  // ~~~ Success Page Load ~~~
+  // Purpose: Loads the page showing the most recent order after a successful payment.
+  // Response: Renders the success page with order details.
   async successPageLoad(req, res) {
     try {
       const { currentId } = req.session;
@@ -843,6 +596,9 @@ module.exports = {
       console.log(err);
     }
   },
+  // ~~~ Download Receipt ~~~
+  // Purpose: Generates and serves a downloadable invoice for an order.
+  // Response: Returns the generated invoice as a PDF for download.
   async downloadRecipt(req, res) {
     const { orderId } = req.params;
     if (!orderId) {
@@ -906,34 +662,77 @@ module.exports = {
       res.status(500).json({ val: false, msg: err.message });
     }
   },
+  // ~~~ Admin Return Request ~~~
+  // Purpose: Handles the approval or cancellation of return requests for orders.
+  // Response: Returns the status of the return request after processing.
   async adminReturnRequest(req, res) {
     const { orderId } = req.params;
     const { status } = req.body;
+  
     try {
       const order = await orderModel.findOne({ _id: orderId });
       if (!order) {
         return res.status(400).json({ val: false, msg: "Order not found" });
       }
+  
       if (status === "approved") {
         order.orderStatus = "returned";
         order.returnRequest.adminStatus = "approved";
+        order.items.forEach((item) => {
+          item.itemStatus = "returned";
+        });
+ 
         order.statusHistory.push({
           status: "returned",
           updatedAt: new Date(),
         });
+  
+        const refundAmount = order.totalAmount;
+        const userId = order.user;
+  
+        let wallet = await walletModel.findOne({ userId });
+        if (!wallet) {
+          wallet = await walletModel.create({
+            userId,
+            balance: refundAmount,
+            transactionHistory: [
+              {
+                transactionType: "refund",
+                transactionAmount: refundAmount,
+                transactionDate: new Date(),
+                description: `Refund for returned order ${orderId}`,
+              },
+            ],
+          });
+        } else {
+          wallet.balance += refundAmount;
+          wallet.transactionHistory.push({
+            transactionType: "refund",
+            transactionAmount: refundAmount,
+            transactionDate: new Date(),
+            description: `Refund for returned order ${orderId}`,
+          });
+          await wallet.save();
+        }
+  
         await order.save();
         return res
           .status(200)
-          .json({ val: true, msg: "Order return request approved" });
+          .json({ val: true, msg: "Order return request approved and refunded" });
       }
       order.returnRequest.adminStatus = "cancelled";
       await order.save();
-      res.status(200).json({ val: true, msg: "Order return request canceled" });
+      res
+        .status(200)
+        .json({ val: true, msg: "Order return request canceled successfully" });
     } catch (err) {
-      console.log(err);
-      res.status(200).json({ val: false, msg: err.message });
+      console.error(err);
+      res.status(500).json({ val: false, msg: "An error occurred: " + err.message });
     }
   },
+  // ~~~ Retry Payment ~~~
+  // Purpose: Handles retrying the payment for an order that failed previously.
+  // Response: Returns the Razorpay order details for the user to complete the payment.
   async retryPayment(req, res) {
     const { orderId } = req.body;
     const userId = req.session.currentId;
@@ -972,6 +771,9 @@ module.exports = {
       });
     }
   },
+  // ~~~ Cancel Individual Order ~~~
+  // Purpose: Allows the user to cancel an individual item from an order.
+  // Response: Returns a message indicating whether the item cancellation was successful or not.
   async cancelIndividualOrder(req, res) {
     const { orderId } = req.params;
     const { itemId } = req.body;
@@ -1044,6 +846,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Failed to cancel item" });
     }
   },
+  // ~~~ Request Individual Return ~~~
+  // Purpose: Allows the user to submit a return request for an item in an order.
+  // Response: Returns the status of the return request submission.
   async requestIndividualReturn(req, res) {
     console.log("hii");
     const { orderId } = req.params;
@@ -1084,6 +889,9 @@ module.exports = {
         .json({ val: false, msg: "Failed to submit return request" });
     }
   },
+  // ~~~ Admin Handle Return Request ~~~
+  // Purpose: Allows the admin to approve or reject a return request for an item.
+  // Response: Returns the status of the return request after admin action.
   async requestIndividualReturnAdmin(req, res) {
     try {
       const { orderId, itemId } = req.params;
@@ -1091,7 +899,7 @@ module.exports = {
 
       const order = await orderModel.findById(orderId);
       if (!order) {
-        return res.status(404).json({ val:false,msg: "Order not found" });
+        return res.status(404).json({ val: false, msg: "Order not found" });
       }
 
       const item = order.items.find((item) => item._id.toString() === itemId);
@@ -1100,22 +908,71 @@ module.exports = {
         !item.returnRequest ||
         item.returnRequest.adminStatus !== "pending"
       ) {
-        return res
-          .status(400)
-          .json({ val:false,msg: "Invalid return request or already processed" });
+        return res.status(400).json({
+          val: false,
+          msg: "Invalid return request or already processed",
+        });
       }
 
       if (status === "approved") {
         item.returnRequest.adminStatus = "approved";
+        item.itemStatus = "returned";
+        const refundAmount = item.offerPrice * item.quantity;
+        const userId = order.user;
+
+        let wallet = await walletModel.findOne({ userId });
+        if (!wallet) {
+          wallet = await walletModel.create({
+            userId,
+            balance: refundAmount,
+            transactionHistory: [
+              {
+                transactionType: "refund",
+                transactionAmount: refundAmount,
+                transactionDate: new Date(),
+                description: `Refund for returned item ${itemId} in order ${orderId}`,
+              },
+            ],
+          });
+        } else {
+          wallet.balance += refundAmount;
+          wallet.transactionHistory.push({
+            transactionType: "refund",
+            transactionAmount: refundAmount,
+            transactionDate: new Date(),
+            description: `Refund for returned item ${itemId} in order ${orderId}`,
+          });
+          await wallet.save();
+        }
+
+        const allReturned = order.items.every(
+          (item) =>
+            item.itemStatus === "returned" ||
+            item.returnRequest.adminStatus === "approved"
+        );
+        if (allReturned) {
+          order.orderStatus = "returned";
+          order.statusHistory.push({
+            status: "returned",
+            updatedAt: new Date(),
+          });
+        }
+
         await order.save();
-        return res.status(200).json({val:true, msg: "Return request approved successfully" });
+        return res
+          .status(200)
+          .json({ val: true, msg: "Return request approved successfully" });
       }
+
       item.returnRequest.adminStatus = "cancelled";
       await order.save();
-      res.status(200).json({ val:true,msg: "Return request canceled successfully" });
+
+      return res
+        .status(200)
+        .json({ val: true, msg: "Return request canceled successfully" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ val:false,msg: "Something went wrong" });
+      res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
 };

@@ -125,6 +125,7 @@
             <th>Item</th>
             <th>Quantity</th>
             <th>Unit Price</th>
+            <th>Offer Price</th>
             <th>Total</th>
           </tr>
         </thead>
@@ -133,6 +134,7 @@
           <tr>
             <td><%= data.product.name %></td>
             <td><%= data.quantity %></td>
+            <td>&#8377;<%= data.product.price %></td>
             <td>&#8377;<%= data.product.offerPrice %></td>
             <td>&#8377;<%= data.quantity*data.product.offerPrice %></td>
           </tr>

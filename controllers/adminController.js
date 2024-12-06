@@ -2,7 +2,6 @@ const userModel = require("../models/userModel");
 const productModel = require("../models/productModel");
 const categoryModel = require("../models/categoryModel");
 const orderModel = require("../models/orderModel");
-const vistorModel = require("../models/visitorModel");
 const visitorModel = require("../models/visitorModel");
 const path = require("path");
 let pdf = require("html-pdf");
@@ -10,17 +9,22 @@ const ejs = require("ejs");
 const moment = require("moment");
 
 module.exports = {
+  // ~~~ Dashboard Load ~~~
+  // Purpose: Renders the dashboard page.
+  // Response: Loads the dashboard view.
   whenDashboardLoad(req, res) {
     res.render("dashboard");
   },
+  // ~~~ Dashboard Data ~~~
+  // Purpose: Retrieves and returns dashboard data based on date range.
+  // Response: Returns dashboard data including total users, products, orders, etc.
   async dashboardData(req, res) {
-    const { range, startDate, endDate } = req.query; 
+    const { range, startDate, endDate } = req.query;
     try {
-
-      console.log(range,startDate,endDate)
+      console.log(range, startDate, endDate);
 
       let start, end;
-  
+
       if (range === "daily") {
         start = moment().startOf("day").toDate();
         end = moment().endOf("day").toDate();
@@ -31,68 +35,78 @@ module.exports = {
         start = moment().startOf("month").toDate();
         end = moment().endOf("day").toDate();
       } else if (range === "custom") {
-        start = new Date(startDate); 
+        start = new Date(startDate);
         end = new Date(endDate);
       } else {
         return res.status(400).json({ val: false, msg: "Invalid range." });
       }
-  
-      console.log(start)
+
+      console.log(start);
 
       const dateFilter = { createdAt: { $gte: start, $lt: end } };
-  
-      const [users, products, orders, sales, pendingMoney, categoryData] = await Promise.all([
-        userModel.find({}),
-        productModel.find({}, "_id"),
-        orderModel.find(
-          { ...dateFilter, orderStatus: { $not: { $in: ["cancelled", "delivered"] } } },
-          "_id"
-        ),
-        orderModel.aggregate([
-          { $match: { ...dateFilter, paymentStatus: "paid" } },
-          {
-            $group: {
-              _id: null,
-              totalRevenue: { $sum: "$totalAmount" },
-              count: { $sum: 1 },
+
+      const [users, products, orders, sales, pendingMoney, categoryData] =
+        await Promise.all([
+          userModel.find({}),
+          productModel.find({}, "_id"),
+          orderModel.find(
+            {
+              ...dateFilter,
+              orderStatus: { $not: { $in: ["cancelled", "delivered"] } },
             },
-          },
-        ]),
-        orderModel.aggregate([
-          { $match: { ...dateFilter, paymentMethod: "cash_on_delivery",paymentStatus:'pending' } },
-          {
-            $group: {
-              _id: null,
-              totalPendingMoney: { $sum: "$totalAmount" },
-              count: { $sum: 1 },
+            "_id"
+          ),
+          orderModel.aggregate([
+            { $match: { ...dateFilter, paymentStatus: "paid" } },
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: "$totalAmount" },
+                count: { $sum: 1 },
+              },
             },
-          },
-        ]),
-        categoryModel.aggregate([
-          {
-            $lookup: {
-              from: "products",
-              localField: "_id",
-              foreignField: "category",
-              as: "products",
+          ]),
+          orderModel.aggregate([
+            {
+              $match: {
+                ...dateFilter,
+                paymentMethod: "cash_on_delivery",
+                paymentStatus: "pending",
+              },
             },
-          },
-          {
-            $addFields: {
-              productCount: { $size: "$products" },
+            {
+              $group: {
+                _id: null,
+                totalPendingMoney: { $sum: "$totalAmount" },
+                count: { $sum: 1 },
+              },
             },
-          },
-          {
-            $project: {
-              name: 1,
-              image: 1,
-              productCount: 1,
-              isDeleted: 1,
+          ]),
+          categoryModel.aggregate([
+            {
+              $lookup: {
+                from: "products",
+                localField: "_id",
+                foreignField: "category",
+                as: "products",
+              },
             },
-          },
-        ]),
-      ]);
-  
+            {
+              $addFields: {
+                productCount: { $size: "$products" },
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                image: 1,
+                productCount: 1,
+                isDeleted: 1,
+              },
+            },
+          ]),
+        ]);
+
       const totalSales = sales[0]?.count || 0;
       const totalRevenue = sales[0]?.totalRevenue || 0;
       const totalPendingMoney = pendingMoney[0]?.totalPendingMoney || 0;
@@ -124,7 +138,7 @@ module.exports = {
       ]);
 
       const topSellingCategories = await orderModel.aggregate([
-        { $match: {...dateFilter, orderStatus: "delivered" } },
+        { $match: { ...dateFilter, orderStatus: "delivered" } },
         { $unwind: "$items" },
         {
           $lookup: {
@@ -161,7 +175,7 @@ module.exports = {
       ]);
 
       const topSellingBrands = await orderModel.aggregate([
-        { $match: {...dateFilter, orderStatus: "delivered" } },
+        { $match: { ...dateFilter, orderStatus: "delivered" } },
         { $unwind: "$items" },
         {
           $lookup: {
@@ -187,7 +201,6 @@ module.exports = {
           },
         },
       ]);
-      
 
       const totalDiscounts = await orderModel.aggregate([
         { $match: { ...dateFilter, "coupon.code": { $exists: true } } },
@@ -199,10 +212,8 @@ module.exports = {
         },
       ]);
 
-      
-  
       const vistors = await visitorModel.find({});
-  
+
       const dashboard = {
         usersCount: users.length,
         productsCount: products.length,
@@ -226,38 +237,54 @@ module.exports = {
       });
     }
   },
+  // ~~~ Download Report ~~~
+  // Purpose: Generate and download sales report in PDF based on the selected date range.
+  // Response: Returns PDF file for download.
   async downloadReport(req, res) {
     console.log("Processing downloadReport...");
-  
+
     try {
       const { startDate, endDate, range } = req.body;
-  
+
       let start, end;
       const today = new Date();
 
-
-      if(range==='daily'){
+      if (range === "daily") {
         start = new Date(today.setHours(0, 0, 0, 0));
         end = new Date(today.setHours(23, 59, 59, 999));
-      }else if(range==='weekly'){
-        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+      } else if (range === "weekly") {
+        const startOfWeek = new Date(
+          today.setDate(today.getDate() - today.getDay())
+        );
         start = new Date(startOfWeek.setHours(0, 0, 0, 0));
         end = new Date(today.setHours(23, 59, 59, 999));
-      }else if(range==='monthly'){
+      } else if (range === "monthly") {
         start = new Date(today.getFullYear(), today.getMonth(), 1);
-        end = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
-      }else if(range==='custom'){
+        end = new Date(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+      } else if (range === "custom") {
         if (!startDate || !endDate) {
-          return res.status(400).json({ msg: "Start and end dates are required for custom range." });
+          return res
+            .status(400)
+            .json({
+              msg: "Start and end dates are required for custom range.",
+            });
         }
         start = new Date(startDate);
         end = new Date(endDate);
       }
 
-      console.log(range)
-      console.log(startDate,endDate)
-      console.log(start,end)
-  
+      console.log(range);
+      console.log(startDate, endDate);
+      console.log(start, end);
+
       const salesDataResult = await orderModel.aggregate([
         {
           $match: {
@@ -278,13 +305,13 @@ module.exports = {
           },
         },
       ]);
-  
+
       const salesData = salesDataResult[0] || {
         totalRevenue: 0,
         totalSales: 0,
         itemsSold: 0,
       };
-  
+
       const detailedOrders = await orderModel
         .find({
           orderStatus: "delivered",
@@ -292,21 +319,32 @@ module.exports = {
         })
         .populate("items.product", "name price");
 
-        const totalDiscounts = await orderModel.aggregate([
-          { $match: { createdAt: { $gte: start, $lte: end }, "coupon.code": { $exists: true } } },
-          {
-            $group: {
-              _id: null,
-              totalDiscount: { $sum: "$coupon.discountApplied" },
-            },
+      const totalDiscounts = await orderModel.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: start, $lte: end },
+            "coupon.code": { $exists: true },
           },
-        ]);
-  
+        },
+        {
+          $group: {
+            _id: null,
+            totalDiscount: { $sum: "$coupon.discountApplied" },
+          },
+        },
+      ]);
+
       console.log("Sales Data:", salesData);
       console.log("Number of Detailed Orders:", detailedOrders.length);
-  
-      const templatePath = path.join(__dirname, "..", "views", "admin", "report-template.ejs");
-  
+
+      const templatePath = path.join(
+        __dirname,
+        "..",
+        "views",
+        "admin",
+        "report-template.ejs"
+      );
+
       ejs.renderFile(
         templatePath,
         {
@@ -314,51 +352,72 @@ module.exports = {
           detailedOrders,
           totalDiscounts: totalDiscounts[0]?.totalDiscount || 0,
           startDate: start.toISOString().split("T")[0],
-          endDate: end.toISOString().split("T")[0],  
+          endDate: end.toISOString().split("T")[0],
         },
         (err, renderedHTML) => {
           if (err) {
             console.error(err);
-            return res.status(500).json({ msg: "Error rendering report template." });
+            return res
+              .status(500)
+              .json({ msg: "Error rendering report template." });
           }
-      
+
           const pdfOptions = {
             height: "11.25in",
             width: "8.5in",
             header: { height: "20mm" },
             footer: { height: "20mm" },
           };
-      
-          pdf.create(renderedHTML, pdfOptions).toFile("report.pdf", (err, result) => {
-            if (err) {
-              console.error(err);
-              return res.status(500).json({ msg: "Error generating PDF file." });
-            }
-            return res.download(result.filename, "SalesReport.pdf", (downloadErr) => {
-              if (downloadErr) {
-                console.error(downloadErr);
-                return res.status(500).json({ msg: "Error downloading PDF file." });
+
+          pdf
+            .create(renderedHTML, pdfOptions)
+            .toFile("report.pdf", (err, result) => {
+              if (err) {
+                console.error(err);
+                return res
+                  .status(500)
+                  .json({ msg: "Error generating PDF file." });
               }
+              return res.download(
+                result.filename,
+                "SalesReport.pdf",
+                (downloadErr) => {
+                  if (downloadErr) {
+                    console.error(downloadErr);
+                    return res
+                      .status(500)
+                      .json({ msg: "Error downloading PDF file." });
+                  }
+                }
+              );
             });
-          });
         }
       );
-      
     } catch (error) {
       console.error("Error in downloadReport:", error);
-      res.status(500).json({ msg: "An error occurred while generating the report." });
+      res
+        .status(500)
+        .json({ msg: "An error occurred while generating the report." });
     }
-  }
-  ,
+  },
+  // ~~~ Admin Login Page Load ~~~
+  // Purpose: Renders the login page when the admin login route is accessed.
+  // Response: Renders the "login" view.
   whenAdminLoginLoad(req, res) {
     res.render("login");
   },
+  // ~~~ Load Users with Pagination ~~~
+// Purpose: Fetch and display users with pagination (7 users per page).
+// Response: Renders the "usersManagement" page with user data.
   async whenUsersLoad(req, res) {
     const { page = 1 } = req.query;
     const limit = 7;
     const skip = (page - 1) * limit;
     try {
-      const users = await userModel.find({role:'user'}).skip(skip).limit(limit);
+      const users = await userModel
+        .find({ role: "user" })
+        .skip(skip)
+        .limit(limit);
       const totalUsers = await userModel.countDocuments();
       const totalPages = Math.ceil(totalUsers / limit);
       return res.status(200).render("usersManagement", {
@@ -381,6 +440,9 @@ module.exports = {
       });
     }
   },
+  // ~~~ View Specific User ~~~
+// Purpose: Fetch and display a specific user based on the userId in the URL parameters.
+// Response: Returns the user data in JSON format.
   async whenUsersView(req, res) {
     const { userId } = req.params;
     try {
@@ -391,6 +453,9 @@ module.exports = {
       console.log(err);
     }
   },
+  // ~~~ Ban/Unban User ~~~
+// Purpose: Ban or unban a user based on the id and value from the query parameters.
+// Response: Returns a success message if the operation was successful.
   async whenUsersBan(req, res) {
     const { id, val } = req.query;
     try {
@@ -405,6 +470,9 @@ module.exports = {
       res.status(500).json({ val: false });
     }
   },
+  // ~~~ Admin Login ~~~
+// Purpose: Handle admin login. Validates username and password.
+// Response: Returns success or error message based on the login credentials.
   whenAdminLogin(req, res) {
     const { username, password } = req.body;
     try {
@@ -427,6 +495,9 @@ module.exports = {
       res.status(500).json({ val: false, type: null, msg: err });
     }
   },
+  // ~~~ Search Users ~~~
+// Purpose: Search for users by username or email based on a query string.
+// Response: Returns a list of users matching the search criteria.
   async searchUsers(req, res) {
     const { key } = req.query;
     try {
@@ -446,6 +517,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
+  // ~~~ Search Products ~~~
+// Purpose: Search for products by name or brand based on a query string.
+// Response: Returns a list of products matching the search criteria.
   async searchProducts(req, res) {
     const { key } = req.query;
     try {
@@ -466,6 +540,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
+  // ~~~ Search Orders ~~~
+// Purpose: Search for orders by username, order status, or payment method based on a query string.
+// Response: Returns a list of orders matching the search criteria.
   async searchOrders(req, res) {
     const { key } = req.query;
     try {
@@ -485,6 +562,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
+  // ~~~ Search Categories ~~~
+// Purpose: Search for categories by name based on a query string.
+// Response: Returns a list of categories matching the search criteria.
   async searchCategories(req, res) {
     const { key } = req.query;
     try {
@@ -500,6 +580,9 @@ module.exports = {
       res.status(500).json({ val: false, msg: "Something went wrong" });
     }
   },
+  // ~~~ Search Coupons ~~~
+// Purpose: Search for coupons by code based on a query string.
+// Response: Returns a list of coupons matching the search criteria.
   async searchCoupons(req, res) {
     const { key } = req.query;
     try {

@@ -3,6 +3,9 @@ const productModel = require("../models/productModel");
 const path = require("path");
 
 module.exports = {
+  // ~~~ Category Load Admin ~~~
+  // Purpose: Loads the categories for the admin panel with pagination and product count.
+  // Response: Renders the category management page showing categories with pagination and product count.
   async categoryLoadAdmin(req, res) {
     const { page = 1 } = req.query;
     const limit = 7;
@@ -52,6 +55,9 @@ module.exports = {
       });
     }
   },
+  // ~~~ Category Add ~~~
+  // Purpose: Adds a new category to the database with an image.
+  // Response: Responds with success or failure based on whether the category already exists.
   async categoryAdd(req, res) {
     const { categoryName } = req.body;
     try {
@@ -73,6 +79,9 @@ module.exports = {
       res.status(200).json({ val: false, msg: "Category add failed" });
     }
   },
+  // ~~~ Category Load ~~~
+  // Purpose: Loads the products under a category with pagination.
+  // Response: Renders the category page with products or sends an API response if requested.
   async categoryLoad(req, res) {
     const { categoryId } = req.params;
     const page = parseInt(req.query.page) || 1;
@@ -93,6 +102,9 @@ module.exports = {
       res.status(500).render("category", { products: null, category: null });
     }
   },
+  // ~~~ Category Unlist ~~~
+  // Purpose: Marks a category as deleted or restores it.
+  // Response: Responds with success if the category is successfully updated.
   async categoryUnlist(req, res) {
     const { id, val } = req.query;
     console.log(id);
@@ -108,11 +120,18 @@ module.exports = {
       res.status(500).json({ val: false });
     }
   },
+  // ~~~ Category Update Load ~~~
+  // Purpose: Loads the category details for updating.
+  // Response: Renders the update category page with category data.
+
   async categoryUpdateload(req, res) {
     const { categoryId } = req.params;
     const category = await categoryModel.findOne({ _id: categoryId });
     res.render("updateCategory", { category });
   },
+  // ~~~ Category Image Update ~~~
+  // Purpose: Updates the image of a category.
+  // Response: Responds with success or failure based on whether the update was successful.
   async categoryImageUpdate(req, res) {
     try {
       const { categoryId } = req.params;
@@ -141,6 +160,9 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Category Update ~~~
+  // Purpose: Updates the name of a category.
+  // Response: Responds with success or failure based on whether the update was successful.
   async categoryUpdate(req, res) {
     const { categoryId } = req.params;
     const { categoryName } = req.body;
@@ -160,39 +182,52 @@ module.exports = {
       return res.status(500).json({ val: false, msg: "Server error" });
     }
   },
+  // ~~~ Category Offer Add ~~~
+  // Purpose: Adds or updates an offer for a category and updates the products in that category.
+  // Response: Responds with success or failure based on whether the operation was successful.
   async categoryOfferAdd(req, res) {
     try {
       const { categoryId, offerValue } = req.body;
       console.log(categoryId, offerValue);
-  
+
       if (!categoryId || !offerValue) {
-        return res.status(400).json({val:false,msg:"Category ID and offer value are required."});
+        return res
+          .status(400)
+          .json({
+            val: false,
+            msg: "Category ID and offer value are required.",
+          });
       }
-  
+
       let offerAmount;
       let isPercentage = false;
       if (/%/.test(offerValue)) {
         isPercentage = true;
-        offerAmount = parseFloat(offerValue.replace('%', ''));
+        offerAmount = parseFloat(offerValue.replace("%", ""));
       } else {
         offerAmount = parseFloat(offerValue);
       }
-  
+
       if (isNaN(offerAmount) || offerAmount <= 0) {
-        return res.status(400).json({val:false,msg:"Invalid offer amount."});
+        return res
+          .status(400)
+          .json({ val: false, msg: "Invalid offer amount." });
       }
-  
+
       const category = await categoryModel.findById(categoryId);
       if (!category) {
-        return res.status(404).json({val:false,msg:"Category not found."});
+        return res.status(404).json({ val: false, msg: "Category not found." });
       }
       const products = await productModel.find({ category: categoryId });
       if (products.length === 0) {
-        return res.status(404).json({val:false,msg:"No products found under this category."});
+        return res
+          .status(404)
+          .json({ val: false, msg: "No products found under this category." });
       }
       for (const product of products) {
         if (isPercentage) {
-          product.offerPrice = product.price - (product.price * offerAmount) / 100;
+          product.offerPrice =
+            product.price - (product.price * offerAmount) / 100;
         } else {
           product.offerPrice = product.price - offerAmount;
         }
@@ -202,20 +237,14 @@ module.exports = {
         await product.save();
       }
 
-      category.offer = {
-        value: offerAmount,
-        isPercentage: isPercentage,
-        updatedAt: new Date(),
-      };
-  
+
+
       await category.save();
 
-      res.status(200).json({val:true});
-  
+      res.status(200).json({ val: true });
     } catch (error) {
       console.error(error);
-      res.status(500).json({val:false,msg:"Server error."});
+      res.status(500).json({ val: false, msg: "Server error." });
     }
-  }
-  
+  },
 };
