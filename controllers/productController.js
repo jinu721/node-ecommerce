@@ -261,6 +261,7 @@ module.exports = {
           maxQuantity: parsedMaxQuantity,
         };
       }
+      console.log(parsedSizes)
       colors = colors
         ? colors
             .split(",")
@@ -291,6 +292,8 @@ module.exports = {
           );
         });
       }
+
+      console.log('HHHHHHH')
 
       await productModel.create({
         name,
